@@ -158,8 +158,12 @@ return [
         App\Providers\AuthServiceProvider::class,
         // App\Providers\BroadcastServiceProvider::class,
         App\Providers\EventServiceProvider::class,
-        App\Providers\RouteServiceProvider::class,
+
+        Optimus\Api\System\TranslationServiceProvider::class,
+        Optimus\Api\System\ViewServiceProvider::class,
+        Optimus\ApiConsumer\Provider\LaravelServiceProvider::class,
         Optimus\Heimdal\Provider\LaravelServiceProvider::class,
+        App\Providers\RouteServiceProvider::class,
     ],
 
     /*
