@@ -9,8 +9,11 @@
         "fideloper/proxy": "^4.0",
         "laravel/framework": "5.6.*",
         "laravel/tinker": "^1.0",
+        "optimus/distributed-laravel": "0.1.*",
         "optimus/bruno": "~3.0",
-        "optimus/heimdal": "~1.0"
+        "optimus/genie": "~2.0",
+        "optimus/heimdal": "~1.0",
+        "optimus/api-consumer": "0.2.*"
     },
     "require-dev": {
         "filp/whoops": "^2.0",
@@ -25,7 +28,8 @@
             "database/factories"
         ],
         "psr-4": {
-            "App\\": "app/"
+            "App\\": "app/",
+            "APIServices\\": "APIServices/"
         }
     },
     "autoload-dev": {

@@ -2,20 +2,11 @@
 
 namespace App\Providers;
 
-use Illuminate\Support\Facades\Route;
-use Illuminate\Foundation\Support\Providers\RouteServiceProvider as ServiceProvider;
+use Illuminate\Routing\Router;
+use Optimus\Api\System\RouteServiceProvider as ServiceProvider;
 
 class RouteServiceProvider extends ServiceProvider
 {
-    /**
-     * This namespace is applied to your controller routes.
-     *
-     * In addition, it is set as the URL generator's root namespace.
-     *
-     * @var string
-     */
-    protected $namespace = 'App\Http\Controllers';
-
     /**
      * Define your route model bindings, pattern filters, etc.
      *
@@ -23,51 +14,60 @@ class RouteServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-        //
+        $router = $this->app->make(Router::class);
 
-        parent::boot();
+        $router->pattern('id', '[0-9]+');
+        parent::boot($router);
     }
 
     /**
      * Define the routes for the application.
      *
+     * @param  \Illuminate\Routing\Router  $router
      * @return void
      */
-    public function map()
+    public function map(Router $router)
     {
-        $this->mapApiRoutes();
+        $config = $this->app['config']['optimus.components'];
 
-        $this->mapWebRoutes();
+        $middleware = $config['protection_middleware'];
 
-        //
-    }
+        $highLevelParts = array_map(function ($namespace) {
+            return glob(sprintf('%s%s*', $namespace, DIRECTORY_SEPARATOR), GLOB_ONLYDIR);
+        }, $config['namespaces']);
 
-    /**
-     * Define the "web" routes for the application.
-     *
-     * These routes all receive session state, CSRF protection, etc.
-     *
-     * @return void
-     */
-    protected function mapWebRoutes()
-    {
-        Route::middleware('web')
-             ->namespace($this->namespace)
-             ->group(base_path('routes/web.php'));
-    }
+        foreach ($highLevelParts as $part => $partComponents) {
+            foreach ($partComponents as $componentRoot) {
+                $component = substr($componentRoot, strrpos($componentRoot, DIRECTORY_SEPARATOR) + 1);
 
-    /**
-     * Define the "api" routes for the application.
-     *
-     * These routes are typically stateless.
-     *
-     * @return void
-     */
-    protected function mapApiRoutes()
-    {
-        Route::prefix('api')
-             ->middleware('api')
-             ->namespace($this->namespace)
-             ->group(base_path('routes/api.php'));
+                $namespace = sprintf(
+                    '%s\\%s\\Controllers',
+                    $part,
+                    $component
+                );
+
+                $fileNames = [
+                    'routes' => true,
+                    'routes_protected' => true,
+                    'routes_public' => false,
+                ];
+
+                foreach ($fileNames as $fileName => $protected) {
+                    $path = sprintf('%s/%s.php', $componentRoot, $fileName);
+
+                    if (!file_exists($path)) {
+                        continue;
+                    }
+
+                    $router->group([
+                        'middleware' => $protected ? $middleware : ['web'],
+                        'namespace'  => $namespace,
+                        'prefix' => $protected ? 'api' : ''
+                    ], function ($router) use ($path) {
+                        require $path;
+                    });
+                }
+            }
+        }
     }
 }
