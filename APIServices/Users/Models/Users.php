@@ -2,13 +2,13 @@
 
 namespace APIServices\Users\Models;
 
-use Illuminate\Notifications\Notifiable;
-use Illuminate\Foundation\Auth\User as Authenticatable;
 
-class User extends Authenticatable
+use App\Database\Eloquent\Model;
+
+class Users extends Model
 {
-    use Notifiable;
-
+    protected $primaryKey = 'uuid';
+    protected $keyType = 'string';
     /**
      * The attributes that are mass assignable.
      *
