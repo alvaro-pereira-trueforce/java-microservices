@@ -2,14 +2,15 @@
 
 namespace APIServices\Users\Repositories;
 
-use APIServices\Users\Models\User;
+use APIServices\Users\Models\Users;
 use App\Database\Eloquent\Repository;
+use Illuminate\Support\Facades\App;
 
 class UserRepository extends Repository
 {
     public function getModel()
     {
-        return new User();
+        return App::make(Users::class);
     }
 
     public function create(array $data)
@@ -24,7 +25,7 @@ class UserRepository extends Repository
         return $user;
     }
 
-    public function update(User $user, array $data)
+    public function update(Users $user, array $data)
     {
         $user->fill($data);
 
