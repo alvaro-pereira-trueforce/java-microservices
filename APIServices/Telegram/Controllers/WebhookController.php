@@ -23,11 +23,13 @@ class WebhookController extends Controller
     }
 
 
-    public function webhookHandler()
+    public function webhookHandler($token)
     {
         // If you're not using commands system, then you can enable this.
-//        $update = $this->telegram->getWebhookUpdate();
+        // $update = $this->telegram->getWebhookUpdate();
 
+        //This will set the access token to replay the correct registered bot
+        $this->telegram->setAccessToken($token);
         // This fetchs webhook update + processes the update through the commands system.
         $update = $this->telegram->commandsHandler(true);
 
@@ -52,7 +54,6 @@ class WebhookController extends Controller
                 ->getResult();
         }*/
         Log::info($message);
-
-        return 'Ok';
+        return response()->json('ok',200);
     }
 }
