@@ -1,8 +1,8 @@
 <?php
 
-namespace APIService\AppFrontEnd\Controllers;
+namespace APIServices\AppFrontEnd\Controllers;
 
-use App\Http\Controller as BaseController;
+use App\Http\Controllers\Controller as BaseController;
 use App\Version;
 
 class DefaultApiController extends BaseController
