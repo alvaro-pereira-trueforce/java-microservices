@@ -18,6 +18,7 @@ class CreateManifestsTable extends Migration
             $table->string('name');
             $table->string('id')->unique();
             $table->string('author');
+            $table->string('version');
             $table->timestamps();
         });
     }

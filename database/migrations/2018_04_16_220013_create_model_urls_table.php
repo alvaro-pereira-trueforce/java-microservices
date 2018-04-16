@@ -13,7 +13,7 @@ class CreateModelUrlsTable extends Migration
      */
     public function up()
     {
-        Schema::create('model_urls', function (Blueprint $table) {
+        Schema::create('urls', function (Blueprint $table) {
             $table->uuid('uuid')->unique();
             $table->string('admin_ui');
             $table->string('pull_url');
@@ -31,6 +31,6 @@ class CreateModelUrlsTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('model_urls');
+        Schema::dropIfExists('urls');
     }
 }
