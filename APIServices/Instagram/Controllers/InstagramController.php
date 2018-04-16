@@ -39,7 +39,8 @@ class InstagramController extends Controller
 
 
         $user = $this->instagram->getUser();
-
+        //$user = $this->instagram->getUserFeed(0);
+        //$user = $this->instagram->getPopularMedia();
 
         //$user = $this->instagram->getUserMedia(7508601214,0); funciona con tre
         //$user = $this->instagram->getMediaComments('1758602735810303054_7508601214');
