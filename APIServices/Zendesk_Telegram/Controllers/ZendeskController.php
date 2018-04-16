@@ -1,6 +1,6 @@
 <?php
 
-namespace APIServices\Zendesk\Controllers;
+namespace APIServices\Zendesk_Telegram\Controllers;
 
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
