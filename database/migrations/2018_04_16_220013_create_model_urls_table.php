@@ -14,7 +14,9 @@ class CreateModelUrlsTable extends Migration
     public function up()
     {
         Schema::create('urls', function (Blueprint $table) {
+            $table->primary('uuid');
             $table->uuid('uuid')->unique();
+            $table->string('manifest_uuid');
             $table->string('admin_ui');
             $table->string('pull_url');
             $table->string('channelback_url');

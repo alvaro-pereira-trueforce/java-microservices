@@ -3,16 +3,19 @@
 namespace App\Database\Models;
 
 use App\Database\Eloquent\Concerns\HasFillableRelations;
-use Illuminate\Database\Eloquent\Model;
+use App\Database\Eloquent\Model;
 
 class Urls extends Model
 {
     protected $primaryKey = 'uuid';
     protected $keyType = 'string';
     protected $table = 'urls';
-
-    use HasFillableRelations;
-    protected $fillable_relations = ['manifest'];
+    /**
+     * Indicates if the IDs are auto-incrementing.
+     *
+     * @var bool
+     */
+    public $incrementing = false;
 
     /**
      * The attributes that are mass assignable.
@@ -33,6 +36,6 @@ class Urls extends Model
      */
     public function manifest()
     {
-        return $this->belongsTo(Manifest::class, 'uuid','uuid')->withDefault();
+        return $this->belongsTo(Manifest::class,'manifest_uuid','uuid')->withDefault();
     }
 }

@@ -5,6 +5,7 @@ namespace APIServices\Zendesk_Telegram\Repositories;
 use App\Database\Eloquent\Repository;
 use App\Database\Eloquent\Model;
 use App\Database\Models\Manifest;
+use App\Database\Models\Urls;
 use Illuminate\Support\Facades\App;
 
 class ManifestRepository extends Repository
@@ -42,5 +43,16 @@ class ManifestRepository extends Repository
         $model->fill($data);
         $model->save();
         return $model;
+    }
+
+    public function createManifestWithUrls(array $manifest, array $urls) {
+        $urlsModel = App::make(Urls::class);
+        $urlsModel->fill($urls);
+
+        $manifestModel = $this->getModel();
+
+        $manifestModel->fill($manifest);
+        $manifestModel->save();
+        return $manifestModel->urls()->save($urlsModel);
     }
 }

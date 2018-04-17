@@ -14,6 +14,7 @@ class CreateManifestsTable extends Migration
     public function up()
     {
         Schema::create('manifests', function (Blueprint $table) {
+            $table->primary('uuid');
             $table->uuid('uuid')->unique();
             $table->string('name');
             $table->string('id')->unique();
