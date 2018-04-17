@@ -5,6 +5,7 @@ namespace App\Console;
 use APIServices\Telegram\Console\AddBotCommand;
 use APIServices\Telegram\Console\SetWebhookCommand;
 use APIServices\Users\Console\AddUserCommand;
+use APIServices\Zendesk_Telegram\Console\AddApplicationManifestCommand;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
 
@@ -18,7 +19,8 @@ class Kernel extends ConsoleKernel
     protected $commands = [
         AddUserCommand::class,
         AddBotCommand::class,
-        SetWebhookCommand::class
+        SetWebhookCommand::class,
+        AddApplicationManifestCommand::class
     ];
 
     /**
