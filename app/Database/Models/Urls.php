@@ -2,20 +2,12 @@
 
 namespace App\Database\Models;
 
-use App\Database\Eloquent\Concerns\HasFillableRelations;
-use App\Database\Eloquent\Model;
 
-class Urls extends Model
+use App\Database\Eloquent\ModelUUID;
+
+class Urls extends ModelUUID
 {
-    protected $primaryKey = 'uuid';
-    protected $keyType = 'string';
     protected $table = 'urls';
-    /**
-     * Indicates if the IDs are auto-incrementing.
-     *
-     * @var bool
-     */
-    public $incrementing = false;
 
     /**
      * The attributes that are mass assignable.
