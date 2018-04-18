@@ -5,7 +5,6 @@ namespace App\Console;
 use APIServices\Telegram\Console\AddBotCommand;
 use APIServices\Telegram\Console\SetWebhookCommand;
 use APIServices\Users\Console\AddUserCommand;
-use APIServices\Zendesk_Telegram\Console\AddApplicationManifestCommand;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
 
