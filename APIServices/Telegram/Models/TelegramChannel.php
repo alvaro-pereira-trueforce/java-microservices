@@ -4,6 +4,7 @@ namespace APIServices\Telegram\Models;
 
 
 use App\Database\Eloquent\Model;
+use App\Database\Traits\UUIDTrait;
 
 class TelegramChannel extends Model
 {
@@ -11,6 +12,7 @@ class TelegramChannel extends Model
     protected $primaryKey = "uuid";
     protected $keyType = 'string';
 
+    use UUIDTrait;
     /**
      * The attributes that are mass assignable.
      *

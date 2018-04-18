@@ -4,11 +4,14 @@ namespace APIServices\Users\Models;
 
 
 use App\Database\Eloquent\Model;
+use App\Database\Traits\UUIDTrait;
 
 class Users extends Model
 {
     protected $primaryKey = 'uuid';
     protected $keyType = 'string';
+
+    use UUIDTrait;
     /**
      * The attributes that are mass assignable.
      *
