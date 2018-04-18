@@ -1,6 +1,6 @@
 <?php
 
-namespace APIServices\Zendesk_Telegram\Console;
+namespace App\Console;
 
 use App\Repositories\ManifestRepository;
 use Illuminate\Console\Command;
