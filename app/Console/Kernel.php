@@ -18,7 +18,8 @@ class Kernel extends ConsoleKernel
     protected $commands = [
         AddUserCommand::class,
         AddBotCommand::class,
-        SetWebhookCommand::class
+        SetWebhookCommand::class,
+        AddApplicationManifestCommand::class
     ];
 
     /**

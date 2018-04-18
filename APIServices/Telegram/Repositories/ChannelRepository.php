@@ -19,23 +19,23 @@ class ChannelRepository extends Repository
      */
     public function create(array $data)
     {
-        $user = $this->getModel();
+        $model = $this->getModel();
 
-        $user->fill($data);
-        $user->save();
+        $model->fill($data);
+        $model->save();
 
-        return $user;
+        return $model;
     }
 
     /***
-     * @param Model $user
-     * @param array           $data ['token', 'zendesk_app_id']
+     * @param Model $model
+     * @param array $data ['token', 'zendesk_app_id']
      * @return Model
      */
-    public function update(Model $user, array $data)
+    public function update(Model $model, array $data)
     {
-        $user->fill($data);
-        $user->save();
-        return $user;
+        $model->fill($data);
+        $model->save();
+        return $model;
     }
 }
