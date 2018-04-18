@@ -1,10 +1,12 @@
 <?php
 
 namespace APIServices\Instagram\Controllers;
-use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
+
 use APIServices\Instagram\Models;
 use APIServices\Instagram\Logic\InstagramLogic;
+use App\Http\Controllers\Controller;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class InstagramController extends Controller
 {
@@ -22,9 +24,10 @@ class InstagramController extends Controller
     {
         $this->instagram->setAccessToken($token);
         try {
-            $user = $this->instagram->getMediaComments($id_media, true);
-            return response()->json($user, 200);
+            $comments = $this->instagram->getMediaComments($id_media, true);
+            return response()->json($comments, 200);
         } catch (Exception $e) {
+            Log::info($e->getMessage());
             return response()->json($e, 500);
         }
     }
@@ -33,9 +36,10 @@ class InstagramController extends Controller
     {
         $this->instagram->setAccessToken($token);
         try {
-            $media = $this->instagram->getUserMedia(true, 'self');
-            return response()->json($media, 200);
+            $user_media = $this->instagram->getUserMedia(true);
+            return response()->json($user_media, 200);
         } catch (Exception $e) {
+            Log::info($e->getMessage());
             return response()->json($e, 500);
         }
     }
