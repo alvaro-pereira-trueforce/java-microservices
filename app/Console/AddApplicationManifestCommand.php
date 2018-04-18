@@ -4,6 +4,7 @@ namespace App\Console;
 
 use App\Repositories\ManifestRepository;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\DB;
 
 class AddApplicationManifestCommand extends Command {
     /**
@@ -52,20 +53,29 @@ class AddApplicationManifestCommand extends Command {
         $clickthrough_url = $this->ask('What is the click through URL?');
         $healthcheck_url = $this->ask('What is the health check URL?');
 
-        $manifest = $this->manifestRepository->createManifestWithUrls([
-            'name' => $this->argument('name'),
-            'id' => $this->argument('id'),
-            'author' => $this->argument('author'),
-            'version' => $this->argument('version')
-        ],
-            [
-                'admin_ui' => $app_url . $admin_ui,
-                'pull_url' => $app_url . $pull_url,
-                'channelback_url' => $app_url . $channelback_url,
-                'clickthrough_url' => $app_url . $clickthrough_url,
-                'healthcheck_url' => $app_url . $healthcheck_url
-            ]);
+        DB::beginTransaction();
+        try
+        {
+            $manifest = $this->manifestRepository->createManifestWithUrls([
+                'name' => $this->argument('name'),
+                'id' => $this->argument('id'),
+                'author' => $this->argument('author'),
+                'version' => $this->argument('version')
+            ],
+                [
+                    'admin_ui' => $admin_ui ? $app_url . $admin_ui : '',
+                    'pull_url' => $pull_url ? $app_url . $pull_url : '',
+                    'channelback_url' => $channelback_url ? $app_url . $channelback_url : '',
+                    'clickthrough_url' => $clickthrough_url ? $app_url . $clickthrough_url : '',
+                    'healthcheck_url' => $healthcheck_url ? $app_url . $healthcheck_url : ''
+                ]);
+            DB::commit();
+            $this->info(sprintf('A new application manifest was created with ID %s', $manifest));
+        }catch (\Exception $exception)
+        {
+            DB::rollBack();
+            $this->info(sprintf('There is an error %s', $exception->getMessage()));
+        }
 
-        $this->info(sprintf('A new application manifest was created with ID %s', $manifest));
     }
 }
