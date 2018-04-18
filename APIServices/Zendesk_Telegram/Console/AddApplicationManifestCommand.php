@@ -2,7 +2,7 @@
 
 namespace APIServices\Zendesk_Telegram\Console;
 
-use APIServices\Zendesk_Telegram\Repositories\ManifestRepository;
+use App\Repositories\ManifestRepository;
 use Illuminate\Console\Command;
 
 class AddApplicationManifestCommand extends Command {

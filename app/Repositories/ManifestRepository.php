@@ -1,6 +1,6 @@
 <?php
 
-namespace APIServices\Zendesk_Telegram\Repositories;
+namespace App\Repositories;
 
 use App\Database\Eloquent\Repository;
 use App\Database\Eloquent\Model;
