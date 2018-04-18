@@ -9,8 +9,6 @@ use App\Database\Traits\UUIDTrait;
 class TelegramChannel extends Model
 {
     protected $table = "telegram_channels";
-    protected $primaryKey = "uuid";
-    protected $keyType = 'string';
 
     use UUIDTrait;
     /**
