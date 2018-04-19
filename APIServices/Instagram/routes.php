@@ -1,4 +1,4 @@
 <?php
 
-Route::get('/media/{idMedia}/comments/{token}', 'InstagramController@getMediaComments');
-Route::get('/listMedia/{token}', 'InstagramController@getAllUserMedia');
+Route::get('/{token}/media/{idMedia}/comments', 'InstagramController@getMediaComments');
+Route::get('/{token}/listMedia', 'InstagramController@getAllUserMedia');
