@@ -4,9 +4,12 @@ namespace App\Database\Models;
 
 
 use App\Database\Eloquent\ModelUUID;
+use App\Database\Traits\toArrayFiltered;
 
 class Manifest extends ModelUUID {
     protected $table = 'manifests';
+
+    use toArrayFiltered;
 
     /**
      * The attributes that are mass assignable.
