@@ -9,6 +9,28 @@ use App\Database\Models\Urls;
 use Illuminate\Support\Facades\App;
 
 class ManifestRepository extends Repository {
+
+    /**
+     * @param mixed $id
+     * @param array $options
+     * @return Manifest
+     */
+    public function getById($id, array $options = []) {
+        $model = $this->getModel();
+        $manifest = $model->find($id)->with('urls')->first();
+        return $manifest;
+    }
+
+    /**
+     * @param $name
+     * @return Manifest
+     */
+    public function getByName($name)
+    {
+        $model = $this->getModel();
+        $manifest = $model->where('name', '=', $name)->with('urls')->first();
+        return $manifest;
+    }
     /**
      * @return Manifest
      */

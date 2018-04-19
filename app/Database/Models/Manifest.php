@@ -4,9 +4,12 @@ namespace App\Database\Models;
 
 
 use App\Database\Eloquent\ModelUUID;
+use App\Database\Traits\toArrayFiltered;
 
 class Manifest extends ModelUUID {
     protected $table = 'manifests';
+
+    use toArrayFiltered;
 
     /**
      * The attributes that are mass assignable.
@@ -14,6 +17,12 @@ class Manifest extends ModelUUID {
      * @var array
      */
     protected $fillable = ['name', 'id', 'author', 'version', 'push_client_id'];
+
+    /**
+     * The attributes that are hidden on the serialization
+     * @var array
+     */
+    protected $hidden = ['uuid','created_at','updated_at'];
 
     /**
      * Get the urls record associated with the Manifest.
