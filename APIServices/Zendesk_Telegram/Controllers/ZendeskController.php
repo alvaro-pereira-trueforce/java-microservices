@@ -16,7 +16,9 @@ class ZendeskController extends Controller {
     }
 
     public function getManifest(Request $request) {
-        return $this->manifest->getByName('Telegram_Channel');
+        Log::info("Zendesk Request: ".$request);
+        return response()->json($this->manifest->getByName('Telegram_Channel')
+            ->toArray());
     }
 
     public function admin_ui(Request $request) {
