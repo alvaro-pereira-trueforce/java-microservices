@@ -8,10 +8,11 @@ use App\Database\Models\Manifest;
 use App\Database\Models\Urls;
 use Illuminate\Support\Facades\App;
 
-class ManifestRepository extends Repository
-{
-    public function getModel()
-    {
+class ManifestRepository extends Repository {
+    /**
+     * @return Manifest
+     */
+    public function getModel() {
         return App::make(Manifest::class);
     }
 
@@ -21,8 +22,7 @@ class ManifestRepository extends Repository
      *                    healthcheck_url]
      * @return Manifest
      */
-    public function create(array $data)
-    {
+    public function create(array $data) {
         $model = $this->getModel();
 
         $model->fill($data);
@@ -38,8 +38,7 @@ class ManifestRepository extends Repository
      *                    healthcheck_url]
      * @return Model
      */
-    public function update(Model $model, array $data)
-    {
+    public function update(Model $model, array $data) {
         $model->fill($data);
         $model->save();
         return $model;

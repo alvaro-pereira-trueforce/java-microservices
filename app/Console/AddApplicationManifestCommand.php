@@ -47,11 +47,26 @@ class AddApplicationManifestCommand extends Command {
      */
     public function handle() {
         $app_url = env('APP_URL') . '/';
+
         $admin_ui = $this->ask('What is the admin UI URL?');
+        $admin_ui = $admin_ui ? $app_url . $admin_ui : '';
+        $this->info($admin_ui);
+
         $pull_url = $this->ask('What is the pull URL?');
+        $pull_url = $pull_url ? $app_url . $pull_url : '';
+        $this->info($pull_url);
+
         $channelback_url = $this->ask('What is the channel back URL?');
+        $channelback_url = $channelback_url ? $app_url . $channelback_url : '';
+        $this->info($channelback_url);
+
         $clickthrough_url = $this->ask('What is the click through URL?');
+        $clickthrough_url = $clickthrough_url ? $app_url . $clickthrough_url : '';
+        $this->info($clickthrough_url);
+
         $healthcheck_url = $this->ask('What is the health check URL?');
+        $healthcheck_url = $healthcheck_url ? $app_url . $healthcheck_url : '';
+        $this->info($healthcheck_url);
 
         DB::beginTransaction();
         try
@@ -63,11 +78,11 @@ class AddApplicationManifestCommand extends Command {
                 'version' => $this->argument('version')
             ],
                 [
-                    'admin_ui' => $admin_ui ? $app_url . $admin_ui : '',
-                    'pull_url' => $pull_url ? $app_url . $pull_url : '',
-                    'channelback_url' => $channelback_url ? $app_url . $channelback_url : '',
-                    'clickthrough_url' => $clickthrough_url ? $app_url . $clickthrough_url : '',
-                    'healthcheck_url' => $healthcheck_url ? $app_url . $healthcheck_url : ''
+                    'admin_ui' => $admin_ui,
+                    'pull_url' => $pull_url,
+                    'channelback_url' => $channelback_url,
+                    'clickthrough_url' => $clickthrough_url,
+                    'healthcheck_url' => $healthcheck_url
                 ]);
             DB::commit();
             $this->info(sprintf('A new application manifest was created with ID %s', $manifest));

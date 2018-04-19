@@ -19,7 +19,8 @@ class Kernel extends ConsoleKernel
         AddUserCommand::class,
         AddBotCommand::class,
         SetWebhookCommand::class,
-        AddApplicationManifestCommand::class
+        AddApplicationManifestCommand::class,
+        DeleteApplicationManifestCommand::class
     ];
 
     /**
