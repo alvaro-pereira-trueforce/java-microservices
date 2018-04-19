@@ -5,8 +5,7 @@ namespace App\Database\Models;
 
 use App\Database\Eloquent\ModelUUID;
 
-class Urls extends ModelUUID
-{
+class Urls extends ModelUUID {
     protected $table = 'urls';
 
     /**
@@ -14,7 +13,7 @@ class Urls extends ModelUUID
      *
      * @var array
      */
-    protected $fillable = ['admin_ui', 'pull_url', 'channelback_url', 'clickthrough_url', 'healthcheck_url'];
+    protected $fillable = ['admin_ui', 'pull_url', 'channelback_url', 'clickthrough_url', 'healthcheck_url', 'dashboard_url', 'about_url'];
 
     /**
      * All of the relationships to be touched.
@@ -26,8 +25,7 @@ class Urls extends ModelUUID
     /**
      * Get the Manifest that owns the Urls.
      */
-    public function manifest()
-    {
-        return $this->belongsTo(Manifest::class,'manifest_uuid','uuid')->withDefault();
+    public function manifest() {
+        return $this->belongsTo(Manifest::class, 'manifest_uuid', 'uuid')->withDefault();
     }
 }
