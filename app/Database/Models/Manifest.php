@@ -19,6 +19,12 @@ class Manifest extends ModelUUID {
     protected $fillable = ['name', 'id', 'author', 'version', 'push_client_id'];
 
     /**
+     * The attributes that are hidden on the serialization
+     * @var array
+     */
+    protected $hidden = ['uuid','created_at','updated_at'];
+
+    /**
      * Get the urls record associated with the Manifest.
      */
     public function urls() {

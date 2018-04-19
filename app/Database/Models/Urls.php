@@ -19,6 +19,12 @@ class Urls extends ModelUUID {
     protected $fillable = ['admin_ui', 'pull_url', 'channelback_url', 'clickthrough_url', 'healthcheck_url', 'dashboard_url', 'about_url'];
 
     /**
+     * The attributes that are hidden on the serialization
+     * @var array
+     */
+    protected $hidden = ['uuid','created_at','updated_at','manifest_uuid'];
+
+    /**
      * All of the relationships to be touched.
      *
      * @var array
