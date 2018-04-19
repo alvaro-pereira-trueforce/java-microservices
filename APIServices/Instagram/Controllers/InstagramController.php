@@ -20,7 +20,7 @@ class InstagramController extends Controller
         $this->instagram->setApiCallback('https://twitter.com/soysantizeta');
     }
 
-    public function getMediaComments($id_media, $token)
+    public function getMediaComments($token,$id_media)
     {
         $this->instagram->setAccessToken($token);
         try {
