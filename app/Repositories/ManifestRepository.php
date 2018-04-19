@@ -9,6 +9,13 @@ use App\Database\Models\Urls;
 use Illuminate\Support\Facades\App;
 
 class ManifestRepository extends Repository {
+
+    public function getByName($name)
+    {
+        $model = $this->getModel();
+        $manifest = $model->where('name', '=', $name)->with('urls')->first()->toJson();
+        return $manifest;
+    }
     /**
      * @return Manifest
      */
