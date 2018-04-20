@@ -38,4 +38,10 @@ class ChannelRepository extends Repository
         $model->save();
         return $model;
     }
+
+    public function getByUUID($uuid)
+    {
+        $model = $this->getModel();
+        return $model->where('uuid', '=', $uuid)->first();
+    }
 }
