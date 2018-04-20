@@ -45,8 +45,18 @@ class ZendeskController extends Controller {
         return response()->json($reponse);
     }
 
-    public function channelback(Request $request) {
-        Log::info($request->all());
+    public function channelback(Request $request, ChannelService $service) {
+        $metadata = json_decode($request->metadata, true);
+        $parent_id = explode(':',$request->parent_id);
+        $message = $request->message;
+
+
+        $external_id = $service->sendTelegramMessage($parent_id[1], $parent_id[0], $metadata['token'], $message);
+
+        $response = [
+            'external_id' => $external_id
+        ];
+        return response()->json($response);
     }
 
     public function clickthrough(Request $request) {
@@ -58,7 +68,7 @@ class ZendeskController extends Controller {
     }
 
     public function event_callback(Request $request) {
-        Log::debug($request->all());
+        Log::debug("Event On Zendesk: \n".$request."\n");
         return $this->successReturn();
     }
 

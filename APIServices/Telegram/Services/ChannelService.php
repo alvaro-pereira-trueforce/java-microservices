@@ -90,6 +90,7 @@ class ChannelService {
             $response = $telegram->removeWebhook();
             return $response;
         } catch (TelegramSDKException $exception) {
+            Log::error($exception->getMessage());
             return $exception;
         }
     }
@@ -102,6 +103,13 @@ class ChannelService {
         return $this->telegramAPI->setAccessToken($token);
     }
 
+    /**
+     * Get updates return all the messages from telegram converting the data for zendesk channel
+     * pulling service.
+     *
+     * @param string $uuid TelegramChannelUUID to retrieve the information from the database
+     * @return array Zendesk External resources
+     */
     public function getTelegramUpdates($uuid) {
         $telegramModel = $this->repository->getByUUID($uuid);
 
@@ -119,14 +127,19 @@ class ChannelService {
                 $user_firstname = $update->getMessage()->getFrom()->get('first_name');
                 $user_lastname = $update->getMessage()->getFrom()->get('last_name');
 
+                // must have a buffer in the future to catch only the first 200 messages and send
+                // it the leftover later. Maybe never happen an overflow.
+                if (count($transformedMessages) > 199) {
+                    break;
+                }
                 array_push($transformedMessages, [
-                    'external_id' => $this->zendeskUtils->getExternalID([$message_id, $user_id, $chat_id]),
+                    'external_id' => $this->zendeskUtils->getExternalID([$user_id, $chat_id, $message_id]),
                     'message' => $message,
-                    'parent_id' => $user_id,
+                    'parent_id' => $this->zendeskUtils->getExternalID([$user_id, $chat_id]),
                     'created_at' => gmdate('Y-m-d\TH:i:s\Z', $message_date),
                     'author' => [
                         'external_id' => $this->zendeskUtils->getExternalID([$user_id, $user_username]),
-                        'name' => $user_firstname.' '.$user_lastname
+                        'name' => $user_firstname . ' ' . $user_lastname
                     ]
                 ]);
                 Log::info($update);
@@ -134,9 +147,34 @@ class ChannelService {
             return $transformedMessages;
 
         } catch (\Exception $exception) {
+            Log::error($exception->getMessage());
             return [];
         }
     }
 
+    public function sendTelegramMessage($chat_id, $user_id, $uuid, $message)
+    {
+        $telegramModel = $this->repository->getByUUID($uuid);
+        try
+        {
+            $telegram = $this->getTelegramInstance($telegramModel->token);
 
+            Log::info($message);
+            $response = $telegram->sendMessage([
+                'chat_id' => $chat_id,
+                'text' => $message
+            ]);
+
+            $message_id = $response->getMessageId();
+            $user_id = $response->getFrom()->get('id');
+            $chat_id = $response->getChat()->get('id');
+            return $this->zendeskUtils->getExternalID([$user_id, $chat_id, $message_id]);
+
+        }catch (\Exception $exception)
+        {
+            Log::error($exception->getMessage());
+            return "";
+        }
+        return [$chat_id, $user_id, $uuid, $message];
+    }
 }
