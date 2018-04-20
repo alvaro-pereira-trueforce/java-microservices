@@ -113,6 +113,10 @@ class ChannelService {
     public function getTelegramUpdates($uuid) {
         $telegramModel = $this->repository->getByUUID($uuid);
 
+        if ($telegramModel == null) {
+            return [];
+        }
+
         try {
             $telegram = $this->getTelegramInstance($telegramModel->token);
             $updates = $telegram->commandsHandler(false);
@@ -152,11 +156,13 @@ class ChannelService {
         }
     }
 
-    public function sendTelegramMessage($chat_id, $user_id, $uuid, $message)
-    {
+    public function sendTelegramMessage($chat_id, $user_id, $uuid, $message) {
         $telegramModel = $this->repository->getByUUID($uuid);
-        try
-        {
+        if ($telegramModel == null) {
+            return "";
+        }
+
+        try {
             $telegram = $this->getTelegramInstance($telegramModel->token);
 
             Log::info($message);
@@ -170,11 +176,20 @@ class ChannelService {
             $chat_id = $response->getChat()->get('id');
             return $this->zendeskUtils->getExternalID([$user_id, $chat_id, $message_id]);
 
-        }catch (\Exception $exception)
-        {
+        } catch (\Exception $exception) {
             Log::error($exception->getMessage());
             return "";
         }
         return [$chat_id, $user_id, $uuid, $message];
+    }
+
+    public function checkValidTelegramBot($token) {
+        try{
+            $telegram = $this->getTelegramInstance($token);
+            return $telegram->getMe();
+        }catch (TelegramSDKException $exception)
+        {
+            return null;
+        }
     }
 }

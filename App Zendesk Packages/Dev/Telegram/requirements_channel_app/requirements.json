@@ -1,0 +1,8 @@
+{
+  "channel_integrations": {
+    "Telegram_Channel_Bot": {
+      "manifest_url":
+      "https://c4d94864.ngrok.io/telegram/manifest"
+    }
+  }
+}
