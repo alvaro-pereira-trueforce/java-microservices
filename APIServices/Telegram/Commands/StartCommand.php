@@ -49,6 +49,12 @@ class StartCommand extends Command
 
         // Reply with the commands list
         $this->replyWithMessage(['text' => $response]);
+
+        if(env('APP_ENV') == 'production')
+        {
+            return;
+        }
+
         $this->replyWithSticker([
             'sticker' => 'CAADAgADqAUAAmMr4gleg7AbKyQ65gI',
         ]);

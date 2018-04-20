@@ -2,10 +2,14 @@
 
 namespace APIServices\Zendesk_Telegram\Controllers;
 
+use APIServices\Telegram\Repositories\ChannelRepository;
+use APIServices\Telegram\Services\ChannelService;
 use App\Repositories\ManifestRepository;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Log;
+use Telegram\Bot\Api;
+use Telegram\Bot\Exceptions\TelegramSDKException;
 
 class ZendeskController extends Controller {
 
@@ -16,9 +20,8 @@ class ZendeskController extends Controller {
     }
 
     public function getManifest(Request $request) {
-        Log::info("Zendesk Request: ".$request);
-        return response()->json($this->manifest->getByName('Telegram_Channel')
-            ->toArray());
+        Log::info("Zendesk Request: " . $request);
+        return response()->json($this->manifest->getByName('Telegram_Channel'));
     }
 
     public function admin_ui(Request $request) {
@@ -29,8 +32,14 @@ class ZendeskController extends Controller {
         Log::info($request->all());
     }
 
-    public function pull(Request $request) {
-        Log::info($request->all());
+    public function pull(Request $request, ChannelService $service) {
+        Log::info($request);
+        $metadata = json_decode($request->metadata, true);
+        $state = json_decode($request->state, true);
+
+        $updates = $service->getTelegramUpdates($metadata['token']);
+
+        return response()->json($updates);
     }
 
     public function channelback(Request $request) {
