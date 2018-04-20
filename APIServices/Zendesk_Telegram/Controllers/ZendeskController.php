@@ -38,8 +38,11 @@ class ZendeskController extends Controller {
         $state = json_decode($request->state, true);
 
         $updates = $service->getTelegramUpdates($metadata['token']);
-
-        return response()->json($updates);
+        $reponse = [
+            'external_resources' => $updates,
+            'state' => $state
+        ];
+        return response()->json($reponse);
     }
 
     public function channelback(Request $request) {

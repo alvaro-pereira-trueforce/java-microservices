@@ -134,7 +134,7 @@ class ChannelService {
             return $transformedMessages;
 
         } catch (\Exception $exception) {
-            return null;
+            return [];
         }
     }
 
