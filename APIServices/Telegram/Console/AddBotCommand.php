@@ -5,14 +5,13 @@ namespace APIServices\Telegram\Console;
 use APIServices\Telegram\Repositories\ChannelRepository;
 use Illuminate\Console\Command;
 
-class AddBotCommand extends Command
-{
+class AddBotCommand extends Command {
     /**
      * The name and signature of the console command.
      *
      * @var string
      */
-    protected $signature = 'telegram:add {token} {zendeskID}';
+    protected $signature = 'telegram:add {token} {zendesk_domain} {integration_name}';
 
     /**
      * The console command description.
@@ -31,11 +30,10 @@ class AddBotCommand extends Command
     /**
      * Create a new command instance.
      *
-     * @param  ChannelRepository  $repository
+     * @param  ChannelRepository $repository
      * @return void
      */
-    public function __construct(ChannelRepository $repository)
-    {
+    public function __construct(ChannelRepository $repository) {
         parent::__construct();
 
         $this->repository = $repository;
@@ -46,11 +44,11 @@ class AddBotCommand extends Command
      *
      * @return mixed
      */
-    public function handle()
-    {
+    public function handle() {
         $model = $this->repository->create([
             'token' => $this->argument('token'),
-            'zendesk_app_id' => $this->argument('zendeskID')
+            'zendesk_app_id' => $this->argument('zendesk_domain'),
+            'integration_name' => $this->argument('integration_name')
         ]);
 
         $this->info(sprintf('A record was created with ID %s', $model->uuid));

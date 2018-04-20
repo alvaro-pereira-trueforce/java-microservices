@@ -6,6 +6,7 @@ use APIServices\Telegram\Repositories\ChannelRepository;
 use APIServices\Zendesk\Utility;
 use Illuminate\Database\DatabaseManager;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Database\QueryException;
 use Illuminate\Events\Dispatcher;
 use Illuminate\Support\Facades\Log;
 use Telegram\Bot\Api;
@@ -183,12 +184,35 @@ class ChannelService {
         return [$chat_id, $user_id, $uuid, $message];
     }
 
+    /**
+     * @param $token
+     * @return null|\Telegram\Bot\Objects\User
+     */
     public function checkValidTelegramBot($token) {
-        try{
+        try {
             $telegram = $this->getTelegramInstance($token);
             return $telegram->getMe();
-        }catch (TelegramSDKException $exception)
-        {
+        } catch (TelegramSDKException $exception) {
+            return null;
+        }
+    }
+
+    public function registerNewIntegration($name, $token, $subdomain) {
+        try {
+            $model = $this->repository->create([
+                'token' => $token,
+                'zendesk_app_id' => $subdomain,
+                'integration_name' => $name
+            ]);
+            return [
+                'token' => $model->uuid,
+                'integration_name' => $model->integration_name,
+                'zendesk_app_id' => $model->zendesk_app_id
+            ];
+        } catch (QueryException $exception) {
+            return ["error" => ""];
+        } catch (\Exception $exception) {
+            Log::info($exception);
             return null;
         }
     }
