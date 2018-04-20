@@ -25,6 +25,7 @@ class ZendeskController extends Controller {
     }
 
     public function adminUI(Request $request) {
+        Log::info($request->all());
         $name = $request->name; //will be null on empty
         $metadata = json_decode($request->metadata, true); //will be null on empty
         $state = json_decode($request->state, true); //will be null on empty

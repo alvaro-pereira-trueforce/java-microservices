@@ -1,0 +1,11 @@
+{
+  "name": "Telegram Channel Bot",
+  "author": {
+    "name": "@aketz_a",
+    "email": "support@zendesk.com"
+  },
+  "defaultLocale": "en",
+  "private": true,
+  "version": "0.0.1",
+  "requirementsOnly": true
+}
