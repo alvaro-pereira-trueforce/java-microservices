@@ -24,8 +24,15 @@ class ZendeskController extends Controller {
         return response()->json($this->manifest->getByName('Telegram_Channel'));
     }
 
-    public function admin_ui(Request $request) {
-        Log::info($request->all());
+    public function adminUI(Request $request) {
+        $name = $request->name; //will be null on empty
+        $metadata = json_decode($request->metadata, true); //will be null on empty
+        $state = json_decode($request->state, true); //will be null on empty
+        $return_url = $request->return_url;
+        $subdomain = $request->subdomain;
+        //$locale = $request->locale;
+
+        return view('telegram.admin_ui', ['return_url' => $return_url, 'subdomain' => $subdomain, 'name' => $name]);
     }
 
     public function admin_ui_2(Request $request) {
@@ -47,7 +54,7 @@ class ZendeskController extends Controller {
 
     public function channelback(Request $request, ChannelService $service) {
         $metadata = json_decode($request->metadata, true);
-        $parent_id = explode(':',$request->parent_id);
+        $parent_id = explode(':', $request->parent_id);
         $message = $request->message;
 
 
@@ -68,7 +75,7 @@ class ZendeskController extends Controller {
     }
 
     public function event_callback(Request $request) {
-        Log::debug("Event On Zendesk: \n".$request."\n");
+        Log::debug("Event On Zendesk: \n" . $request . "\n");
         return $this->successReturn();
     }
 

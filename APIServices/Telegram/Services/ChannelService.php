@@ -113,6 +113,11 @@ class ChannelService {
     public function getTelegramUpdates($uuid) {
         $telegramModel = $this->repository->getByUUID($uuid);
 
+        if($telegramModel == null)
+        {
+            return [];
+        }
+
         try {
             $telegram = $this->getTelegramInstance($telegramModel->token);
             $updates = $telegram->commandsHandler(false);
@@ -155,6 +160,11 @@ class ChannelService {
     public function sendTelegramMessage($chat_id, $user_id, $uuid, $message)
     {
         $telegramModel = $this->repository->getByUUID($uuid);
+        if($telegramModel == null)
+        {
+            return "";
+        }
+
         try
         {
             $telegram = $this->getTelegramInstance($telegramModel->token);
