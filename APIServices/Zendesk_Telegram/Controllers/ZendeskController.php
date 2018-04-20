@@ -35,18 +35,28 @@ class ZendeskController extends Controller {
         return view('telegram.admin_ui', ['return_url' => $return_url, 'subdomain' => $subdomain, 'name' => $name, 'submitURL' => $submitURL]);
     }
 
-    public function admin_ui_2(Request $request) {
+    public function admin_ui_2(Request $request, ChannelService $service) {
         Log::info($request->all());
+        $token = $request->token;
         $return_url = $request->return_url;
         $subdomain = $request->subdomain;
         $name = $request->name;
         $submitURL = $request->submitURL;
 
-
-        $errors = ['Token field is required.'];
-        return view('telegram.admin_ui', ['return_url' => $return_url, 'subdomain' =>
-            $subdomain, 'name' => $name, 'submitURL' => $submitURL,
-            'errors' => $errors]);
+        if (!$token) {
+            $errors = ['Token field is required.'];
+            return view('telegram.admin_ui', ['return_url' => $return_url, 'subdomain' =>
+                $subdomain, 'name' => $name, 'submitURL' => $submitURL,
+                'errors' => $errors]);
+        }
+        $telegramBot = $service->checkValidTelegramBot($token);
+        if (!$telegramBot) {
+            $errors = ['Invalid token, use Telegram Bot Father to create one.'];
+            return view('telegram.admin_ui', ['return_url' => $return_url, 'subdomain' =>
+                $subdomain, 'name' => $name, 'submitURL' => $submitURL,
+                'errors' => $errors]);
+        }
+        dd($telegramBot);
     }
 
     public function pull(Request $request, ChannelService $service) {
