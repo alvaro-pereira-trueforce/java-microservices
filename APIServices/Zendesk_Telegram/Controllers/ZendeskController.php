@@ -31,12 +31,22 @@ class ZendeskController extends Controller {
         $return_url = $request->return_url;
         $subdomain = $request->subdomain;
         //$locale = $request->locale;
-
-        return view('telegram.admin_ui', ['return_url' => $return_url, 'subdomain' => $subdomain, 'name' => $name]);
+        $submitURL = env('APP_URL') . '/telegram/admin_ui_2';
+        return view('telegram.admin_ui', ['return_url' => $return_url, 'subdomain' => $subdomain, 'name' => $name, 'submitURL' => $submitURL]);
     }
 
     public function admin_ui_2(Request $request) {
         Log::info($request->all());
+        $return_url = $request->return_url;
+        $subdomain = $request->subdomain;
+        $name = $request->name;
+        $submitURL = $request->submitURL;
+
+
+        $errors = ['Token field is required.'];
+        return view('telegram.admin_ui', ['return_url' => $return_url, 'subdomain' =>
+            $subdomain, 'name' => $name, 'submitURL' => $submitURL,
+            'errors' => $errors]);
     }
 
     public function pull(Request $request, ChannelService $service) {
