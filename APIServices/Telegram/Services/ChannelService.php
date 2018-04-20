@@ -131,12 +131,10 @@ class ChannelService {
                 ]);
                 Log::info($update);
             }
-
-            $response = []
             return $transformedMessages;
 
         } catch (\Exception $exception) {
-            return null;
+            return [];
         }
     }
 
