@@ -4,7 +4,7 @@
     <style>
         .center {
             margin: auto;
-            width: 50%;
+            width: 100%;
         }
     </style>
 </head>

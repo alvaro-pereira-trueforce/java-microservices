@@ -1,0 +1,8 @@
+{
+  "channel_integrations": {
+    "Telegram_Channel_Bot": {
+      "manifest_url":
+      "https://help-desk-server-prod.herokuapp.com/telegram/manifest"
+    }
+  }
+}
