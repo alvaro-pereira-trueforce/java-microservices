@@ -90,7 +90,6 @@ class ZendeskController extends Controller {
     }
 
     public function pull(Request $request, ChannelService $service) {
-        Log::info($request);
         $metadata = json_decode($request->metadata, true);
         $state = json_decode($request->state, true);
 
@@ -104,7 +103,6 @@ class ZendeskController extends Controller {
     }
 
     public function channelback(Request $request, ChannelService $service) {
-        Log::info($request->all());
         $metadata = json_decode($request->metadata, true);
         $parent_id = explode(':', $request->parent_id);
         $message = $request->message;
