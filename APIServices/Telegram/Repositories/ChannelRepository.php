@@ -9,6 +9,9 @@ use Illuminate\Support\Facades\App;
 
 class ChannelRepository extends Repository
 {
+    /**
+     * @return TelegramChannel
+     */
     public function getModel()
     {
         return App::make(TelegramChannel::class);

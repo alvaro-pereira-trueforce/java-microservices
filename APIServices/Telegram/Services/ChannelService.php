@@ -42,9 +42,9 @@ class ChannelService {
     }
 
     public function getById($uuid, array $options = []) {
-        $user = $this->getRequestedModel($uuid);
+        $model = $this->getRequestedModel($uuid);
 
-        return $user;
+        return $model;
     }
 
     public function create($data) {
@@ -61,7 +61,8 @@ class ChannelService {
     }
 
     public function delete($uuid) {
-        $this->repository->delete($uuid);
+        $model = $this->getById($uuid);
+        return $model->delete();
     }
 
     private function getRequestedModel($uuid) {
@@ -140,7 +141,7 @@ class ChannelService {
                 array_push($transformedMessages, [
                     'external_id' => $this->zendeskUtils->getExternalID([$user_id, $chat_id, $message_id]),
                     'message' => $message,
-                    'parent_id' => $this->zendeskUtils->getExternalID([$user_id, $chat_id]),
+                    'thread_id' => $this->zendeskUtils->getExternalID([$user_id, $chat_id]),
                     'created_at' => gmdate('Y-m-d\TH:i:s\Z', $message_date),
                     'author' => [
                         'external_id' => $this->zendeskUtils->getExternalID([$user_id, $user_username]),
@@ -165,8 +166,6 @@ class ChannelService {
 
         try {
             $telegram = $this->getTelegramInstance($telegramModel->token);
-
-            Log::info($message);
             $response = $telegram->sendMessage([
                 'chat_id' => $chat_id,
                 'text' => $message
@@ -181,7 +180,6 @@ class ChannelService {
             Log::error($exception->getMessage());
             return "";
         }
-        return [$chat_id, $user_id, $uuid, $message];
     }
 
     /**
@@ -215,5 +213,20 @@ class ChannelService {
             Log::info($exception);
             return null;
         }
+    }
+
+    public function getMetadataFromSavedIntegration($uuid) {
+        $current_channel = $this->getById($uuid);
+        return [
+            'token' => $current_channel->uuid,
+            'integration_name' => $current_channel->integration_name,
+            'zendesk_app_id' => $current_channel->zendesk_app_id
+        ];
+    }
+
+    public function getByZendeskAppID($subdomain) {
+        $model = $this->repository->getModel();
+        $channels = $model->where('zendesk_app_id', '=', $subdomain)->get();
+        return $channels;
     }
 }
