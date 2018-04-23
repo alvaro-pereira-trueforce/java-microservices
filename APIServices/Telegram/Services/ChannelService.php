@@ -138,17 +138,25 @@ class ChannelService {
                 if (count($transformedMessages) > 199) {
                     break;
                 }
+
+                $message_replay_type = 'thread_id';
+                $reply = $update->getMessage()->getReplyToMessage();
+                $parent_id = $this->zendeskUtils->getExternalID([$user_id, $chat_id]);
+                if ($reply) {
+                    $message_replay_type = 'parent_id';
+                    $parent_id = $this->zendeskUtils->getExternalID([$reply->getFrom()->get('id'), $reply->getChat()->get('id'), $reply->get('message_id')]);
+                }
+
                 array_push($transformedMessages, [
                     'external_id' => $this->zendeskUtils->getExternalID([$user_id, $chat_id, $message_id]),
                     'message' => $message,
-                    'thread_id' => $this->zendeskUtils->getExternalID([$user_id, $chat_id]),
+                    $message_replay_type => $parent_id,
                     'created_at' => gmdate('Y-m-d\TH:i:s\Z', $message_date),
                     'author' => [
                         'external_id' => $this->zendeskUtils->getExternalID([$user_id, $user_username]),
                         'name' => $user_firstname . ' ' . $user_lastname
                     ]
                 ]);
-                Log::info($update);
             }
             return $transformedMessages;
 

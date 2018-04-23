@@ -90,6 +90,7 @@ class ZendeskController extends Controller {
     }
 
     public function pull(Request $request, ChannelService $service) {
+        Log::info($request);
         $metadata = json_decode($request->metadata, true);
         $state = json_decode($request->state, true);
 
@@ -98,7 +99,7 @@ class ZendeskController extends Controller {
             'external_resources' => $updates,
             'state' => ""
         ];
-        Log::info($response);
+        Log::info(json_encode($response));
         return response()->json($response);
     }
 
