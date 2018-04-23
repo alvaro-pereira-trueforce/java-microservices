@@ -5,6 +5,7 @@ namespace APIServices\Zendesk_Telegram\Controllers;
 use APIServices\Telegram\Repositories\ChannelRepository;
 use APIServices\Telegram\Services\ChannelService;
 use App\Repositories\ManifestRepository;
+use GuzzleHttp\Client;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Log;
@@ -21,7 +22,7 @@ class ZendeskController extends Controller {
 
     public function getManifest(Request $request) {
         Log::info("Zendesk Request: " . $request);
-        return response()->json($this->manifest->getByName('Telegram_Channel'));
+        return response()->json($this->manifest->getByName('Telegram Channel'));
     }
 
     public function adminUI(Request $request) {
@@ -36,7 +37,7 @@ class ZendeskController extends Controller {
         return view('telegram.admin_ui', ['return_url' => $return_url, 'subdomain' => $subdomain, 'name' => $name, 'submitURL' => $submitURL]);
     }
 
-    public function admin_ui_2(Request $request, ChannelService $service) {
+    public function admin_ui_2(Request $request, ChannelService $service, Client $httpClient) {
         Log::info($request->all());
         $token = $request->token;
         $return_url = $request->return_url;
@@ -57,7 +58,24 @@ class ZendeskController extends Controller {
                 $subdomain, 'name' => $name, 'submitURL' => $submitURL,
                 'errors' => $errors]);
         }
-        dd($telegramBot);
+
+        $metadata = $service->registerNewIntegration($name, $token, $subdomain);
+
+        if (!$metadata) {
+            $errors = ['There was an error processing your data, please check your information or contact support.'];
+            return view('telegram.admin_ui', ['return_url' => $return_url, 'subdomain' =>
+                $subdomain, 'name' => $name, 'submitURL' => $submitURL,
+                'errors' => $errors]);
+        }
+
+        if (array_key_exists('error', $metadata)) {
+            $errors = ['That telegram token is already registered please create new one.'];
+            return view('telegram.admin_ui', ['return_url' => $return_url, 'subdomain' =>
+                $subdomain, 'name' => $name, 'submitURL' => $submitURL,
+                'errors' => $errors]);
+        }
+
+        return view('telegram.post_metadata', ['return_url' => $return_url, 'name' => $name, 'metadata' => json_encode($metadata)]);
     }
 
     public function pull(Request $request, ChannelService $service) {
@@ -66,11 +84,12 @@ class ZendeskController extends Controller {
         $state = json_decode($request->state, true);
 
         $updates = $service->getTelegramUpdates($metadata['token']);
-        $reponse = [
+        $response = [
             'external_resources' => $updates,
-            'state' => $state
+            'state' => ""
         ];
-        return response()->json($reponse);
+        Log::info($response);
+        return response()->json($response);
     }
 
     public function channelback(Request $request, ChannelService $service) {
