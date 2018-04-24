@@ -67,6 +67,10 @@ class AddApplicationManifestCommand extends Command {
         $clickthrough_url = $clickthrough_url ? $app_url . $clickthrough_url : '';
         $this->info($clickthrough_url);
 
+        $event_callback_url = $this->ask('What is the event callback URL?');
+        $event_callback_url = $event_callback_url ? $app_url . $event_callback_url : '';
+        $this->info($event_callback_url);
+
         $healthcheck_url = $this->ask('What is the health check URL?');
         $healthcheck_url = $healthcheck_url ? $app_url . $healthcheck_url : '';
         $this->info($healthcheck_url);
@@ -96,7 +100,8 @@ class AddApplicationManifestCommand extends Command {
                     'clickthrough_url' => $clickthrough_url,
                     'healthcheck_url' => $healthcheck_url,
                     'dashboard_url' => $dashboard_url,
-                    'about_url' => $about_url
+                    'about_url' => $about_url,
+                    'event_callback_url' => $event_callback_url
                 ]);
             DB::commit();
             $this->info(sprintf('A new application manifest was created with ID %s', $manifest));
