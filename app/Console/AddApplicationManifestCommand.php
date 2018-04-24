@@ -104,7 +104,7 @@ class AddApplicationManifestCommand extends Command {
                     'event_callback_url' => $event_callback_url
                 ]);
             DB::commit();
-            $this->info(sprintf('A new application manifest was created with ID %s', $manifest));
+            $this->info(sprintf('A new application manifest was created, the current manifest will be sent as %s', $manifest));
         }catch (\Exception $exception)
         {
             DB::rollBack();
