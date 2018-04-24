@@ -1,6 +1,6 @@
 {
   "channel_integrations": {
-    "Telegram_Channel_Bot": {
+    "Telegram Channel Bot": {
       "manifest_url":
       "https://help-desk-server-staging.herokuapp.com/telegram/manifest"
     }
