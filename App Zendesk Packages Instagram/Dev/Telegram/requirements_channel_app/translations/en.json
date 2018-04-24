@@ -1,0 +1,9 @@
+{
+  "app": {
+    "package": "instagam_channel_bot",
+    "name": {
+      "value": "Instagram Integration for channel Bot",
+      "title": "instagram Channel Bot"
+    }
+  }
+}

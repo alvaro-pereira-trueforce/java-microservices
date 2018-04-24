@@ -20,7 +20,7 @@ class ZendeskController extends Controller
     public function getManifest(Request $request)
     {
         Log::info("Zendesk Request: " . $request);
-        return response()->json($this->manifest->getByName('InstagramTest'));
+        return response()->json($this->manifest->getByName('Instagram-Integration'));
     }
 
     public function pull(Request $request, InstagramService $service) {
@@ -37,6 +37,24 @@ class ZendeskController extends Controller
         ];
         Log::info($response);
         return response()->json($response);
+    }
+    public function adminUI(Request $request, InstagramService $service) {
+        $name = $request->name; //will be null on empty
+        $metadata = json_decode($request->metadata, true); //will be null on empty
+        $state = json_decode($request->state, true); //will be null on empty
+        $return_url = $request->return_url;
+        $subdomain = $request->subdomain;
+        //$locale = $request->locale;
+        $submitURL = env('APP_URL') . '/instagram/admin_ui_2';
+
+        $accounts = $service->getByZendeskAppID($subdomain);
+        return view('telegram.admin_ui', [
+            'return_url' => $return_url,
+            'subdomain' => $subdomain,
+            'name' => $name,
+            'submitURL' => $submitURL,
+            'current_accounts' => $accounts
+        ]);
     }
 
     public function event_callback(Request $request) {
