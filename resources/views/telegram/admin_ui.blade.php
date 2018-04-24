@@ -19,7 +19,7 @@
             <p>Welcome back. Do you want to update the current telegram token?, Just provide us the telegram token that was generated with Telegram Bot Father in order to start working with telegram channel service.</p>
         @endif
         <p>For more information that how to obtain the telegram token use the following link: </p>
-        <a href="https://telegram.me/botfather"> Telegram Bot Father</a><br><br>
+        <a href="https://telegram.me/botfather" target="_blank"> Telegram Bot Father</a><br><br>
         <form method="post" action="{{$submitURL}}">
             <div class="form-group">
                 <label>Integration Name:</label>
@@ -55,7 +55,7 @@
                         <button class="btn btn-secondary" style="margin-right: 10px"
                                 onclick="addClick({{$account}},'{{$return_url}}',
                                         '{{$submitURL}}')">
-                            Add To Account
+                            Add to account
                         </button>
                         <button class="btn btn-danger"
                         onclick="removeClick('{{$account->uuid}}', '{{$return_url}}',
