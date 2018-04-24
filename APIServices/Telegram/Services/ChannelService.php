@@ -90,7 +90,7 @@ class ChannelService {
         try {
             $telegram = new Api($key);
             $response = $telegram->removeWebhook();
-            return $response;
+            return $response->getBody();
         } catch (TelegramSDKException $exception) {
             Log::error($exception->getMessage());
             return $exception;
