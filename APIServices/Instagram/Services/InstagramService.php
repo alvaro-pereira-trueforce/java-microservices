@@ -106,11 +106,9 @@ class InstagramService
     public function getInstagramUpdates($uuid)
     {
         $instagramModel = $this->repository->getByUUID($uuid);
-
         if ($instagramModel == null) {
             return [];
         }
-
         try {
             //$telegram = $this->getTelegramInstance($instagramModel->token);
             $this->instagramAPI->setAccessToken($instagramModel->token);
@@ -120,38 +118,65 @@ class InstagramService
             $updates_data = $updates[0]['data'];
             $transformedMessages = [];
             $count_comment = 0;
+            $count_post = 0;
             foreach ($updates_data as $update) {
+                $count_post++;
                 $post_id = $update['id'];
                 $link = $update['link'];
-                // Call comment
-                $comments = array($this->instagramAPI->getMediaComments($post_id, true));
-                $comments = json_decode(json_encode($comments), True);
-                $comments_data = $comments[0]['data'];
-
-                foreach ($comments_data as $comment) {
-                    $count_comment++;
-                    $comment_id = $comment['id'];
-                    $user_name = $comment['from']['username'];
-                    $comment_time = $comment['created_time'];
-                    $comment_text = $comment['text'];
-
-                    // must have a buffer in the future to catch only the first 200 messages and send
-                    // it the leftover later. Maybe never happen an overflow.
-                    if ($count_comment > 199) {
-                        break;
-                    }
-                    array_push($transformedMessages, [
-                        'external_id' => $this->zendeskUtils->getExternalID([$link, $post_id, $comment_id]),
-                        'message' => $comment_text,
-                        'parent_id' => $this->zendeskUtils->getExternalID([$link, $post_id]),
-                        'created_at' => gmdate('Y-m-d\TH:i:s\Z', $comment_time),
-                        'author' => [
-                            'external_id' => $this->zendeskUtils->getExternalID([$comment_id, $user_name]),
-                            'name' => $user_name
-                        ]
-                    ]);
+                //$comment_id = $comment['id'];
+                //$user_name = $comment['from']['username'];
+                $user = $update['user'];
+                $user_name_post = $user['username'];
+                $post_time = $update['created_time'];
+                //Name to ticket
+                $post_text = $user_name_post . ' Posted a photo';
+                if ($update['caption']!=null){
+                    $caption = $update['caption'];
+                    $post_text = $caption['text'];
                 }
-                Log::info($update);
+                //Push post
+                array_push($transformedMessages, [
+                    'external_id' => $this->zendeskUtils->getExternalID([$post_id]),
+                    'message' => $post_text,
+                    'thread_id' => $this->zendeskUtils->getExternalID([$link, $post_id]),
+                    'created_at' => gmdate('Y-m-d\TH:i:s\Z', $post_time),
+                    'author' => [
+                        'external_id' => $this->zendeskUtils->getExternalID([$post_id, $user_name_post]),
+                        'name' => $user_name_post
+                    ]
+                ]);
+                //
+                $count_comments = $update['comments'];
+                if($count_comments['count']>0){
+                    // Call comment
+                    $comments = array($this->instagramAPI->getMediaComments($post_id, true));
+                    $comments = json_decode(json_encode($comments), True);
+                    $comments_data = $comments[0]['data'];
+
+                    foreach ($comments_data as $comment) {
+                        $count_comment++;
+                        $comment_id = $comment['id'];
+                        $user_name = $comment['from']['username'];
+                        $comment_time = $comment['created_time'];
+                        $comment_text = $comment['text'];
+                        // must have a buffer in the future to catch only the first 200 messages and send
+                        // it the leftover later. Maybe never happen an overflow.
+                        if ($count_comment > 199) {
+                            break;
+                        }
+                        array_push($transformedMessages, [
+                            'external_id' => $this->zendeskUtils->getExternalID([$comment_id]),
+                            'message' => $comment_text,
+                            'thread_id' => $this->zendeskUtils->getExternalID([$link, $post_id]),
+                            'created_at' => gmdate('Y-m-d\TH:i:s\Z', $comment_time),
+                            'author' => [
+                                'external_id' => $this->zendeskUtils->getExternalID([$comment_id, $user_name]),
+                                'name' => $user_name
+                            ]
+                        ]);
+                    }
+                }
+               Log::info($update);
             }
             return $transformedMessages;
 
