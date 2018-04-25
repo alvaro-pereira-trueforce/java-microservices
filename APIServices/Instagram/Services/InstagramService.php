@@ -188,4 +188,29 @@ class InstagramService
         $channels = $model->where('zendesk_app_id', '=', $subdomain)->get();
         return $channels;
     }
+
+    public function sendInstagramMessage($chat_id, $user_id, $uuid, $message) {
+        $instagramModel = $this->repository->getByUUID($uuid);
+        if ($instagramModel == null) {
+            return "";
+        }
+
+        try {
+            $instagram = $this->getInstagramInstance($instagramModel->token);
+
+//            $response = $instagram->sendMessage([
+//                'chat_id' => $chat_id,
+//                'text' => $message
+//            ]);
+//
+//            $message_id = $response->getMessageId();
+//            $user_id = $response->getFrom()->get('id');
+//            $chat_id = $response->getChat()->get('id');
+//            return $this->zendeskUtils->getExternalID([$user_id, $chat_id, $message_id]);
+              return null;
+        } catch (\Exception $exception) {
+            Log::error($exception->getMessage());
+            return "";
+        }
+    }
 }

@@ -57,6 +57,51 @@ class ZendeskController extends Controller
         ]);
     }
 
+    public function admin_ui_2(Request $request, InstagramService $service) {
+        $token = $request->token;
+        $return_url = $request->return_url;
+        $subdomain = $request->subdomain;
+        $name = $request->name;
+        $submitURL = $request->submitURL;
+        $accounts = $service->getByZendeskAppID($subdomain);
+
+        if (!$token || !$name) {
+            $errors = ['Both fields are required.'];
+            return view('instagram.admin_ui', ['return_url' => $return_url, 'subdomain' =>
+                $subdomain, 'name' => $name, 'submitURL' => $submitURL, 'current_accounts' =>
+                $accounts,
+                'errors' => $errors]);
+        }
+//        $telegramBot = $service->checkValidTelegramBot($token);
+//        if (!$telegramBot) {
+//            $errors = ['Invalid token, use Telegram Bot Father to create one.'];
+//            return view('telegram.admin_ui', ['return_url' => $return_url, 'subdomain' =>
+//                $subdomain, 'name' => $name, 'submitURL' => $submitURL, 'current_accounts' =>
+//                $accounts,
+//                'errors' => $errors]);
+//        }
+
+        $metadata = $service->registerNewIntegration($name, $token, $subdomain);
+
+        if (!$metadata) {
+            $errors = ['There was an error processing your data, please check your information or contact support.'];
+            return view('instagram.admin_ui', ['return_url' => $return_url, 'subdomain' =>
+                $subdomain, 'name' => $name, 'submitURL' => $submitURL, 'current_accounts' =>
+                $accounts,
+                'errors' => $errors]);
+        }
+
+        if (array_key_exists('error', $metadata)) {
+            $errors = ['That Instagram token is already registered.'];
+            return view('instagram.admin_ui', ['return_url' => $return_url, 'subdomain' =>
+                $subdomain, 'name' => $name, 'submitURL' => $submitURL, 'current_accounts' =>
+                $accounts,
+                'errors' => $errors]);
+        }
+
+        return view('instagram.post_metadata', ['return_url' => $return_url, 'name' => $name, 'metadata' => json_encode($metadata)]);
+    }
+
     public function clickthrough(Request $request) {
         Log::info($request->all());
     }
@@ -74,7 +119,7 @@ class ZendeskController extends Controller
         return response()->json('ok', 200);
     }
 
-    public function handleSubmitForAdminUI(Request $request, ChannelService $service) {
+    public function handleSubmitForAdminUI(Request $request, InstagramService $service) {
         try {
             $metadata = $service->getMetadataFromSavedIntegration($request->account['uuid']);
             return view('instagram.post_metadata', [
@@ -87,7 +132,7 @@ class ZendeskController extends Controller
         }
     }
 
-    public function handleDeleteForAdminUI($uuid, Request $request, ChannelService $service)
+    public function handleDeleteForAdminUI($uuid, Request $request, InstagramService $service)
     {
         try
         {
@@ -99,4 +144,17 @@ class ZendeskController extends Controller
         }
     }
 
+    public function channelback(Request $request, InstagramService $service) {
+        $metadata = json_decode($request->metadata, true);
+        $parent_id = explode(':', $request->parent_id);
+        $message = $request->message;
+
+
+        $external_id = $service->sendInstagramMessage($parent_id[1], $parent_id[0], $metadata['token'], $message);
+
+        $response = [
+            'external_id' => $external_id
+        ];
+        return response()->json($response);
+    }
 }
