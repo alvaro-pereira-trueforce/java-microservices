@@ -105,9 +105,16 @@ class InstagramService
      */
     public function getInstagramUpdates($uuid)
     {
+        $instagramModel = $this->repository->getByUUID($uuid);
+
+        if ($instagramModel == null) {
+            return [];
+        }
 
         try {
-            $this->instagramAPI->setAccessToken($uuid);
+            //$telegram = $this->getTelegramInstance($instagramModel->token);
+            $this->instagramAPI->setAccessToken($instagramModel->token);
+            Log::info( $this->instagramAPI->getAccessToken());
             $updates = array($this->instagramAPI->getUserMedia($auth = true, $id = 'self', $limit = 0));
             $updates = json_decode(json_encode($updates), True);
             $updates_data = $updates[0]['data'];
