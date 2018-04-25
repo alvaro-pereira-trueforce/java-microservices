@@ -3,8 +3,16 @@
 namespace APIServices\Instagram\Services;
 
 use APIServices\Instagram\Logic\InstagramLogic;
+use APIServices\Instagram\Repositories\InstagramRepository;
 use APIServices\Zendesk\Utility;
 use Illuminate\Support\Facades\Log;
+
+use APIServices\Instagram\Repositories\ChannelRepository;
+use Illuminate\Database\DatabaseManager;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Database\QueryException;
+use Illuminate\Events\Dispatcher;
+
 
 
 class InstagramService
@@ -23,7 +31,7 @@ class InstagramService
 
         DatabaseManager $database,
         Dispatcher $dispatcher,
-        ChannelRepository $repository,
+        InstagramRepository $repository,
         InstagramLogic $instagramLogic,
         Utility $zendeskUtils
     )
