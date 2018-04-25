@@ -3,4 +3,4 @@
 Route::get('/{token}/media/{idMedia}/comments', 'InstagramController@getMediaComments');
 Route::get('/{token}/listMedia', 'InstagramController@getAllUserMedia');
 
-Route::get('/{token}/pull', 'InstagramController@getPull');
+Route::post('/{token}/media/{idMedia}/comments', 'InstagramController@postMediaComments');

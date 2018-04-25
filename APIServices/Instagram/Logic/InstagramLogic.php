@@ -19,4 +19,9 @@ class InstagramLogic extends Instagram
     {
         return $this->_makeCall('users/' . $id . '/media/recent', $auth, ($id === 'self'), array('count' => $limit));
     }
+
+    public function postUserMedia($auth = false, $id = 'idMedia',$params, $limit = 0)
+    {
+        return $this->_makeCall('media/' . $id . '/comments', $auth,$params,'POST');
+    }
 }

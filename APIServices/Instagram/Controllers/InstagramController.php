@@ -44,4 +44,17 @@ class InstagramController extends Controller
             return response()->json($e, 500);
         }
     }
+
+    public function postMediaComments($token,$id_media)
+    {
+        $this->instagram->setAccessToken($token);
+        try {
+            $array = array('text'=>'como estan este es un post');
+            $user_media = $this->instagram->postUserMedia(true,$id_media,$array,0);
+            return response()->json($user_media, 200);
+        } catch (Exception $e) {
+            Log::info($e->getMessage());
+            return response()->json($e, 500);
+        }
+    }
 }
