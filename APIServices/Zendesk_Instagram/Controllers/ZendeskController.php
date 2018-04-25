@@ -48,7 +48,7 @@ class ZendeskController extends Controller
         $submitURL = env('APP_URL') . '/instagram/admin_ui_2';
 
         $accounts = $service->getByZendeskAppID($subdomain);
-        return view('telegram.admin_ui', [
+        return view('instagram.admin_ui', [
             'return_url' => $return_url,
             'subdomain' => $subdomain,
             'name' => $name,
