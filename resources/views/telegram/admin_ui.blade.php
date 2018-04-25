@@ -47,6 +47,9 @@
         <div>
             <h4>Current configuration</h4>
 
+            @if(count($current_accounts) == 0)
+                <label>No records saved.</label>
+            @endif
             @foreach ($current_accounts as $account)
                 <div class="card" style="margin-top: 10px">
                     <div class="card-body">

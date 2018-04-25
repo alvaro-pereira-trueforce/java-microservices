@@ -21,7 +21,7 @@ class ZendeskController extends Controller {
     }
 
     public function getManifest(Request $request) {
-        Log::info("Zendesk Request: " . $request);
+        Log::notice("Zendesk Request: " . $request->method() .' '.$request->getPathInfo());
         return response()->json($this->manifest->getByName('Telegram Channel'));
     }
 
@@ -90,7 +90,7 @@ class ZendeskController extends Controller {
     }
 
     public function pull(Request $request, ChannelService $service) {
-        Log::info($request);
+        Log::debug($request);
         $metadata = json_decode($request->metadata, true);
         $state = json_decode($request->state, true);
 
@@ -99,7 +99,7 @@ class ZendeskController extends Controller {
             'external_resources' => $updates,
             'state' => ""
         ];
-        Log::info(json_encode($response));
+        Log::debug(json_encode($response));
         return response()->json($response);
     }
 
@@ -126,7 +126,7 @@ class ZendeskController extends Controller {
     }
 
     public function event_callback(Request $request) {
-        Log::debug("Event On Zendesk: \n" . $request . "\n");
+        Log::debug("Event On Zendesk: \n" . $request->getContent() . "\n");
         return $this->successReturn();
     }
 
