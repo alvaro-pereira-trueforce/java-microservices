@@ -57,6 +57,14 @@ class ZendeskController extends Controller
         ]);
     }
 
+    public function clickthrough(Request $request) {
+        Log::info($request->all());
+    }
+
+    public function healthcheck(Request $request) {
+        return $this->successReturn();
+    }
+
     public function event_callback(Request $request) {
         Log::debug("Event On Zendesk: \n" . $request . "\n");
         return $this->successReturn();
@@ -64,6 +72,31 @@ class ZendeskController extends Controller
 
     public function successReturn() {
         return response()->json('ok', 200);
+    }
+
+    public function handleSubmitForAdminUI(Request $request, ChannelService $service) {
+        try {
+            $metadata = $service->getMetadataFromSavedIntegration($request->account['uuid']);
+            return view('instagram.post_metadata', [
+                'return_url' => $request->return_url,
+                'name' => $request->account['integration_name'],
+                'metadata' => json_encode($metadata)
+            ]);
+        } catch (\Exception $exception) {
+            return response()->json($exception->getMessage(), 404);
+        }
+    }
+
+    public function handleDeleteForAdminUI($uuid, Request $request, ChannelService $service)
+    {
+        try
+        {
+            $result = $service->delete($uuid);
+            return $this->adminUI($request, $service);
+        }catch (\Exception $exception)
+        {
+            return response()->json($exception->getMessage(), 404);
+        }
     }
 
 }

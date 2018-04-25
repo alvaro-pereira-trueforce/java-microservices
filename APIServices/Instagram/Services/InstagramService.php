@@ -9,16 +9,30 @@ use Illuminate\Support\Facades\Log;
 
 class InstagramService
 {
+    protected $database;
+
+    protected $dispatcher;
+
+    protected $repository;
 
     protected $instagramAPI;
 
     protected $zendeskUtils;
 
     public function __construct(
+
+        DatabaseManager $database,
+        Dispatcher $dispatcher,
+        ChannelRepository $repository,
         InstagramLogic $instagramLogic,
         Utility $zendeskUtils
     )
     {
+
+
+        $this->database = $database;
+        $this->dispatcher = $dispatcher;
+        $this->repository = $repository;
         $this->instagramAPI = $instagramLogic;
         $this->zendeskUtils = $zendeskUtils;
 
@@ -27,9 +41,27 @@ class InstagramService
         $this->instagramAPI->setApiCallback('https://twitter.com/soysantizeta');
     }
 
-    public function getById($uuid, array $options = [])
-    {
-        return null;
+    public function getAll($options = []) {
+        return $this->repository->get($options);
+    }
+
+    public function create($data) {
+        $user = $this->repository->create($data);
+        return $user;
+    }
+
+
+    public function update($uuid, array $data) {
+        $model = $this->getRequestedModel($uuid);
+
+        $this->repository->update($model, $data);
+
+        return $model;
+    }
+
+    public function delete($uuid) {
+        $model = $this->getById($uuid);
+        return $model->delete();
     }
 
     /**
@@ -40,6 +72,20 @@ class InstagramService
     {
         $this->instagramAPI->setAccessToken($token);
         return $this->instagramAPI;
+    }
+
+    private function getRequestedModel($uuid) {
+        $model = $this->repository->getByUUID($uuid);
+
+        if (is_null($model)) {
+            throw new ModelNotFoundException();
+        }
+        return $model;
+    }
+    public function getById($uuid, array $options = []) {
+        $model = $this->getRequestedModel($uuid);
+
+        return $model;
     }
 
     /**
@@ -98,5 +144,40 @@ class InstagramService
             Log::error($exception->getMessage());
             return [];
         }
+    }
+
+    public function registerNewIntegration($name, $token, $subdomain) {
+        try {
+            $model = $this->repository->create([
+                'token' => $token,
+                'zendesk_app_id' => $subdomain,
+                'integration_name' => $name
+            ]);
+            return [
+                'token' => $model->uuid,
+                'integration_name' => $model->integration_name,
+                'zendesk_app_id' => $model->zendesk_app_id
+            ];
+        } catch (QueryException $exception) {
+            return ["error" => ""];
+        } catch (\Exception $exception) {
+            Log::info($exception);
+            return null;
+        }
+    }
+
+    public function getMetadataFromSavedIntegration($uuid) {
+        $current_channel = $this->getById($uuid);
+        return [
+            'token' => $current_channel->uuid,
+            'integration_name' => $current_channel->integration_name,
+            'zendesk_app_id' => $current_channel->zendesk_app_id
+        ];
+    }
+
+    public function getByZendeskAppID($subdomain) {
+        $model = $this->repository->getModel();
+        $channels = $model->where('zendesk_app_id', '=', $subdomain)->get();
+        return $channels;
     }
 }
