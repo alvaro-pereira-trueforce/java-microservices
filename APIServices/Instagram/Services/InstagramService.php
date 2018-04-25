@@ -128,11 +128,46 @@ class InstagramService
                 $user = $update['user'];
                 $user_name_post = $user['username'];
                 $post_time = $update['created_time'];
-                //Name to ticket
-                $post_text = $user_name_post . ' Posted a photo';
+
+
                 if ($update['caption']!=null){
                     $caption = $update['caption'];
                     $post_text = $caption['text'];
+                }else{
+                    //Name to ticket
+                    $post_text = $user_name_post . ' Posted a photo';
+                    //Images
+                    $images = $update['images'];
+                    $standard_resolution = $images['standard_resolution'];
+                    //Push post
+                    array_push($transformedMessages, [
+                        'external_id' => $this->zendeskUtils->getExternalID([$post_id]),
+                        'message' => $post_text,
+                        'html_message'=>'Please help .  <body>
+                                                          <img src = $standard_resolution[\'url\']
+                                                         </body>',
+                        'thread_id' => $this->zendeskUtils->getExternalID([$link, $post_id]),
+                        'created_at' => gmdate('Y-m-d\TH:i:s\Z', $post_time),
+                        'author' => [
+                            'external_id' => $this->zendeskUtils->getExternalID([$post_id, $user_name_post]),
+                            'name' => $user_name_post,
+                            "image_url"=> $standard_resolution['url']
+
+                        ]
+                    ]);
+//                    //Push photo
+//                    $images = $update['images'];
+//                    $standard_resolution = $images['standard_resolution'];
+//                    array_push($transformedMessages, [
+//                        'external_id' => $this->zendeskUtils->getExternalID([$link,$post_id]),
+//                        'message' => file_get_contents($standard_resolution['url']),
+//                        'thread_id' => $this->zendeskUtils->getExternalID([$link, $post_id]),
+//                        'created_at' => gmdate('Y-m-d\TH:i:s\Z', $post_time),
+//                        'author' => [
+//                            'external_id' => $this->zendeskUtils->getExternalID([$post_id, $user_name_post]),
+//                            'name' => $user_name_post
+//                        ]
+//                    ]);
                 }
                 //Push post
                 array_push($transformedMessages, [
