@@ -239,25 +239,21 @@ class InstagramService
         return $channels;
     }
 
-    public function sendInstagramMessage($chat_id, $user_id, $uuid, $message) {
+    public function sendInstagramMessage($post_id, $uuid, $message)
+    {
         $instagramModel = $this->repository->getByUUID($uuid);
         if ($instagramModel == null) {
             return "";
         }
-
         try {
-            $instagram = $this->getInstagramInstance($instagramModel->token);
-
-//            $response = $instagram->sendMessage([
-//                'chat_id' => $chat_id,
-//                'text' => $message
-//            ]);
-//
-//            $message_id = $response->getMessageId();
-//            $user_id = $response->getFrom()->get('id');
-//            $chat_id = $response->getChat()->get('id');
-//            return $this->zendeskUtils->getExternalID([$user_id, $chat_id, $message_id]);
-              return null;
+            $this->instagramAPI->setAccessToken($instagramModel->token);
+            $array = array('text' => $message);
+            $response = $this->instagramAPI->postUserMedia(true, $post_id, $array);
+            $comments = json_decode(json_encode($response), True);
+            Log::info($comments);
+            $comment_data = $comments['data'];
+            $comment_id = $comment_data['id'];
+            return $this->zendeskUtils->getExternalID([$comment_id]);
         } catch (\Exception $exception) {
             Log::error($exception->getMessage());
             return "";

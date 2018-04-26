@@ -49,7 +49,7 @@ class InstagramController extends Controller
     {
         $this->instagram->setAccessToken($token);
         try {
-            $array = array('text'=>'como estan este es un post');
+            $array = array('text'=>'como estan este es un post para zendesk');
             $user_media = $this->instagram->postUserMedia(true,$id_media,$array,0);
             return response()->json($user_media, 200);
         } catch (Exception $e) {
