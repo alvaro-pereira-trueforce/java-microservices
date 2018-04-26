@@ -2,7 +2,7 @@
 
 namespace APIServices\Telegram\Console;
 
-use APIServices\Telegram\Repositories\ChannelRepository;
+use APIServices\Telegram\Repositories\TelegramRepository;
 use Illuminate\Console\Command;
 
 class AddBotCommand extends Command {
@@ -23,17 +23,17 @@ class AddBotCommand extends Command {
     /**
      * User repository to persist user in database
      *
-     * @var ChannelRepository
+     * @var TelegramRepository
      */
     protected $repository;
 
     /**
      * Create a new command instance.
      *
-     * @param  ChannelRepository $repository
+     * @param  TelegramRepository $repository
      * @return void
      */
-    public function __construct(ChannelRepository $repository) {
+    public function __construct(TelegramRepository $repository) {
         parent::__construct();
 
         $this->repository = $repository;

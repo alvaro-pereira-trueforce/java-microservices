@@ -26,20 +26,21 @@ class StartCommand extends Command
 
         //Make action
         $this->replyWithChatAction(['action' => Actions::TYPING]);
-
         // This will send a message using `sendMessage` method behind the scenes to
         // the user/chat id who triggered this command.
         // `replyWith<Message|Photo|Audio|Video|Voice|Document|Sticker|Location|ChatAction>()` all the available methods are dynamically
         // handled when you replace `send<Method>` with `replyWith` and use the same parameters - except chat_id does NOT need to be included in the array.
         $this->replyWithMessage([
-            'text' => 'Hello! Welcome I\'m the '.$botFirstName.' Bot, I can handle the following commands:',
+            'text' => 'Hello! Welcome I\'m the '.$botFirstName.' Bot, Do you need help? '
+                .json_decode('"\ud83d\ude0c"').
+                ' Tell me and i\'ll send your question to the help desk support  '.json_decode('"\ud83d\udcdc"').json_decode('"\ud83d\udc4d\ud83c\udffb"'),
             'reply_to_message_id' => $this->getUpdate()->getMessage()->getMessageId()
         ]);
 
         // This will prepare a list of available commands and send the user.
         // First, Get an array of all registered commands
         // They'll be in 'command-name' => 'Command Handler Class' format.
-        $commands = $this->getTelegram()->getCommands();
+        /*$commands = $this->getTelegram()->getCommands();
 
         // Build the list
         $response = '';
@@ -48,7 +49,7 @@ class StartCommand extends Command
         }
 
         // Reply with the commands list
-        $this->replyWithMessage(['text' => $response]);
+        $this->replyWithMessage(['text' => $response]);*/
 
 //        if(env('APP_ENV') == 'production')
 //        {

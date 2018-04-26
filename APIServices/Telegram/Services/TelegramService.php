@@ -2,7 +2,7 @@
 
 namespace APIServices\Telegram\Services;
 
-use APIServices\Telegram\Repositories\ChannelRepository;
+use APIServices\Telegram\Repositories\TelegramRepository;
 use APIServices\Zendesk\Utility;
 use Illuminate\Database\DatabaseManager;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
@@ -11,8 +11,10 @@ use Illuminate\Events\Dispatcher;
 use Illuminate\Support\Facades\Log;
 use Telegram\Bot\Api;
 use Telegram\Bot\Exceptions\TelegramSDKException;
+use Telegram\Bot\Objects\PhotoSize;
+use Telegram\Bot\Objects\Update;
 
-class ChannelService {
+class TelegramService {
     protected $database;
 
     protected $dispatcher;
@@ -26,7 +28,7 @@ class ChannelService {
     public function __construct(
         DatabaseManager $database,
         Dispatcher $dispatcher,
-        ChannelRepository $repository,
+        TelegramRepository $repository,
         Api $telegramAPI,
         Utility $zendeskUtils
     ) {
@@ -106,59 +108,39 @@ class ChannelService {
     }
 
     /**
+     * @param $uuid
+     * @return string token
+     */
+    private function getTokenFromUUID($uuid)
+    {
+        $telegramModel = $this->repository->getByUUID($uuid);
+
+        if ($telegramModel == null) {
+            return "";
+        }
+        return $telegramModel->token;
+    }
+
+    /**
+     * @param $uuid
+     * @return null|Api
+     */
+    private function getTelegramActiveInstanse($uuid)
+    {
+        return $this->getTelegramInstance($this->getTokenFromUUID($uuid));
+    }
+    /**
      * Get updates return all the messages from telegram converting the data for zendesk channel
      * pulling service.
      *
      * @param string $uuid TelegramChannelUUID to retrieve the information from the database
-     * @return array Zendesk External resources
+     * @return Update[]
      */
     public function getTelegramUpdates($uuid) {
-        $telegramModel = $this->repository->getByUUID($uuid);
-
-        if ($telegramModel == null) {
-            return [];
-        }
-
         try {
-            $telegram = $this->getTelegramInstance($telegramModel->token);
+            $telegram = $this->getTelegramActiveInstanse($uuid);
             $updates = $telegram->commandsHandler(false);
-            $transformedMessages = [];
-            foreach ($updates as $update) {
-                $message_id = $update->getMessage()->get('message_id');
-                $user_id = $update->getMessage()->getFrom()->get('id');
-                $chat_id = $update->getMessage()->getChat()->get('id');
-                $message = $update->getMessage()->get('text');
-                $message_date = $update->getMessage()->get('date');
-                $user_username = $update->getMessage()->getFrom()->get('username');
-                $user_firstname = $update->getMessage()->getFrom()->get('first_name');
-                $user_lastname = $update->getMessage()->getFrom()->get('last_name');
-
-                // must have a buffer in the future to catch only the first 200 messages and send
-                // it the leftover later. Maybe never happen an overflow.
-                if (count($transformedMessages) > 199) {
-                    break;
-                }
-
-                $message_replay_type = 'thread_id';
-                $reply = $update->getMessage()->getReplyToMessage();
-                $parent_id = $this->zendeskUtils->getExternalID([$user_id, $chat_id]);
-                if ($reply) {
-                    $message_replay_type = 'parent_id';
-                    $parent_id = $this->zendeskUtils->getExternalID([$reply->getFrom()->get('id'), $reply->getChat()->get('id'), $reply->get('message_id')]);
-                }
-
-                array_push($transformedMessages, [
-                    'external_id' => $this->zendeskUtils->getExternalID([$user_id, $chat_id, $message_id]),
-                    'message' => $message,
-                    $message_replay_type => $parent_id,
-                    'created_at' => gmdate('Y-m-d\TH:i:s\Z', $message_date),
-                    'author' => [
-                        'external_id' => $this->zendeskUtils->getExternalID([$user_id, $user_username]),
-                        'name' => $user_firstname . ' ' . $user_lastname
-                    ]
-                ]);
-            }
-            return $transformedMessages;
+            return $updates;
 
         } catch (\Exception $exception) {
             Log::error($exception->getMessage());
@@ -166,14 +148,46 @@ class ChannelService {
         }
     }
 
-    public function sendTelegramMessage($chat_id, $user_id, $uuid, $message) {
-        $telegramModel = $this->repository->getByUUID($uuid);
-        if ($telegramModel == null) {
+    /**
+     * detect the type of the message
+     * @param Update
+     * @return string
+     */
+    public function detectMessageType($update)
+    {
+        return $this->telegramAPI->detectMessageType($update);
+    }
+
+    /**
+     * @param PhotoSize $fileSize
+     * @param string $uuid
+     * @return string
+     */
+    public function getPhotoURL($fileSize, $uuid)
+    {
+        try
+        {
+            $token = $this->getTokenFromUUID($uuid);
+            $telegram = $this->getTelegramActiveInstanse($uuid);
+            $file = $telegram->getFile(['file_id' => $fileSize['file_id']]);
+            return 'https://api.telegram.org/file/bot'.$token.'/'.$file->getFilePath();
+        }catch (\Exception $exception)
+        {
+            Log::error($exception->getMessage());
             return "";
         }
+    }
 
+    /**
+     * @param $chat_id
+     * @param $user_id
+     * @param $uuid
+     * @param $message
+     * @return string
+     */
+    public function sendTelegramMessage($chat_id, $user_id, $uuid, $message) {
         try {
-            $telegram = $this->getTelegramInstance($telegramModel->token);
+            $telegram = $this->getTelegramActiveInstanse($uuid);
             $response = $telegram->sendMessage([
                 'chat_id' => $chat_id,
                 'text' => $message
@@ -198,7 +212,8 @@ class ChannelService {
         try {
             $telegram = $this->getTelegramInstance($token);
             return $telegram->getMe();
-        } catch (TelegramSDKException $exception) {
+        } catch (\Exception $exception) {
+            Log::error($exception->getMessage());
             return null;
         }
     }
