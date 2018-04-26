@@ -11,6 +11,7 @@ use Illuminate\Events\Dispatcher;
 use Illuminate\Support\Facades\Log;
 use Telegram\Bot\Api;
 use Telegram\Bot\Exceptions\TelegramSDKException;
+use Telegram\Bot\Objects\Document;
 use Telegram\Bot\Objects\PhotoSize;
 use Telegram\Bot\Objects\Update;
 
@@ -111,8 +112,7 @@ class TelegramService {
      * @param $uuid
      * @return string token
      */
-    private function getTokenFromUUID($uuid)
-    {
+    private function getTokenFromUUID($uuid) {
         $telegramModel = $this->repository->getByUUID($uuid);
 
         if ($telegramModel == null) {
@@ -125,10 +125,10 @@ class TelegramService {
      * @param $uuid
      * @return null|Api
      */
-    private function getTelegramActiveInstanse($uuid)
-    {
+    private function getTelegramActiveInstanse($uuid) {
         return $this->getTelegramInstance($this->getTokenFromUUID($uuid));
     }
+
     /**
      * Get updates return all the messages from telegram converting the data for zendesk channel
      * pulling service.
@@ -150,29 +150,52 @@ class TelegramService {
 
     /**
      * detect the type of the message
+     *
      * @param Update
      * @return string
      */
-    public function detectMessageType($update)
-    {
+    public function detectMessageType($update) {
         return $this->telegramAPI->detectMessageType($update);
     }
 
     /**
      * @param PhotoSize $fileSize
-     * @param string $uuid
+     * @param string    $uuid
      * @return string
      */
-    public function getPhotoURL($fileSize, $uuid)
-    {
+    public function getPhotoURL($fileSize, $uuid) {
+        try {
+            $token = $this->getTokenFromUUID($uuid);
+            $file = $this->getFileWithID($fileSize['file_id'], $uuid);
+            return 'https://api.telegram.org/file/bot' . $token . '/' . $file->getFilePath();
+        } catch (\Exception $exception) {
+            Log::error($exception->getMessage());
+            return "";
+        }
+    }
+
+    /**
+     * @param $file_id
+     * @param $uuid
+     * @return \Telegram\Bot\Objects\File
+     */
+    public function getFileWithID($file_id, $uuid) {
+        $telegram = $this->getTelegramActiveInstanse($uuid);
+        return $telegram->getFile(['file_id' => $file_id]);
+    }
+
+    /**
+     * @param Document $document
+     * @param          $uuid
+     * @return string
+     */
+    public function getDocumentURL($document, $uuid) {
         try
         {
             $token = $this->getTokenFromUUID($uuid);
-            $telegram = $this->getTelegramActiveInstanse($uuid);
-            $file = $telegram->getFile(['file_id' => $fileSize['file_id']]);
-            return 'https://api.telegram.org/file/bot'.$token.'/'.$file->getFilePath();
-        }catch (\Exception $exception)
-        {
+            $file = $this->getFileWithID($document->getFileId(), $uuid);
+            return 'https://api.telegram.org/file/bot' . $token . '/' . $file->getFilePath();
+        } catch (\Exception $exception) {
             Log::error($exception->getMessage());
             return "";
         }
