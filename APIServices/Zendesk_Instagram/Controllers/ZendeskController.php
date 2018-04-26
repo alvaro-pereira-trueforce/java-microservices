@@ -163,8 +163,7 @@ class ZendeskController extends Controller
         Log::info($parent_id);
         $message = $request->message;
 
-
-        $external_id = $service->sendInstagramMessage($parent_id[1], $parent_id[0], $metadata['token'], $message);
+        $external_id = $service->sendTelegramMessage($parent_id[1], $parent_id[0], $metadata['token'], $message);
 
         $response = [
             'external_id' => $external_id
