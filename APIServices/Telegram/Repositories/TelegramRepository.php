@@ -7,7 +7,7 @@ use App\Database\Eloquent\Model;
 use App\Database\Eloquent\Repository;
 use Illuminate\Support\Facades\App;
 
-class ChannelRepository extends Repository
+class TelegramRepository extends Repository
 {
     /**
      * @return TelegramChannel

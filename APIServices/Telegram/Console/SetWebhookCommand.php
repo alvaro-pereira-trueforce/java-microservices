@@ -2,7 +2,7 @@
 
 namespace APIServices\Telegram\Console;
 
-use APIServices\Telegram\Services\ChannelService;
+use APIServices\Telegram\Services\TelegramService;
 use Illuminate\Console\Command;
 
 class SetWebhookCommand extends Command
@@ -24,17 +24,17 @@ class SetWebhookCommand extends Command
     /**
      * User repository to persist user in database
      *
-     * @var ChannelService
+     * @var TelegramService
      */
     protected $service;
 
     /**
      * Create a new command instance.
      *
-     * @param  ChannelService $service
+     * @param  TelegramService $service
      * @return void
      */
-    public function __construct(ChannelService $service)
+    public function __construct(TelegramService $service)
     {
         parent::__construct();
         $this->service = $service;

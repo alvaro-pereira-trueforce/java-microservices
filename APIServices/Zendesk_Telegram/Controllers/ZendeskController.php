@@ -2,15 +2,12 @@
 
 namespace APIServices\Zendesk_Telegram\Controllers;
 
-use APIServices\Telegram\Repositories\ChannelRepository;
-use APIServices\Telegram\Services\ChannelService;
+use APIServices\Telegram\Services\TelegramService;
+use APIServices\Zendesk_Telegram\Models\Services\ChannelService;
 use App\Repositories\ManifestRepository;
-use GuzzleHttp\Client;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Log;
-use Telegram\Bot\Api;
-use Telegram\Bot\Exceptions\TelegramSDKException;
 
 class ZendeskController extends Controller {
 
@@ -21,11 +18,11 @@ class ZendeskController extends Controller {
     }
 
     public function getManifest(Request $request) {
-        Log::notice("Zendesk Request: " . $request->method() .' '.$request->getPathInfo());
+        Log::notice("Zendesk Request: " . $request->method() . ' ' . $request->getPathInfo());
         return response()->json($this->manifest->getByName('Telegram Channel'));
     }
 
-    public function adminUI(Request $request, ChannelService $service) {
+    public function adminUI(Request $request, TelegramService $service) {
         $name = $request->name; //will be null on empty
         $metadata = json_decode($request->metadata, true); //will be null on empty
         $state = json_decode($request->state, true); //will be null on empty
@@ -44,7 +41,7 @@ class ZendeskController extends Controller {
         ]);
     }
 
-    public function admin_ui_2(Request $request, ChannelService $service) {
+    public function admin_ui_2(Request $request, TelegramService $service) {
         $token = $request->token;
         $return_url = $request->return_url;
         $subdomain = $request->subdomain;
@@ -94,7 +91,7 @@ class ZendeskController extends Controller {
         $metadata = json_decode($request->metadata, true);
         $state = json_decode($request->state, true);
 
-        $updates = $service->getTelegramUpdates($metadata['token']);
+        $updates = $service->getUpdates($metadata);
         $response = [
             'external_resources' => $updates,
             'state' => ""
@@ -103,7 +100,7 @@ class ZendeskController extends Controller {
         return response()->json($response);
     }
 
-    public function channelback(Request $request, ChannelService $service) {
+    public function channelback(Request $request, TelegramService $service) {
         $metadata = json_decode($request->metadata, true);
         $parent_id = explode(':', $request->parent_id);
         $message = $request->message;
@@ -134,7 +131,7 @@ class ZendeskController extends Controller {
         return response()->json('ok', 200);
     }
 
-    public function handleSubmitForAdminUI(Request $request, ChannelService $service) {
+    public function handleSubmitForAdminUI(Request $request, TelegramService $service) {
         try {
             $metadata = $service->getMetadataFromSavedIntegration($request->account['uuid']);
             return view('telegram.post_metadata', [
@@ -147,14 +144,11 @@ class ZendeskController extends Controller {
         }
     }
 
-    public function handleDeleteForAdminUI($uuid, Request $request, ChannelService $service)
-    {
-        try
-        {
+    public function handleDeleteForAdminUI($uuid, Request $request, TelegramService $service) {
+        try {
             $result = $service->delete($uuid);
             return $this->adminUI($request, $service);
-        }catch (\Exception $exception)
-        {
+        } catch (\Exception $exception) {
             return response()->json($exception->getMessage(), 404);
         }
     }
