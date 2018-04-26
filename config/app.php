@@ -165,6 +165,7 @@ return [
         Optimus\Heimdal\Provider\LaravelServiceProvider::class,
         App\Providers\RouteServiceProvider::class,
         Telegram\Bot\Laravel\TelegramServiceProvider::class,
+        Spatie\DirectoryCleanup\DirectoryCleanupServiceProvider::class,
     ],
 
     /*

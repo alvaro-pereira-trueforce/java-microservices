@@ -2,7 +2,6 @@
 
 namespace APIServices\Zendesk_Telegram\Models\MessageTypes;
 
-use Illuminate\Support\Facades\Storage;
 
 class Document extends MessageType {
 
@@ -27,10 +26,7 @@ class Document extends MessageType {
             $parent_id = $this->zendeskUtils->getExternalID([$reply->getFrom()->get('id'), $reply->getChat()->get('id'), $reply->get('message_id')]);
         }
 
-        $contents = file_get_contents($documentURL);
-        $name = substr($documentURL, strrpos($documentURL, '/') + 1);
-        Storage::put($name, $contents);
-        $url = Storage::url($name);
+        $link = $this->getLocalURLFromExternalURL($documentURL);
 
         return [
             'external_id' => $this->zendeskUtils->getExternalID([$user_id, $chat_id, $message_id]),
@@ -41,7 +37,7 @@ class Document extends MessageType {
                 'external_id' => $this->zendeskUtils->getExternalID([$user_id, $user_username]),
                 'name' => $user_firstname . ' ' . $user_lastname
             ],
-            'file_urls' => [$url]
+            'file_urls' => [$link]
         ];
     }
 }

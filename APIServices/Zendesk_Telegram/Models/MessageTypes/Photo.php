@@ -2,21 +2,7 @@
 namespace APIServices\Zendesk_Telegram\Models\MessageTypes;
 
 
-use APIServices\Telegram\Services\TelegramService;
-use APIServices\Zendesk\Utility;
-use Illuminate\Support\Facades\Storage;
-
-class Photo implements IMessageType {
-
-    protected $telegramService;
-    protected $uuid;
-    protected $zendeskUtils;
-
-    public function __construct(TelegramService $telegramService, $uuid, Utility $zendeskUtils) {
-        $this->telegramService = $telegramService;
-        $this->uuid = $uuid;
-        $this->zendeskUtils = $zendeskUtils;
-    }
+class Photo extends MessageType {
 
     function getTransformedMessage($update) {
         $photoSize = $update->getMessage()->getPhoto();
@@ -40,21 +26,23 @@ class Photo implements IMessageType {
             $parent_id = $this->zendeskUtils->getExternalID([$reply->getFrom()->get('id'), $reply->getChat()->get('id'), $reply->get('message_id')]);
         }
 
-        $contents = file_get_contents($photoURL);
-        $name = substr($photoURL, strrpos($photoURL, '/') + 1);
-        Storage::put($name, $contents);
-        $url = Storage::url($name);
+        $link = $this->getLocalURLFromExternalURL($photoURL);
 
         return [
             'external_id' => $this->zendeskUtils->getExternalID([$user_id, $chat_id, $message_id]),
             'message' => $message,
-            'html_message' => sprintf('<p><img src=%s></p>', env('APP_URL').$url),
+            'html_message' => view('telegram.photo_viewer',[
+                'title' => 'Photo Sent from Telegram:',
+                'photoURL' => env('APP_URL').$link,
+                'message' => $message
+            ])->render(),
             $message_replay_type => $parent_id,
             'created_at' => gmdate('Y-m-d\TH:i:s\Z', $message_date),
             'author' => [
                 'external_id' => $this->zendeskUtils->getExternalID([$user_id, $user_username]),
                 'name' => $user_firstname . ' ' . $user_lastname
-            ]
+            ],
+            'file_urls' => [$link]
         ];
     }
 }
