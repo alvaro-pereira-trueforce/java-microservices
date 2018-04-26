@@ -41,8 +41,8 @@ class Photo implements IMessageType {
         }
 
         $contents = file_get_contents($photoURL);
-        $name = $photoSize[3]['file_id'];
-        Storage::disk('public')->put($name, $contents);
+        $name = substr($photoURL, strrpos($photoURL, '/') + 1);
+        Storage::put($name, $contents);
         $url = Storage::url($name);
 
         return [

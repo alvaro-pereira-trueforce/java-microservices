@@ -29,7 +29,7 @@ class Document extends MessageType {
 
         $contents = file_get_contents($documentURL);
         $name = substr($documentURL, strrpos($documentURL, '/') + 1);
-        Storage::disk('public')->put($name, $contents);
+        Storage::put($name, $contents);
         $url = Storage::url($name);
 
         return [
