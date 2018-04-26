@@ -140,26 +140,11 @@ class ZendeskController extends Controller
             return response()->json($exception->getMessage(), 404);
         }
     }
-//
-//    public function channelback(Request $request, ChannelService $service) {
-//        $metadata = json_decode($request->metadata, true);
-//        $parent_id = explode(':', $request->parent_id);
-//        $message = $request->message;
-//
-//
-//        $external_id = $service->sendTelegramMessage($parent_id[1], $parent_id[0], $metadata['token'], $message);
-//
-//        $response = [
-//            'external_id' => $external_id
-//        ];
-//        return response()->json($response);
-//    }
 
     public function channelback(Request $request, InstagramService $service) {
         $metadata = json_decode($request->metadata, true);
-        Log::info('This Channel Back');
-        Log::info($request);
-        $parent_id = explode(':', $request->parent_id);
+         Log::info($request);
+        $parent_id = explode(':', $request->recipient_id);
         $message = $request->message;
         $external_id = $service->sendInstagramMessage($parent_id[0], $metadata['token'], $message);
         $response = [
