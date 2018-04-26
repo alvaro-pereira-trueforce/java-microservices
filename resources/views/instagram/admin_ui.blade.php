@@ -14,12 +14,12 @@
     <div class="card-body">
         <h3>Instagram configuration</h3>
         @if (!$name)
-            <p>We need to you provide us the Instagram token that was generated with Instagram APP Father in order to start working with Instagram channel service.</p>
+            <p>We need to you provide us the Instagram token that was generated with Instagram APP in order to start working with Instagram channel service.</p>
         @else
-            <p>Welcome back. Do you want to update the current Instagram token?, Just provide us the Instagram token that was generated with Instagram APP Father in order to start working with Instagram channel service.</p>
+            <p>Welcome back. Do you want to update the current Instagram token?, Just provide us the Instagram token that was generated with Instagram APP in order to start working with Instagram channel service.</p>
         @endif
         <p>For more information that how to obtain the Instagram token use the following link: </p>
-        <a href="https://www.instagram.com/developer" target="_blank"> Instagram APP Father</a><br><br>
+        <a href="https://www.instagram.com/developer" target="_blank"> Instagram APP</a><br><br>
         <form method="post" action="{{$submitURL}}">
             <div class="form-group">
                 <label>Integration Name:</label>
