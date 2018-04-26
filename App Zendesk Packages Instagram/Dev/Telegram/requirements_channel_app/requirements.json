@@ -1,0 +1,8 @@
+{
+  "channel_integrations": {
+    "Instagram_Channel_Bot": {
+      "manifest_url":
+      "https://e1eeec78.ngrok.io/instagram/manifest"
+    }
+  }
+}
