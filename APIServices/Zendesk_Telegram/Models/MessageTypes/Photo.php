@@ -32,7 +32,7 @@ class Photo extends MessageType {
             'external_id' => $this->zendeskUtils->getExternalID([$user_id, $chat_id, $message_id]),
             'message' => $message,
             'html_message' => view('telegram.photo_viewer',[
-                'title' => 'Photo Sent from Telegram',
+                'title' => 'Photo Sent from Telegram:',
                 'photoURL' => env('APP_URL').$link,
                 'message' => $message
             ])->render(),
