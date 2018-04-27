@@ -130,16 +130,16 @@ class InstagramService
                 $user_name_post = $user['username'];
                 $link_profile_picture_post = $user['profile_picture'];
                 $post_time = $update['created_time'];
+                //Images of Post
+                $images = $update['images'];
+                $standard_resolution = $images['standard_resolution'];
                 if ($update['caption']!=null){
                     $caption = $update['caption'];
                     $post_text = $caption['text'];
                 }else{
                     //Name to ticket
                     $post_text = $user_name_post . ' Posted a photo';
-                    //Images of Post
-                    $images = $update['images'];
-                    $standard_resolution = $images['standard_resolution'];
-                    //Push post
+                   //Push post
                     array_push($transformedMessages, [
                         'external_id' => $this->zendeskUtils->getExternalID([$post_id]),
                         'message' => $post_text,
@@ -157,6 +157,7 @@ class InstagramService
                 array_push($transformedMessages, [
                     'external_id' => $this->zendeskUtils->getExternalID([$post_id]),
                     'message' => $post_text,
+                    'html_message'=>sprintf('<p><img src=%s></p>',$standard_resolution['url']),
                     'thread_id' => $this->zendeskUtils->getExternalID([$link, $post_id]),
                     'created_at' => gmdate('Y-m-d\TH:i:s\Z', $post_time),
                     'author' => [
