@@ -157,7 +157,7 @@ class InstagramService
                 array_push($transformedMessages, [
                     'external_id' => $this->zendeskUtils->getExternalID([$post_id]),
                     'message' => $post_text,
-                    'html_message'=>sprintf('<p><img src=%s></p>',$standard_resolution['url']),
+                    'html_message'=>sprintf($post_text.' <p><img src=%s></p>',$standard_resolution['url']),
                     'thread_id' => $this->zendeskUtils->getExternalID([$link, $post_id]),
                     'created_at' => gmdate('Y-m-d\TH:i:s\Z', $post_time),
                     'author' => [
