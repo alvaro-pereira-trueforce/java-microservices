@@ -1,16 +1,11 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: pablo.daza
- * Date: 4/26/18
- * Time: 9:54 AM
- */
 
 namespace APIServices\Zendesk_Telegram\Models\MessageTypes;
 
 
 use APIServices\Telegram\Services\TelegramService;
 use APIServices\Zendesk\Utility;
+use Illuminate\Support\Facades\Storage;
 
 abstract class MessageType implements IMessageType {
 
@@ -22,5 +17,13 @@ abstract class MessageType implements IMessageType {
         $this->telegramService = $telegramService;
         $this->uuid = $uuid;
         $this->zendeskUtils = $zendeskUtils;
+    }
+
+    public function getLocalURLFromExternalURL($external_url)
+    {
+        $contents = file_get_contents($external_url);
+        $name = substr($external_url, strrpos($external_url, '/') + 1);
+        Storage::put($name, $contents);
+        return Storage::url($name);
     }
 }
