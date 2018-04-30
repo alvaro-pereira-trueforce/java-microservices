@@ -14,12 +14,10 @@
     <div class="card-body">
         <h3>Instagram configuration</h3>
         @if (!$name)
-            <p>We need to you provide us the Instagram token that was generated with Instagram APP in order to start working with Instagram channel service.</p>
+            <p>We need an instagram tocken to be able to work with the Instagram service channel</p>
         @else
-            <p>Welcome back. Do you want to update the current Instagram token?, Just provide us the Instagram token that was generated with Instagram APP in order to start working with Instagram channel service.</p>
+            <p>Welcome back. Do you want to update the current Instagram token?, Just provide us the Instagram token that was generated, to start working with Instagram channel service.</p>
         @endif
-        <p>For more information that how to obtain the Instagram token use the following link: </p>
-        <a href="https://www.instagram.com/developer" target="_blank"> Instagram APP</a><br><br>
         <form method="post" action="{{$submitURL}}">
             <div class="form-group">
                 <label>Integration Name:</label>
@@ -46,7 +44,9 @@
         </form>
         <div>
             <h4>Current configuration</h4>
-
+            @if(count($current_accounts) == 0)
+                <label>No records saved.</label>
+            @endif
             @foreach ($current_accounts as $account)
                 <div class="card" style="margin-top: 10px">
                     <div class="card-body">
