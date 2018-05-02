@@ -3,27 +3,70 @@
 namespace APIServices\Zendesk_Telegram\Models\MessageTypes;
 
 
-use APIServices\Telegram\Services\TelegramService;
 use APIServices\Zendesk\Utility;
-use Illuminate\Support\Facades\Storage;
+use Telegram\Bot\Objects\Message;
+use Telegram\Bot\Objects\Update;
 
 abstract class MessageType implements IMessageType {
 
-    protected $telegramService;
-    protected $uuid;
+    /**
+     * @var Utility
+     */
     protected $zendeskUtils;
 
-    public function __construct(TelegramService $telegramService, $uuid, Utility $zendeskUtils) {
-        $this->telegramService = $telegramService;
-        $this->uuid = $uuid;
+    /**
+     * @var Update
+     */
+    protected $update;
+    /**
+     * @var Message
+     */
+    protected  $message;
+
+    protected  $message_id;
+    protected  $user_id;
+    protected  $chat_id;
+    protected  $message_date;
+    protected  $user_username;
+    protected  $user_firstname;
+    protected  $user_lastname;
+
+    /**
+     * MessageType constructor.
+     *
+     * @param Utility $zendeskUtils
+     * @param Update  $update
+     */
+    public function __construct(Utility $zendeskUtils, $update) {
         $this->zendeskUtils = $zendeskUtils;
+        $this->update = $update;
+        $this->message = $update->getMessage();
+        $this->message_id = $this->message->getMessageId();
+        $this->user_id = $this->message->getFrom()->getId();
+        $this->chat_id = $this->message->getChat()->getId();
+        $this->message_date = $this->message->getDate();
+        $this->user_username = $this->message->getFrom()->getUsername();
+        $this->user_firstname = $this->message->getFrom()->getFirstName();
+        $this->user_lastname = $this->message->getFrom()->getLastName();
     }
 
-    public function getLocalURLFromExternalURL($external_url)
+    protected function getParentID()
     {
-        $contents = file_get_contents($external_url);
-        $name = substr($external_url, strrpos($external_url, '/') + 1);
-        Storage::put($name, $contents);
-        return Storage::url($name);
+        $reply = $this->message->getReplyToMessage();
+        $parent_id = $this->zendeskUtils->getExternalID([$this->user_id, $this->chat_id]);
+        if ($reply) {
+            $parent_id = $this->zendeskUtils->getExternalID([$reply->getFrom()->get('id'), $reply->getChat()->get('id'), $reply->get('message_id')]);
+        }
+        return $parent_id;
+    }
+
+    protected function getExternalID()
+    {
+        return $this->zendeskUtils->getExternalID([$this->user_id, $this->chat_id, $this->message_id]);
+    }
+
+    protected function getAuthorExternalID()
+    {
+        return $this->zendeskUtils->getExternalID([$this->user_id, $this->user_username]);
     }
 }
