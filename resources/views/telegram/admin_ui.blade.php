@@ -14,11 +14,13 @@
     <div class="card-body">
         <h3>Telegram configuration</h3>
         @if (!$name)
-            <p>We need to you provide us the telegram token that was generated with Telegram Bot Father in order to start working with telegram channel service.</p>
+            <p>We need you to provide us your Telegram token which was generated with the "Telegram Bot Father" in order to start working with the Telegram Channel service.</p>
         @else
-            <p>Welcome back. Do you want to update the current telegram token?, Just provide us the telegram token that was generated with Telegram Bot Father in order to start working with telegram channel service.</p>
+            <p>Welcome back. Do you want to update the current telegram token?, Just provide us
+                the telegram token that was generated with Telegram Bot Father in order to start
+                working with Telegram Channel Service.</p>
         @endif
-        <p>For more information that how to obtain the telegram token use the following link: </p>
+        <p>For more information about how to obtain the Telegram token use the following link: </p>
         <a href="https://telegram.me/botfather" target="_blank"> Telegram Bot Father</a><br><br>
         <form method="post" action="{{$submitURL}}">
             <div class="form-group">
