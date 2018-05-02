@@ -26,13 +26,13 @@ class Utility {
     }
 
     public function addHtmlMessageToBasicResponse(array $basic_response, $html_message) {
-        array_push($basic_response, ['html_message' => $html_message]);
+        $basic_response['html_message'] = $html_message;
         return $basic_response;
     }
 
     public function addFilesURLToBasicResponse(array $basic_response, array $files_urls)
     {
-        array_push($basic_response, ['file_urls' => $files_urls]);
+        $basic_response['file_urls'] = $files_urls;
         return $basic_response;
     }
 }

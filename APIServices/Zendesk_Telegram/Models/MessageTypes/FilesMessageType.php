@@ -7,7 +7,7 @@ use APIServices\Telegram\Services\TelegramService;
 use APIServices\Zendesk\Utility;
 use Illuminate\Support\Facades\Storage;
 
-abstract class MultimediaMessageType extends MessageType {
+abstract class FilesMessageType extends MessageType {
 
     protected $telegramService;
     protected $uuid;

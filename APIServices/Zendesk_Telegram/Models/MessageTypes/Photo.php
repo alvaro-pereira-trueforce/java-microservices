@@ -3,7 +3,7 @@
 namespace APIServices\Zendesk_Telegram\Models\MessageTypes;
 
 
-class Photo extends MultimediaMessageType {
+class Photo extends FilesMessageType {
 
     function getTransformedMessage() {
         $photoSize = $this->message->getPhoto();
