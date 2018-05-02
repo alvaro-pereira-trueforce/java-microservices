@@ -39,8 +39,11 @@ class ChannelService {
             }
 
             try {
-                $updateType = App::makeWith($this->chanel_type . '.' . $message_type, ['uuid' => $uuid]);
-                $message = $updateType->getTransformedMessage($update);
+                $updateType = App::makeWith($this->chanel_type . '.' . $message_type, [
+                    'uuid' => $uuid,
+                    'update' => $update
+                ]);
+                $message = $updateType->getTransformedMessage();
                 if ($message)
                     array_push($transformedMessages, $message);
             } catch (\Exception $exception) {

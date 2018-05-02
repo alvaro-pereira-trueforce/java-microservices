@@ -46,41 +46,40 @@ class AddApplicationManifestCommand extends Command {
      * @return mixed
      */
     public function handle() {
-        $app_url = env('APP_URL') . '/';
 
         $admin_ui = $this->ask('What is the admin UI URL?');
-        $admin_ui = $admin_ui ? $app_url . $admin_ui : '';
+        $admin_ui = $admin_ui ? $admin_ui : '';
         $this->info($admin_ui);
 
         $push_client_id = $this->ask('Do you have push Client ID?');
         $push_client_id = $push_client_id ? $push_client_id : '';
 
         $pull_url = $this->ask('What is the pull URL?');
-        $pull_url = $pull_url ? $app_url . $pull_url : '';
+        $pull_url = $pull_url ? $pull_url : '';
         $this->info($pull_url);
 
         $channelback_url = $this->ask('What is the channel back URL?');
-        $channelback_url = $channelback_url ? $app_url . $channelback_url : '';
+        $channelback_url = $channelback_url ? $channelback_url : '';
         $this->info($channelback_url);
 
         $clickthrough_url = $this->ask('What is the click through URL?');
-        $clickthrough_url = $clickthrough_url ? $app_url . $clickthrough_url : '';
+        $clickthrough_url = $clickthrough_url ? $clickthrough_url : '';
         $this->info($clickthrough_url);
 
         $event_callback_url = $this->ask('What is the event callback URL?');
-        $event_callback_url = $event_callback_url ? $app_url . $event_callback_url : '';
+        $event_callback_url = $event_callback_url ? $event_callback_url : '';
         $this->info($event_callback_url);
 
         $healthcheck_url = $this->ask('What is the health check URL?');
-        $healthcheck_url = $healthcheck_url ? $app_url . $healthcheck_url : '';
+        $healthcheck_url = $healthcheck_url ? $healthcheck_url : '';
         $this->info($healthcheck_url);
 
         $dashboard_url = $this->ask('Do you have dashboard URL?');
-        $dashboard_url = $dashboard_url ? $app_url . $dashboard_url : '';
+        $dashboard_url = $dashboard_url ? $dashboard_url : '';
         $this->info($dashboard_url);
 
         $about_url = $this->ask('Do you have about URL?');
-        $about_url = $about_url ? $app_url . $about_url : '';
+        $about_url = $about_url ? $about_url : '';
         $this->info($about_url);
 
         DB::beginTransaction();

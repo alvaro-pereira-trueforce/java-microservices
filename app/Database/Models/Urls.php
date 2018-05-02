@@ -47,4 +47,61 @@ class Urls extends ModelUUID {
     public function manifest() {
         return $this->belongsTo(Manifest::class, 'manifest_uuid', 'uuid')->withDefault();
     }
+
+    /**
+     * Get the URLS with the domain included
+     * @var $value
+     * @return string||null
+     */
+    private function getUrlWithDomain($value)
+    {
+        if($value)
+        {
+            return env('APP_URL').'/'.$value;
+        }
+        else
+        {
+            return null;
+        }
+    }
+
+    public function getAdminUiAttribute($value)
+    {
+        return $this->getUrlWithDomain($value);
+    }
+
+    public function getPullUrlAttribute($value)
+    {
+        return $this->getUrlWithDomain($value);
+    }
+
+    public function getChannelbackUrlAttribute($value)
+    {
+        return $this->getUrlWithDomain($value);
+    }
+
+    public function getClickthroughUrlAttribute($value)
+    {
+        return $this->getUrlWithDomain($value);
+    }
+
+    public function getHealthcheckUrlAttribute($value)
+    {
+        return $this->getUrlWithDomain($value);
+    }
+
+    public function getDashboardUrlAttribute($value)
+    {
+        return $this->getUrlWithDomain($value);
+    }
+
+    public function getAboutUrlAttribute($value)
+    {
+        return $this->getUrlWithDomain($value);
+    }
+
+    public function getEventCallbackUrlAttribute($value)
+    {
+        return $this->getUrlWithDomain($value);
+    }
 }
