@@ -29,21 +29,12 @@ class ZendeskController extends Controller
         Log::info($request);
         $metadata = json_decode($request->metadata, true);
         $state = json_decode($request->state, true);
-       // $updates = $service->getInstagramUpdates($metadata['token']);
-
         if ($state != null){
-            Log::info("TO STATE NOT NULL");
-            Log::info($state);
             $new_state = $state;
-            Log::info($new_state);
             $updates = $service->getInstagramUpdates($metadata['token'],$state['most_recent_item_timestamp']);
-           // $updates = $this->getMessages($updates,$state['most_recent_item_timestamp']);
-            Log::info($updates);
         }else{
-            Log::info("TO STATE-NULL");
-            $new_state =$this->pullState();
+            $new_state =$service->pullState($metadata['token']);
             $updates = $service->getInstagramUpdates($metadata['token'],$new_state['most_recent_item_timestamp']);
-            //$updates = $this->getMessages($updates,$new_state['most_recent_item_timestamp']);
         }
         $response = [
             'external_resources' => $updates,
@@ -51,13 +42,6 @@ class ZendeskController extends Controller
         ];
         Log::info($response);
         return response()->json($response);
-    }
-
-    function pullState()
-    {
-            $now = Carbon::now()->getTimestamp();
-            $current_date = gmdate('Y-m-d\TH:i:s\Z', $now);
-            return ['most_recent_item_timestamp' =>sprintf('%s',$current_date)];
     }
 
     function getMessages($updates, $state)

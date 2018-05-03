@@ -96,6 +96,16 @@ class InstagramService
         return $model;
     }
 
+    function pullState($uuid)
+    {
+        $instagramModel = $this->repository->getByUUID($uuid);
+        if ($instagramModel == null) {
+            return [];
+        }
+        $created_at = $instagramModel->updated_at;
+        $current_date = gmdate('Y-m-d\TH:i:s\Z', $created_at->getTimestamp());
+        return ['most_recent_item_timestamp' => sprintf('%s', $current_date)];
+    }
     /**
      * Get updates return all the messages from telegram converting the data for zendesk channel
      * pulling service.
@@ -127,7 +137,6 @@ class InstagramService
                 $post_time = $update['created_time'];
                 $aux = gmdate('Y-m-d\TH:i:s\Z', $post_time);
                 if ($aux > $state_date){
-                    Log::info( "Entro la condicion aux...................");
                     $post_id = $update['id'];
                     $link = $update['link'];
                     //data User
