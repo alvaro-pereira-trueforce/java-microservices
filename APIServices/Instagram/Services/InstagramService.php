@@ -96,6 +96,16 @@ class InstagramService
         return $model;
     }
 
+    function pullState($uuid)
+    {
+        $instagramModel = $this->repository->getByUUID($uuid);
+        if ($instagramModel == null) {
+            return [];
+        }
+        $created_at = $instagramModel->updated_at;
+        $current_date = gmdate('Y-m-d\TH:i:s\Z', $created_at->getTimestamp());
+        return ['most_recent_item_timestamp' => sprintf('%s', $current_date)];
+    }
     /**
      * Get updates return all the messages from telegram converting the data for zendesk channel
      * pulling service.
@@ -103,7 +113,7 @@ class InstagramService
      * @param string $uuid TelegramChannelUUID to retrieve the information from the database
      * @return array Zendesk External resources
      */
-    public function getInstagramUpdates($uuid)
+    public function getInstagramUpdates($uuid,$state_date)
     {
         $instagramModel = $this->repository->getByUUID($uuid);
         if ($instagramModel == null) {
@@ -123,27 +133,45 @@ class InstagramService
                 if (count($transformedMessages) > 199) {
                     break;
                 }
-                $post_id = $update['id'];
-                $link = $update['link'];
-                //data User
-                $user = $update['user'];
-                $user_name_post = $user['username'];
-                $link_profile_picture_post = $user['profile_picture'];
+
                 $post_time = $update['created_time'];
-                //Images of Post
-                $images = $update['images'];
-                $standard_resolution = $images['standard_resolution'];
-                if ($update['caption']!=null){
-                    $caption = $update['caption'];
-                    $post_text = $caption['text'];
-                }else{
-                    //Name to ticket
-                    $post_text = $user_name_post . ' Posted a photo';
-                   //Push post
+                $aux = gmdate('Y-m-d\TH:i:s\Z', $post_time);
+                if ($aux > $state_date){
+                    $post_id = $update['id'];
+                    $link = $update['link'];
+                    //data User
+                    $user = $update['user'];
+                    $user_name_post = $user['username'];
+                    $link_profile_picture_post = $user['profile_picture'];
+
+                    //Images of Post
+                    $images = $update['images'];
+                    $standard_resolution = $images['standard_resolution'];
+                    if ($update['caption']!=null){
+                        $caption = $update['caption'];
+                        $post_text = $caption['text'];
+                    }else{
+                        //Name to ticket
+                        $post_text = $user_name_post . ' Posted a photo';
+                        //Push post
+                        array_push($transformedMessages, [
+                            'external_id' => $this->zendeskUtils->getExternalID([$post_id]),
+                            'message' => $post_text,
+                            'html_message'=>sprintf('<p><img src=%s></p>',$standard_resolution['url']),
+                            'thread_id' => $this->zendeskUtils->getExternalID([$link, $post_id]),
+                            'created_at' => gmdate('Y-m-d\TH:i:s\Z', $post_time),
+                            'author' => [
+                                'external_id' => $this->zendeskUtils->getExternalID([$post_id, $user_name_post]),
+                                'name' => $user_name_post,
+                                "image_url"=> $link_profile_picture_post
+                            ]
+                        ]);
+                    }
+                    //Push post
                     array_push($transformedMessages, [
                         'external_id' => $this->zendeskUtils->getExternalID([$post_id]),
                         'message' => $post_text,
-                        'html_message'=>sprintf('<p><img src=%s></p>',$standard_resolution['url']),
+                        'html_message'=>sprintf($post_text.' <p><img src=%s></p>',$standard_resolution['url']),
                         'thread_id' => $this->zendeskUtils->getExternalID([$link, $post_id]),
                         'created_at' => gmdate('Y-m-d\TH:i:s\Z', $post_time),
                         'author' => [
@@ -152,50 +180,37 @@ class InstagramService
                             "image_url"=> $link_profile_picture_post
                         ]
                     ]);
-                }
-                //Push post
-                array_push($transformedMessages, [
-                    'external_id' => $this->zendeskUtils->getExternalID([$post_id]),
-                    'message' => $post_text,
-                    'html_message'=>sprintf($post_text.' <p><img src=%s></p>',$standard_resolution['url']),
-                    'thread_id' => $this->zendeskUtils->getExternalID([$link, $post_id]),
-                    'created_at' => gmdate('Y-m-d\TH:i:s\Z', $post_time),
-                    'author' => [
-                        'external_id' => $this->zendeskUtils->getExternalID([$post_id, $user_name_post]),
-                        'name' => $user_name_post,
-                        "image_url"=> $link_profile_picture_post
-                    ]
-                ]);
-                //
-                $count_comments = $update['comments'];
-                if($count_comments['count']>0){
-                    // Call comment
-                    $comments = array($this->instagramAPI->getMediaComments($post_id, true));
-                    $comments = json_decode(json_encode($comments), True);
-                    $comments_data = $comments[0]['data'];
-                    foreach ($comments_data as $comment) {
-                        $comment_id = $comment['id'];
-                        $user_name = $comment['from']['username'];
-                        $comment_time = $comment['created_time'];
-                        $comment_text = $comment['text'];
-                        // must have a buffer in the future to catch only the first 200 messages and send
-                        // it the leftover later. Maybe never happen an overflow.
-                        if (count($transformedMessages) > 199) {
-                            break;
+                    //
+                    $count_comments = $update['comments'];
+                    if($count_comments['count']>0){
+                        // Call comment
+                        $comments = array($this->instagramAPI->getMediaComments($post_id, true));
+                        $comments = json_decode(json_encode($comments), True);
+                        $comments_data = $comments[0]['data'];
+                        foreach ($comments_data as $comment) {
+                            $comment_id = $comment['id'];
+                            $user_name = $comment['from']['username'];
+                            $comment_time = $comment['created_time'];
+                            $comment_text = $comment['text'];
+                            // must have a buffer in the future to catch only the first 200 messages and send
+                            // it the leftover later. Maybe never happen an overflow.
+                            if (count($transformedMessages) > 199) {
+                                break;
+                            }
+                            array_push($transformedMessages, [
+                                'external_id' => $this->zendeskUtils->getExternalID([$comment_id]),
+                                'message' => $comment_text,
+                                'thread_id' => $this->zendeskUtils->getExternalID([$link, $post_id]),
+                                'created_at' => gmdate('Y-m-d\TH:i:s\Z', $comment_time),
+                                'author' => [
+                                    'external_id' => $this->zendeskUtils->getExternalID([$comment_id, $user_name]),
+                                    'name' => $user_name
+                                ]
+                            ]);
                         }
-                        array_push($transformedMessages, [
-                            'external_id' => $this->zendeskUtils->getExternalID([$comment_id]),
-                            'message' => $comment_text,
-                            'thread_id' => $this->zendeskUtils->getExternalID([$link, $post_id]),
-                            'created_at' => gmdate('Y-m-d\TH:i:s\Z', $comment_time),
-                            'author' => [
-                                'external_id' => $this->zendeskUtils->getExternalID([$comment_id, $user_name]),
-                                'name' => $user_name
-                            ]
-                        ]);
                     }
+                    Log::info($update);
                 }
-               Log::info($update);
             }
             return $transformedMessages;
 

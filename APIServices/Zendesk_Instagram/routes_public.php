@@ -7,6 +7,7 @@ $router->prefix('instagram')->group(function () use ($router) {
     $router->post('admin_ui_2/{uuid}','ZendeskController@handleSubmitForAdminUI');
     $router->post('admin_ui_2/delete/{uuid}','ZendeskController@handleDeleteForAdminUI');
     $router->post('pull','ZendeskController@pull');
+    $router->post('pull2','ZendeskController@pull2');
     $router->post('channelback','ZendeskController@channelback');
     //$router->get('clickthrough','ZendeskController@clickthrough');
     $router->get('healthcheck','ZendeskController@healthcheck');

@@ -2,12 +2,14 @@
 
 namespace APIServices\Zendesk_Instagram\Controllers;
 
+use APIServices\Instagram\Logic\BubbleSorting;
 use APIServices\Instagram\Services\InstagramService;
 use APIServices\Zendesk_Instagram\Model\Test;
 use App\Http\Controllers\Controller;
 use App\Repositories\ManifestRepository;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Carbon\Carbon;
 
 class ZendeskController extends Controller
 {
@@ -27,14 +29,33 @@ class ZendeskController extends Controller
         Log::info($request);
         $metadata = json_decode($request->metadata, true);
         $state = json_decode($request->state, true);
-        $updates = $service->getInstagramUpdates($metadata['token']);
+        if ($state != null){
+            $new_state = $state;
+            $updates = $service->getInstagramUpdates($metadata['token'],$state['most_recent_item_timestamp']);
+        }else{
+            $new_state =$service->pullState($metadata['token']);
+            $updates = $service->getInstagramUpdates($metadata['token'],$new_state['most_recent_item_timestamp']);
+        }
         $response = [
             'external_resources' => $updates,
-            'state' => ""
+            'state' => json_encode($new_state)
         ];
         Log::info($response);
         return response()->json($response);
     }
+
+    function getMessages($updates, $state)
+    {
+        Log::info("GET MESAGE: " . $state);
+        $recent_messages = [];
+        foreach ($updates as $data){
+            if ($data["created_at"]>=$state){
+                array_push($recent_messages,$data);
+            }
+        }
+        return $recent_messages;
+    }
+
     public function adminUI(Request $request, InstagramService $service) {
         $name = $request->name; //will be null on empty
         $metadata = json_decode($request->metadata, true); //will be null on empty
