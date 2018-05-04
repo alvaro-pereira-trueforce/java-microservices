@@ -5,6 +5,7 @@ namespace APIServices\Zendesk_Instagram\Models\Services;
 
 use APIServices\Instagram\Services\InstagramService;
 use APIServices\Zendesk\Utility;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Log;
 
@@ -84,10 +85,15 @@ class ZendeskChannelService
             //Name to ticket
             $post_text = $user_name_post . ' Posted a photo';
         }
+        //'html_message' => sprintf('<p><img src=%s></p>', $standard_resolution['url']),
+        $link_media = $this->getLocalURLFromExternalURL($standard_resolution['url']);
         return [
             'external_id' => $this->zendeskUtils->getExternalID([$post_id]),
             'message' => $post_text,
-            'html_message' => sprintf('<p><img src=%s></p>', $standard_resolution['url']),
+            'html_message' =>  view('instagram.multimedia.photo_viewer', [
+                'photoURL' => env('APP_URL') . $link_media,
+                'message' => $post_text
+            ])->render(),
             'thread_id' => $this->zendeskUtils->getExternalID([$link, $post_id]),
             'created_at' => gmdate('Y-m-d\TH:i:s\Z', $post_time),
             'author' => [
@@ -96,6 +102,22 @@ class ZendeskChannelService
                 "image_url" => $link_profile_picture_post
             ]
         ];
+    }
+
+    public function getLocalURLFromExternalURL($external_url)
+    {
+        $contents = file_get_contents($external_url);
+        $parts = explode('/', $external_url);
+        Log::info("PARTS...........");
+        Log::info($parts);
+        $name = $parts[count($parts)-1];
+        Log::info($name);
+        //$name = substr($external_url, strrpos($external_url, '/') + 1);
+        Storage::put($name, $contents);
+        $storage = Storage::url($name);
+        Log::info("STORAGE..........");
+        Log::info($storage);
+        return Storage::url($name);
     }
 
     public function pushComment($update, $comment)
