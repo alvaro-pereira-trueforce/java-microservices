@@ -4,7 +4,7 @@ namespace APIServices\Zendesk_Instagram\Controllers;
 
 use APIServices\Instagram\Logic\BubbleSorting;
 use APIServices\Instagram\Services\InstagramService;
-use APIServices\Zendesk_Instagram\Model\Test;
+use APIServices\Zendesk_Instagram\Models\Services\ZendeskChannelService;
 use App\Http\Controllers\Controller;
 use App\Repositories\ManifestRepository;
 use Illuminate\Http\Request;
@@ -25,16 +25,17 @@ class ZendeskController extends Controller
         return response()->json($this->manifest->getByName('Instagram-Integration'));
     }
 
-    public function pull(Request $request, InstagramService $service) {
+    public function pull(Request $request, ZendeskChannelService $service)
+    {
         Log::info($request);
         $metadata = json_decode($request->metadata, true);
         $state = json_decode($request->state, true);
-        if ($state != null){
+        if ($state != null) {
             $new_state = $state;
-            $updates = $service->getInstagramUpdates($metadata['token'],$state['most_recent_item_timestamp']);
-        }else{
-            $new_state =$service->pullState($metadata['token']);
-            $updates = $service->getInstagramUpdates($metadata['token'],$new_state['most_recent_item_timestamp']);
+            $updates = $service->getUpdates($metadata['token'], $state['most_recent_item_timestamp']);
+        } else {
+            $new_state = $service->pullState($metadata['token']);
+            $updates = $service->getUpdates($metadata['token'], $new_state['most_recent_item_timestamp']);
         }
         $response = [
             'external_resources' => $updates,
