@@ -1,0 +1,9 @@
+{
+  "app": {
+    "package": "telegram_channel_bot_developer",
+    "name": {
+      "value": "Telegram Integration for channel Bot Developer",
+      "title": "Telegram Channel Bot Developer"
+    }
+  }
+}

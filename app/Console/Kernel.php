@@ -3,6 +3,7 @@
 namespace App\Console;
 
 use APIServices\Telegram\Console\AddBotCommand;
+use APIServices\Telegram\Console\RemoveWebhookCommand;
 use APIServices\Telegram\Console\SetWebhookCommand;
 use APIServices\Users\Console\AddUserCommand;
 use Illuminate\Console\Scheduling\Schedule;
@@ -19,7 +20,9 @@ class Kernel extends ConsoleKernel
         AddUserCommand::class,
         AddBotCommand::class,
         SetWebhookCommand::class,
-        AddApplicationManifestCommand::class
+        RemoveWebhookCommand::class,
+        AddApplicationManifestCommand::class,
+        DeleteApplicationManifestCommand::class
     ];
 
     /**
