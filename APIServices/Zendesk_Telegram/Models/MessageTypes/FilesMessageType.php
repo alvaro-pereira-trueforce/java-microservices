@@ -10,13 +10,10 @@ use Illuminate\Support\Facades\Storage;
 abstract class FilesMessageType extends MessageType {
 
     protected $telegramService;
-    protected $uuid;
 
-    public function __construct(Utility $zendeskUtils, $update, TelegramService $telegramService, $uuid) {
-        parent::__construct($zendeskUtils, $update);
+    public function __construct(Utility $zendeskUtils, $update, TelegramService $telegramService, $state) {
+        parent::__construct($zendeskUtils, $update, $state);
         $this->telegramService = $telegramService;
-        $this->uuid = $uuid;
-
     }
 
     public function getLocalURLFromExternalURL($external_url)

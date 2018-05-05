@@ -5,6 +5,7 @@ namespace APIServices\Zendesk_Telegram\Models\Services;
 
 use APIServices\Telegram\Services\TelegramService;
 use APIServices\Zendesk\Utility;
+use APIServices\Zendesk_Telegram\Models\MessageTypes\IMessageType;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Log;
 
@@ -21,12 +22,10 @@ class ChannelService {
     }
 
     /**
-     * @param $metadata
      * @return array
      */
-    public function getUpdates($metadata) {
-        $uuid = $metadata['token'];
-        $updates = $this->telegram_service->getTelegramUpdates($uuid);
+    public function getUpdates() {
+        $updates = $this->telegram_service->getTelegramUpdates();
 
         $transformedMessages = [];
         foreach ($updates as $update) {
@@ -39,8 +38,8 @@ class ChannelService {
             }
 
             try {
+                /** @var $updateType IMessageType*/
                 $updateType = App::makeWith($this->chanel_type . '.' . $message_type, [
-                    'uuid' => $uuid,
                     'update' => $update
                 ]);
                 $message = $updateType->getTransformedMessage();
