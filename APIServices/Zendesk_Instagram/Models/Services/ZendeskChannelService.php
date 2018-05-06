@@ -85,6 +85,16 @@ class ZendeskChannelService
             //Name to ticket
             $post_text = $user_name_post . ' Posted a photo';
         }
+        //verify video
+        if (array_key_exists('videos', $update)){
+            Log::info("VVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVvvvvv");
+          Log::info("Existe video");
+            $standard_resolution = $update['videos']['standard_resolution'];
+            Log::info($standard_resolution);
+        }else{
+            Log::info("NO Existe video");
+            Log::info("NO NO NONO OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO");
+        }
         //'html_message' => sprintf('<p><img src=%s></p>', $standard_resolution['url']),
         $link_media = $this->getLocalURLFromExternalURL($standard_resolution['url']);
         return [
