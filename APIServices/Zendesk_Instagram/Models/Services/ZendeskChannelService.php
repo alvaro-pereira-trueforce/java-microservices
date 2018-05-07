@@ -5,7 +5,6 @@ namespace APIServices\Zendesk_Instagram\Models\Services;
 
 use APIServices\Instagram\Services\InstagramService;
 use APIServices\Zendesk\Utility;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Log;
 
@@ -48,7 +47,6 @@ class ZendeskChannelService
             $post_time = $update['created_time'];
             $aux = gmdate('Y-m-d\TH:i:s\Z', $post_time);
             if ($aux > $state_date) {
-                //$content_type = $this->telegram_service->detectMessageType($update);
                 array_push($transformedMessages, $this->pushMedia($update, null));
                 $count_comments = $update['comments'];
                 if ($count_comments['count'] > 0) {
@@ -78,15 +76,9 @@ class ZendeskChannelService
         //Images of Post
         $images = $update['images'];
         $standard_resolution_photo = $images['standard_resolution'];
-        if ($update['caption'] != null) {
-            $caption = $update['caption'];
-            $post_text = $caption['text'];
-        } else {
-            //Name to ticket
-            $post_text = $user_name_post . ' Posted a photo';
-        }
-        //verify video
+         //verify video
         if (array_key_exists('videos', $update)){
+            $post_text =  $this->getTitleTicket($update,"video");
             $standard_resolution_video = $update['videos']['standard_resolution'];
             return [
                 'external_id' => $this->zendeskUtils->getExternalID([$post_id]),
@@ -105,6 +97,7 @@ class ZendeskChannelService
                 ]
             ];
         }else{
+            $post_text =  $this->getTitleTicket($update,"photo");
                return [
                 'external_id' => $this->zendeskUtils->getExternalID([$post_id]),
                 'message' => $post_text,
@@ -121,18 +114,15 @@ class ZendeskChannelService
                 ]
             ];
         }
-        //'html_message' => sprintf('<p><img src=%s></p>', $standard_resolution['url']),
     }
 
-    public function getLocalURLFromExternalURL($external_url)
+    public function getTitleTicket($update,$type_file)
     {
-        $contents = file_get_contents($external_url);
-        $parts = explode('/', $external_url);
-        $name = $parts[count($parts)-1];
-        Storage::put($name, $contents);
-        return Storage::url($name);
+        if ($update['caption'] != null) {
+            return  $update['caption']['text'];
+        }
+        return $update['user']['username'] . ' Posted a ' . $type_file;
     }
-
     public function pushComment($update, $comment)
     {
         $link = $update['link'];

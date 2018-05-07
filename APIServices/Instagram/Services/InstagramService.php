@@ -105,7 +105,6 @@ class InstagramService
     public function getById($uuid, array $options = [])
     {
         $model = $this->getRequestedModel($uuid);
-
         return $model;
     }
 
@@ -127,7 +126,7 @@ class InstagramService
     {
         $instagramModel = $this->repository->getByUUID($uuid);
         if ($instagramModel == null) {
-             return null;
+            return null;
         }
         return $instagramModel->updated_at;
     }
@@ -140,7 +139,6 @@ class InstagramService
             $updates = json_decode(json_encode($updates), True);
             $updates_data = $updates[0]['data'];
             return $updates_data;
-
         } catch (\Exception $exception) {
             Log::error($exception->getMessage());
             return [];
@@ -210,7 +208,6 @@ class InstagramService
             $array = array('text' => $message);
             $response = $this->instagramAPI->postUserMedia(true, $post_id, $array);
             $comments = json_decode(json_encode($response), True);
-            Log::info($comments);
             $comment_data = $comments['data'];
             $comment_id = $comment_data['id'];
             return $this->zendeskUtils->getExternalID([$comment_id]);

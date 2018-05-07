@@ -22,7 +22,7 @@ class ZendeskController extends Controller
     public function getManifest(Request $request)
     {
         Log::info("Zendesk Request: " . $request);
-        return response()->json($this->manifest->getByName('Instagram-Integration'));
+        return response()->json($this->manifest->getByName('Instagram Channel'));
     }
 
     public function pull(Request $request, ZendeskChannelService $service)
@@ -63,7 +63,6 @@ class ZendeskController extends Controller
         $state = json_decode($request->state, true); //will be null on empty
         $return_url = $request->return_url;
         $subdomain = $request->subdomain;
-        //$locale = $request->locale;
         $submitURL = env('APP_URL') . '/instagram/admin_ui_2';
 
         $accounts = $service->getByZendeskAppID($subdomain);
@@ -91,15 +90,6 @@ class ZendeskController extends Controller
                 $accounts,
                 'errors' => $errors]);
         }
-//        $telegramBot = $service->checkValidTelegramBot($token);
-//        if (!$telegramBot) {
-//            $errors = ['Invalid token, use Telegram Bot Father to create one.'];
-//            return view('telegram.admin_ui', ['return_url' => $return_url, 'subdomain' =>
-//                $subdomain, 'name' => $name, 'submitURL' => $submitURL, 'current_accounts' =>
-//                $accounts,
-//                'errors' => $errors]);
-//        }
-
         $metadata = $service->registerNewIntegration($name, $token, $subdomain);
 
         if (!$metadata) {
