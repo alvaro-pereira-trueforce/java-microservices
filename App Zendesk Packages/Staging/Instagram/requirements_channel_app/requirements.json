@@ -1,6 +1,6 @@
 {
   "channel_integrations": {
-    "Instagram Channel Bot": {
+    "Instagram Channel Staging": {
       "manifest_url":
       "https://help-desk-server-staging.herokuapp.com/instagram/manifest"
     }
