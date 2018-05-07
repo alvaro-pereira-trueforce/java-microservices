@@ -3,6 +3,6 @@
 <body>
 <p>{{$message}}</p>
 <img src="{{$photoURL}}">
-<p><a href="{{$videoURL}}">See video in Instagram.</a></p>
+<p><a href="{{$videoURL}}">See video in Instagram</a></p>
 </body>
 </html>
