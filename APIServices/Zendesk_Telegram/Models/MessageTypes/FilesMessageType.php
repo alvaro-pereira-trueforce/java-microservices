@@ -11,13 +11,13 @@ abstract class FilesMessageType extends MessageType {
 
     protected $telegramService;
 
-    public function __construct(Utility $zendeskUtils, $update, TelegramService $telegramService, $state) {
-        parent::__construct($zendeskUtils, $update, $state);
+    public function __construct(Utility $zendeskUtils, $update, TelegramService $telegramService,
+                                $state, $parent_id) {
+        parent::__construct($zendeskUtils, $update, $state, $parent_id);
         $this->telegramService = $telegramService;
     }
 
-    public function getLocalURLFromExternalURL($external_url)
-    {
+    public function getLocalURLFromExternalURL($external_url) {
         $contents = file_get_contents($external_url);
         $name = substr($external_url, strrpos($external_url, '/') + 1);
         Storage::put($name, $contents);

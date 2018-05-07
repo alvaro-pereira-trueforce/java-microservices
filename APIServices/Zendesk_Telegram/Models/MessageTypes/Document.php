@@ -16,7 +16,7 @@ class Document extends FilesMessageType {
             $this->getExternalID(),
             $message,
             'thread_id',
-            $this->getParentID(),
+            $this->parent_id,
             $this->message_date,
             $this->getAuthorExternalID(),
             $this->user_firstname . ' ' . $this->user_lastname);

@@ -8,17 +8,21 @@ use APIServices\Zendesk\Utility;
 use APIServices\Zendesk_Telegram\Models\MessageTypes\IMessageType;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Log;
+use Telegram\Bot\Objects\Message;
 
 class ChannelService {
 
     protected $telegram_service;
     protected $zendeskUtils;
     protected $chanel_type;
+    protected $ticketService;
 
-    public function __construct(TelegramService $telegramService, Utility $zendeskUtils) {
+    public function __construct(TelegramService $telegramService, Utility $zendeskUtils,
+                                TicketService $ticketService) {
         $this->telegram_service = $telegramService;
         $this->zendeskUtils = $zendeskUtils;
         $this->chanel_type = 'telegram';
+        $this->ticketService = $ticketService;
     }
 
     /**
@@ -37,9 +41,13 @@ class ChannelService {
             }
 
             try {
-                /** @var $updateType IMessageType*/
+                $message = $update->getMessage();
+                $parent_id = $this->getParentID($message);
+
+                /** @var $updateType IMessageType */
                 $updateType = App::makeWith($this->chanel_type . '.' . $message_type, [
-                    'update' => $update
+                    'update' => $update,
+                    'parent_id' => $parent_id
                 ]);
                 $message = $updateType->getTransformedMessage();
                 if ($message)
@@ -49,5 +57,27 @@ class ChannelService {
             }
         }
         return $transformedMessages;
+    }
+
+    /**
+     * @param Message $message
+     * @return string
+     */
+    protected function getParentID($message) {
+        $reply = $message->getReplyToMessage();
+
+        if ($reply) {
+            $parent_id = $this->zendeskUtils->getExternalID([
+                $reply->getChat()->get('id'),
+                $reply->getFrom()->get('id')
+            ]);
+        } else {
+            $parent_id = $this->zendeskUtils->getExternalID([
+                $message->getChat()->getId(),
+                $message->getFrom()->getId()
+            ]);
+        }
+
+        return $this->ticketService->getValidParentID($parent_id);
     }
 }

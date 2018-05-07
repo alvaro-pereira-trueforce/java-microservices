@@ -4,10 +4,10 @@ namespace APIServices\Telegram\Repositories;
 
 use APIServices\Telegram\Models\TelegramChannel;
 use App\Database\Eloquent\Model;
-use App\Database\Eloquent\Repository;
+use App\Database\Eloquent\RepositoryUUID;
 use Illuminate\Support\Facades\App;
 
-class TelegramRepository extends Repository
+class TelegramRepository extends RepositoryUUID
 {
     /**
      * @return TelegramChannel
@@ -40,11 +40,5 @@ class TelegramRepository extends Repository
         $model->fill($data);
         $model->save();
         return $model;
-    }
-
-    public function getByUUID($uuid)
-    {
-        $model = $this->getModel();
-        return $model->where('uuid', '=', $uuid)->first();
     }
 }
