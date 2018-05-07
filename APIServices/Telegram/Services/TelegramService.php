@@ -31,13 +31,17 @@ class TelegramService {
         Dispatcher $dispatcher,
         TelegramRepository $repository,
         Api $telegramAPI,
-        Utility $zendeskUtils
+        Utility $zendeskUtils,
+        $uuid
     ) {
         $this->database = $database;
         $this->dispatcher = $dispatcher;
         $this->repository = $repository;
         $this->telegramAPI = $telegramAPI;
         $this->zendeskUtils = $zendeskUtils;
+
+        $token = $this->getTokenFromUUID($uuid);
+        $this->telegramAPI->setAccessToken($token);
     }
 
     public function getAll($options = []) {
@@ -101,14 +105,6 @@ class TelegramService {
     }
 
     /**
-     * @param $token
-     * @return Api
-     */
-    private function getTelegramInstance($token) {
-        return $this->telegramAPI->setAccessToken($token);
-    }
-
-    /**
      * @param $uuid
      * @return string token
      */
@@ -122,24 +118,14 @@ class TelegramService {
     }
 
     /**
-     * @param $uuid
-     * @return null|Api
-     */
-    private function getTelegramActiveInstanse($uuid) {
-        return $this->getTelegramInstance($this->getTokenFromUUID($uuid));
-    }
-
-    /**
      * Get updates return all the messages from telegram converting the data for zendesk channel
      * pulling service.
      *
-     * @param string $uuid TelegramChannelUUID to retrieve the information from the database
      * @return Update[]
      */
-    public function getTelegramUpdates($uuid) {
+    public function getTelegramUpdates() {
         try {
-            $telegram = $this->getTelegramActiveInstanse($uuid);
-            $updates = $telegram->commandsHandler(false);
+            $updates = $this->telegramAPI->commandsHandler(false);
             return $updates;
 
         } catch (\Exception $exception) {
@@ -160,13 +146,12 @@ class TelegramService {
 
     /**
      * @param PhotoSize $fileSize
-     * @param string    $uuid
      * @return string
      */
-    public function getPhotoURL($fileSize, $uuid) {
+    public function getPhotoURL($fileSize) {
         try {
-            $token = $this->getTokenFromUUID($uuid);
-            $file = $this->getFileWithID($fileSize['file_id'], $uuid);
+            $token = $this->telegramAPI->getAccessToken();
+            $file = $this->getFileWithID($fileSize['file_id']);
             return 'https://api.telegram.org/file/bot' . $token . '/' . $file->getFilePath();
         } catch (\Exception $exception) {
             Log::error($exception->getMessage());
@@ -176,24 +161,21 @@ class TelegramService {
 
     /**
      * @param $file_id
-     * @param $uuid
      * @return \Telegram\Bot\Objects\File
      */
-    public function getFileWithID($file_id, $uuid) {
-        $telegram = $this->getTelegramActiveInstanse($uuid);
-        return $telegram->getFile(['file_id' => $file_id]);
+    public function getFileWithID($file_id) {
+        return $this->telegramAPI->getFile(['file_id' => $file_id]);
     }
 
     /**
      * @param Document $document
-     * @param          $uuid
      * @return string
      */
-    public function getDocumentURL($document, $uuid) {
+    public function getDocumentURL($document) {
         try
         {
-            $token = $this->getTokenFromUUID($uuid);
-            $file = $this->getFileWithID($document->getFileId(), $uuid);
+            $token = $this->telegramAPI->getAccessToken();
+            $file = $this->getFileWithID($document->getFileId());
             return 'https://api.telegram.org/file/bot' . $token . '/' . $file->getFilePath();
         } catch (\Exception $exception) {
             Log::error($exception->getMessage());
@@ -204,14 +186,12 @@ class TelegramService {
     /**
      * @param $chat_id
      * @param $user_id
-     * @param $uuid
      * @param $message
      * @return string
      */
-    public function sendTelegramMessage($chat_id, $user_id, $uuid, $message) {
+    public function sendTelegramMessage($chat_id, $user_id, $message) {
         try {
-            $telegram = $this->getTelegramActiveInstanse($uuid);
-            $response = $telegram->sendMessage([
+            $response = $this->telegramAPI->sendMessage([
                 'chat_id' => $chat_id,
                 'text' => $message
             ]);
@@ -233,8 +213,8 @@ class TelegramService {
      */
     public function checkValidTelegramBot($token) {
         try {
-            $telegram = $this->getTelegramInstance($token);
-            return $telegram->getMe();
+            $this->telegramAPI->setAccessToken($token);
+            return $this->telegramAPI->getMe();
         } catch (\Exception $exception) {
             Log::error($exception->getMessage());
             return null;
