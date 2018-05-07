@@ -21,24 +21,26 @@ abstract class MessageType implements IMessageType {
     /**
      * @var Message
      */
-    protected  $message;
+    protected $message;
 
-    protected  $message_id;
-    protected  $user_id;
-    protected  $chat_id;
-    protected  $message_date;
-    protected  $user_username;
-    protected  $user_firstname;
-    protected  $user_lastname;
-    protected  $state;
+    protected $message_id;
+    protected $user_id;
+    protected $chat_id;
+    protected $message_date;
+    protected $user_username;
+    protected $user_firstname;
+    protected $user_lastname;
+    protected $parent_id;
+    protected $state;
+
     /**
      * MessageType constructor.
      *
      * @param Utility $zendeskUtils
      * @param Update  $update
-     * @param array $state
+     * @param array   $state
      */
-    public function __construct(Utility $zendeskUtils, $update, $state) {
+    public function __construct(Utility $zendeskUtils, $update, $state, $parent_id) {
         $this->zendeskUtils = $zendeskUtils;
         $this->update = $update;
         $this->message = $update->getMessage();
@@ -50,25 +52,14 @@ abstract class MessageType implements IMessageType {
         $this->user_firstname = $this->message->getFrom()->getFirstName();
         $this->user_lastname = $this->message->getFrom()->getLastName();
         $this->state = $state;
+        $this->parent_id = $parent_id;
     }
 
-    protected function getParentID()
-    {
-        $reply = $this->message->getReplyToMessage();
-        $parent_id = $this->zendeskUtils->getExternalID([$this->user_id, $this->chat_id]);
-        if ($reply) {
-            $parent_id = $this->zendeskUtils->getExternalID([$reply->getFrom()->get('id'), $reply->getChat()->get('id'), $reply->get('message_id')]);
-        }
-        return $parent_id;
-    }
-
-    protected function getExternalID()
-    {
-        return $this->zendeskUtils->getExternalID([$this->user_id, $this->chat_id, $this->message_id]);
-    }
-
-    protected function getAuthorExternalID()
-    {
+    protected function getAuthorExternalID() {
         return $this->zendeskUtils->getExternalID([$this->user_id, $this->user_username]);
+    }
+
+    protected function getExternalID() {
+        return $this->zendeskUtils->getExternalID([$this->parent_id, $this->message_id]);
     }
 }
