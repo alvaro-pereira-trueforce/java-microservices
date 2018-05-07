@@ -3,7 +3,7 @@
 namespace APIServices\Zendesk_Telegram\Controllers;
 
 use APIServices\Telegram\Services\TelegramService;
-use APIServices\Zendesk_Telegram\Models\Services\ChannelService;
+use APIServices\Zendesk_Telegram\Services\ChannelService;
 use App\Repositories\ManifestRepository;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;

@@ -1,6 +1,6 @@
 <?php
 
-namespace APIServices\Zendesk_Telegram\Models\Services;
+namespace APIServices\Zendesk_Telegram\Services;
 
 
 use APIServices\Telegram\Services\TelegramService;
@@ -30,7 +30,6 @@ class ChannelService {
         $transformedMessages = [];
         foreach ($updates as $update) {
             $message_type = $this->telegram_service->detectMessageType($update);
-
             // must have a buffer in the future to catch only the first 200 messages and send
             // it the leftover later. Maybe never happen an overflow.
             if (count($transformedMessages) > 199) {
