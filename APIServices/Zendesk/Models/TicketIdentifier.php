@@ -2,9 +2,10 @@
 
 namespace APIServices\Zendesk\Models;
 
-use Illuminate\Database\Eloquent\Model;
+use App\Database\Eloquent\ModelUUID;
 
-class TicketIdentifier extends Model
-{
-    //
+class TicketIdentifier extends ModelUUID {
+
+    protected $fillable = ['parent_identifier'];
+
 }

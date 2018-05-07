@@ -14,7 +14,9 @@ class CreateTicketIdentifiersTable extends Migration
     public function up()
     {
         Schema::create('ticket_identifiers', function (Blueprint $table) {
-            $table->increments('id');
+            $table->primary('uuid');
+            $table->uuid('uuid')->unique();
+            $table->string('parent_identifier')->unique();
             $table->timestamps();
         });
     }
