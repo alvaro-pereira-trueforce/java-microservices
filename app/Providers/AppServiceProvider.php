@@ -4,8 +4,6 @@ namespace App\Providers;
 
 use APIServices\Telegram\Services\TelegramService;
 use APIServices\Zendesk_Telegram\Models\MessageTypes\Document;
-use APIServices\Zendesk_Telegram\Models\MessageTypes\IMessageType;
-use APIServices\Zendesk_Telegram\Models\MessageTypes\MessageType;
 use APIServices\Zendesk_Telegram\Models\MessageTypes\Photo;
 use APIServices\Zendesk_Telegram\Models\MessageTypes\Text;
 use Illuminate\Http\Request;
@@ -51,11 +49,10 @@ class AppServiceProvider extends ServiceProvider {
                 }
                 return $uuid;
             });
-
+        
         $message_types = [Text::class, Photo::class, Document::class];
 
-        foreach ($message_types as $type)
-        {
+        foreach ($message_types as $type) {
             $this->app->when($type)
                 ->needs('$state')
                 ->give(function () use ($state) {
