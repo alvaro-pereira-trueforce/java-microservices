@@ -30,14 +30,15 @@ abstract class MessageType implements IMessageType {
     protected  $user_username;
     protected  $user_firstname;
     protected  $user_lastname;
-
+    protected  $state;
     /**
      * MessageType constructor.
      *
      * @param Utility $zendeskUtils
      * @param Update  $update
+     * @param array $state
      */
-    public function __construct(Utility $zendeskUtils, $update) {
+    public function __construct(Utility $zendeskUtils, $update, $state) {
         $this->zendeskUtils = $zendeskUtils;
         $this->update = $update;
         $this->message = $update->getMessage();
@@ -48,6 +49,7 @@ abstract class MessageType implements IMessageType {
         $this->user_username = $this->message->getFrom()->getUsername();
         $this->user_firstname = $this->message->getFrom()->getFirstName();
         $this->user_lastname = $this->message->getFrom()->getLastName();
+        $this->state = $state;
     }
 
     protected function getParentID()

@@ -7,7 +7,7 @@ class Photo extends FilesMessageType {
 
     function getTransformedMessage() {
         $photoSize = $this->message->getPhoto();
-        $photoURL = $this->telegramService->getPhotoURL($photoSize[3], $this->uuid);
+        $photoURL = $this->telegramService->getPhotoURL($photoSize[3]);
         $message = $this->message->getCaption() ? $this->message->getCaption() : 'Photo from: ' . $this->user_firstname . ' ' . $this->user_lastname;
         $link = $this->getLocalURLFromExternalURL($photoURL);
 

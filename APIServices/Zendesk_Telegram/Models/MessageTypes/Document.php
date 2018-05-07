@@ -7,7 +7,7 @@ class Document extends FilesMessageType {
 
     function getTransformedMessage() {
         $document = $this->message->getDocument();
-        $documentURL = $this->telegramService->getDocumentURL($document, $this->uuid);
+        $documentURL = $this->telegramService->getDocumentURL($document);
 
         $message = $this->message->getCaption() ? $this->message->getCaption() : 'Document from: ' .
             $this->user_firstname . ' ' . $this->user_lastname;

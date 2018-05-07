@@ -88,10 +88,8 @@ class ZendeskController extends Controller {
 
     public function pull(Request $request, ChannelService $service) {
         Log::debug($request);
-        $metadata = json_decode($request->metadata, true);
-        $state = json_decode($request->state, true);
 
-        $updates = $service->getUpdates($metadata);
+        $updates = $service->getUpdates();
         $response = [
             'external_resources' => $updates,
             'state' => ""
@@ -101,12 +99,11 @@ class ZendeskController extends Controller {
     }
 
     public function channelback(Request $request, TelegramService $service) {
-        $metadata = json_decode($request->metadata, true);
         $parent_id = explode(':', $request->parent_id);
         $message = $request->message;
 
-
-        $external_id = $service->sendTelegramMessage($parent_id[1], $parent_id[0], $metadata['token'], $message);
+    //$metadata['token']
+        $external_id = $service->sendTelegramMessage($parent_id[1], $parent_id[0] , $message);
 
         $response = [
             'external_id' => $external_id
