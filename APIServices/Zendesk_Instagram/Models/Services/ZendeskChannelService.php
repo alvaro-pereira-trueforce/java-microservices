@@ -77,7 +77,7 @@ class ZendeskChannelService
         $link_profile_picture_post = $user['profile_picture'];
         //Images of Post
         $images = $update['images'];
-        $standard_resolution = $images['standard_resolution'];
+        $standard_resolution_photo = $images['standard_resolution'];
         if ($update['caption'] != null) {
             $caption = $update['caption'];
             $post_text = $caption['text'];
@@ -87,46 +87,49 @@ class ZendeskChannelService
         }
         //verify video
         if (array_key_exists('videos', $update)){
-            Log::info("VVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVvvvvv");
-          Log::info("Existe video");
-            $standard_resolution = $update['videos']['standard_resolution'];
-            Log::info($standard_resolution);
+            $standard_resolution_video = $update['videos']['standard_resolution'];
+            return [
+                'external_id' => $this->zendeskUtils->getExternalID([$post_id]),
+                'message' => $post_text,
+                'html_message' =>  view('instagram.multimedia.video_viewer', [
+                    'photoURL' => $standard_resolution_photo['url'],
+                    'videoURL' => $standard_resolution_video['url'],
+                    'message' => $post_text
+                ])->render(),
+                'thread_id' => $this->zendeskUtils->getExternalID([$link, $post_id]),
+                'created_at' => gmdate('Y-m-d\TH:i:s\Z', $post_time),
+                'author' => [
+                    'external_id' => $this->zendeskUtils->getExternalID([$post_id, $user_name_post]),
+                    'name' => $user_name_post,
+                    "image_url" => $link_profile_picture_post
+                ]
+            ];
         }else{
-            Log::info("NO Existe video");
-            Log::info("NO NO NONO OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO");
+               return [
+                'external_id' => $this->zendeskUtils->getExternalID([$post_id]),
+                'message' => $post_text,
+                'html_message' =>  view('instagram.multimedia.photo_viewer', [
+                    'photoURL' => $standard_resolution_photo['url'],
+                    'message' => $post_text
+                ])->render(),
+                'thread_id' => $this->zendeskUtils->getExternalID([$link, $post_id]),
+                'created_at' => gmdate('Y-m-d\TH:i:s\Z', $post_time),
+                'author' => [
+                    'external_id' => $this->zendeskUtils->getExternalID([$post_id, $user_name_post]),
+                    'name' => $user_name_post,
+                    "image_url" => $link_profile_picture_post
+                ]
+            ];
         }
         //'html_message' => sprintf('<p><img src=%s></p>', $standard_resolution['url']),
-        $link_media = $this->getLocalURLFromExternalURL($standard_resolution['url']);
-        return [
-            'external_id' => $this->zendeskUtils->getExternalID([$post_id]),
-            'message' => $post_text,
-            'html_message' =>  view('instagram.multimedia.photo_viewer', [
-                'photoURL' => env('APP_URL') . $link_media,
-                'message' => $post_text
-            ])->render(),
-            'thread_id' => $this->zendeskUtils->getExternalID([$link, $post_id]),
-            'created_at' => gmdate('Y-m-d\TH:i:s\Z', $post_time),
-            'author' => [
-                'external_id' => $this->zendeskUtils->getExternalID([$post_id, $user_name_post]),
-                'name' => $user_name_post,
-                "image_url" => $link_profile_picture_post
-            ]
-        ];
     }
 
     public function getLocalURLFromExternalURL($external_url)
     {
         $contents = file_get_contents($external_url);
         $parts = explode('/', $external_url);
-        Log::info("PARTS...........");
-        Log::info($parts);
         $name = $parts[count($parts)-1];
-        Log::info($name);
-        //$name = substr($external_url, strrpos($external_url, '/') + 1);
         Storage::put($name, $contents);
-        $storage = Storage::url($name);
-        Log::info("STORAGE..........");
-        Log::info($storage);
         return Storage::url($name);
     }
 
