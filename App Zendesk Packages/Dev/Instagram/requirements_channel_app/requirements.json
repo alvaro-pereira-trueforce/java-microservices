@@ -1,8 +1,8 @@
 {
   "channel_integrations": {
-    "Instagram_Channel_Bot": {
+    "Instagram Channel Developer": {
       "manifest_url":
-      "https://e1eeec78.ngrok.io/instagram/manifest"
+      "https://f861623c.ngrok.io/instagram/manifest"
     }
   }
 }
