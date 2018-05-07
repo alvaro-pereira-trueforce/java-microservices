@@ -1,6 +1,6 @@
 <?php
 
-namespace APIServices\Zendesk_Telegram\Models\Services;
+namespace APIServices\Zendesk_Telegram\Services;
 
 
 use APIServices\Telegram\Services\TelegramService;
