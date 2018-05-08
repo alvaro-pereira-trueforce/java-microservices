@@ -91,7 +91,7 @@ class ZendeskChannelService
                 'thread_id' => $this->zendeskUtils->getExternalID([$link, $post_id]),
                 'created_at' => gmdate('Y-m-d\TH:i:s\Z', $post_time),
                 'author' => [
-                    'external_id' => $this->zendeskUtils->getExternalID([$post_id, $user_name_post]),
+                    'external_id' => $this->zendeskUtils->getExternalID([$user_name_post]),
                     'name' => $user_name_post,
                     "image_url" => $link_profile_picture_post
                 ]
@@ -108,7 +108,7 @@ class ZendeskChannelService
                 'thread_id' => $this->zendeskUtils->getExternalID([$link, $post_id]),
                 'created_at' => gmdate('Y-m-d\TH:i:s\Z', $post_time),
                 'author' => [
-                    'external_id' => $this->zendeskUtils->getExternalID([$post_id, $user_name_post]),
+                    'external_id' => $this->zendeskUtils->getExternalID([$user_name_post]),
                     'name' => $user_name_post,
                     "image_url" => $link_profile_picture_post
                 ]
@@ -137,7 +137,7 @@ class ZendeskChannelService
             'thread_id' => $this->zendeskUtils->getExternalID([$link, $post_id]),
             'created_at' => gmdate('Y-m-d\TH:i:s\Z', $comment_time),
             'author' => [
-                'external_id' => $this->zendeskUtils->getExternalID([$comment_id, $user_name]),
+                'external_id' => $this->zendeskUtils->getExternalID([$user_name]),
                 'name' => $user_name
             ]
         ];
