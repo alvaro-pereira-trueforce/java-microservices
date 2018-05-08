@@ -57,10 +57,10 @@ class AppServiceProvider extends ServiceProvider {
                 }
                 return $uuid;
             });
-        
+
         $message_types = [
             Text::class, Photo::class, Document::class, UnknownType::class,
-            LeftChatMember::class , NewChatMember::class
+            LeftChatMember::class, NewChatMember::class
         ];
 
         foreach ($message_types as $type) {

@@ -156,7 +156,7 @@ class TelegramService {
         $result = $object->keys()
             ->intersect($types)
             ->pop();
-        Log::debug($result);
+
         return $result;
     }
 
