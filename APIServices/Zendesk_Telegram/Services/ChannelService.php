@@ -30,17 +30,17 @@ class ChannelService {
      */
     public function getUpdates() {
         $updates = $this->telegram_service->getTelegramUpdates();
-
         $transformedMessages = [];
         foreach ($updates as $update) {
-            $message_type = $this->telegram_service->detectMessageType($update);
             // must have a buffer in the future to catch only the first 200 messages and send
             // it the leftover later. Maybe never happen an overflow.
+            // Telegram API already catch only the first 100 messages
             if (count($transformedMessages) > 199) {
                 break;
             }
 
             try {
+                $message_type = $this->telegram_service->detectMessageType($update);
                 $message = $update->getMessage();
                 $parent_id = $this->getParentID($message);
 
@@ -52,6 +52,7 @@ class ChannelService {
                 $message = $updateType->getTransformedMessage();
                 if ($message)
                     array_push($transformedMessages, $message);
+
             } catch (\Exception $exception) {
                 Log::error($exception->getMessage());
             }
