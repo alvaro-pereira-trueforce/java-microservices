@@ -14,7 +14,7 @@ class Text extends MessageType {
             return null;
         }
 
-        return $this->zendeskUtils->getBasicResponse(
+        $response = $this->zendeskUtils->getBasicResponse(
             $this->getExternalID(),
             $message,
             'thread_id',
@@ -22,5 +22,16 @@ class Text extends MessageType {
             $this->message_date,
             $this->getAuthorExternalID(),
             $this->user_firstname . ' ' . $this->user_lastname);
+
+        $reply = $this->message->getReplyToMessage();
+        if($reply)
+        {
+            $response = $this->zendeskUtils->addHtmlMessageToBasicResponse($response,
+                view('telegram.replay_message', [
+                    'reply_text' => $reply->getText()
+                ])->render()
+            );
+        }
+        return $response;
     }
 }
