@@ -8,7 +8,7 @@ class Photo extends FilesMessageType {
     function getTransformedMessage() {
         $photoSize = $this->message->getPhoto();
         $photoURL = $this->telegramService->getPhotoURL($photoSize[3]);
-        $message = $this->message->getCaption() ? $this->message->getCaption() : '';
+        $message = $this->message->getCaption() ? $this->message->getCaption() : ' ';
         $link = $this->getLocalURLFromExternalURL($photoURL);
 
         $basic_response = $this->zendeskUtils->getBasicResponse(
