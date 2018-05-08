@@ -8,7 +8,7 @@ class Photo extends FilesMessageType {
     function getTransformedMessage() {
         $photoSize = $this->message->getPhoto();
         $photoURL = $this->telegramService->getPhotoURL($photoSize[3]);
-        $message = $this->message->getCaption() ? $this->message->getCaption() : 'Photo from: ' . $this->user_firstname . ' ' . $this->user_lastname;
+        $message = $this->message->getCaption() ? $this->message->getCaption() : '';
         $link = $this->getLocalURLFromExternalURL($photoURL);
 
         $basic_response = $this->zendeskUtils->getBasicResponse(
@@ -22,7 +22,7 @@ class Photo extends FilesMessageType {
 
         $response = $this->zendeskUtils->addHtmlMessageToBasicResponse($basic_response,
             view('telegram.photo_viewer', [
-                'title' => 'Photo Sent from Telegram:',
+                'title' => $this->user_firstname. ' ' . $this->user_lastname.' sent a Photo:',
                 'photoURL' => env('APP_URL') . $link,
                 'message' => $message
             ])->render()
