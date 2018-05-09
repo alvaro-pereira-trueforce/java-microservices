@@ -72,8 +72,13 @@ abstract class MessageType implements IMessageType {
     }
 
     protected function getAuthorName() {
-        return $this->user_firstname .
-        $this->user_lastname ? ' ' . $this->user_lastname : '' .
-            '(' . $this->user_username . ')';
+        $author_name = $this->user_firstname;
+        $user_name = '(' . $this->user_username . ')';
+        if (!$this->user_lastname || trim($this->user_lastname) == '')
+        {
+            return $author_name . ' ' . $user_name;
+        }
+        
+        return $author_name. ' ' . $this->user_lastname . ' ' . $user_name;
     }
 }
