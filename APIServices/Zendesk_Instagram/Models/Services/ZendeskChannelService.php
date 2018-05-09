@@ -68,9 +68,9 @@ class ZendeskChannelService
     {
         $post_time = $update['created_time'];
         $post_id = $update['id'];
-        $link = $update['link'];
         //data User
         $user = $update['user'];
+        $user_id = $user['id'];
         $user_name_post = $user['username'];
         $link_profile_picture_post = $user['profile_picture'];
         //Images of Post
@@ -88,7 +88,7 @@ class ZendeskChannelService
                     'videoURL' => $standard_resolution_video['url'],
                     'message' => $post_text
                 ])->render(),
-                'thread_id' => $this->zendeskUtils->getExternalID([$link, $post_id]),
+                'thread_id' => $this->zendeskUtils->getExternalID([$user_id, $post_id]),
                 'created_at' => gmdate('Y-m-d\TH:i:s\Z', $post_time),
                 'author' => [
                     'external_id' => $this->zendeskUtils->getExternalID([$user_name_post]),
@@ -105,7 +105,7 @@ class ZendeskChannelService
                     'photoURL' => $standard_resolution_photo['url'],
                     'message' => $post_text
                 ])->render(),
-                'thread_id' => $this->zendeskUtils->getExternalID([$link, $post_id]),
+                'thread_id' => $this->zendeskUtils->getExternalID([$user_id, $post_id]),
                 'created_at' => gmdate('Y-m-d\TH:i:s\Z', $post_time),
                 'author' => [
                     'external_id' => $this->zendeskUtils->getExternalID([$user_name_post]),
@@ -125,7 +125,7 @@ class ZendeskChannelService
     }
     public function pushComment($update, $comment)
     {
-        $link = $update['link'];
+        $user_id = $update['user']['id'];
         $post_id = $update['id'];
         $comment_id = $comment['id'];
         $user_name = $comment['from']['username'];
@@ -134,7 +134,7 @@ class ZendeskChannelService
         return [
             'external_id' => $this->zendeskUtils->getExternalID([$comment_id]),
             'message' => $comment_text,
-            'thread_id' => $this->zendeskUtils->getExternalID([$link, $post_id]),
+            'thread_id' => $this->zendeskUtils->getExternalID([$user_id, $post_id]),
             'created_at' => gmdate('Y-m-d\TH:i:s\Z', $comment_time),
             'author' => [
                 'external_id' => $this->zendeskUtils->getExternalID([$user_name]),
