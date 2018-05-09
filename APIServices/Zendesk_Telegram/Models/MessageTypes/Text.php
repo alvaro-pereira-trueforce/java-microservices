@@ -14,13 +14,24 @@ class Text extends MessageType {
             return null;
         }
 
-        return $this->zendeskUtils->getBasicResponse(
+        $response = $this->zendeskUtils->getBasicResponse(
             $this->getExternalID(),
             $message,
             'thread_id',
             $this->parent_id,
             $this->message_date,
             $this->getAuthorExternalID(),
-            $this->user_firstname . ' ' . $this->user_lastname);
+            $this->getAuthorName());
+
+        $reply = $this->message->getReplyToMessage();
+        if ($reply) {
+            $response = $this->zendeskUtils->addHtmlMessageToBasicResponse($response,
+                view('telegram.replay_message', [
+                    'message' => $message,
+                    'reply_text' => $reply->getText()
+                ])->render()
+            );
+        }
+        return $response;
     }
 }

@@ -36,4 +36,19 @@ class TicketService {
 
         return $ticket->uuid;
     }
+
+    /**
+     * @param string $parent_id
+     * @return string $chat_id
+     */
+    public function getExternalParentIDFromParentID($parent_id)
+    {
+        $ticket = $this->repository->getByUUID($parent_id);
+        if ($ticket)
+        {
+            return $ticket->parent_identifier;
+        }
+
+        return '';
+    }
 }

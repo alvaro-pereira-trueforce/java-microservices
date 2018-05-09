@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Log;
 use Telegram\Bot\Api;
 use Telegram\Bot\Exceptions\TelegramSDKException;
 use Telegram\Bot\Objects\Document;
+use Telegram\Bot\Objects\Message;
 use Telegram\Bot\Objects\PhotoSize;
 use Telegram\Bot\Objects\Update;
 
@@ -135,13 +136,49 @@ class TelegramService {
     }
 
     /**
-     * detect the type of the message
+     * Detect Message Type Based on Update or Message Object.
      *
-     * @param Update
-     * @return string
+     * @param Update|Message $object
+     *
+     * @return string|null
      */
-    public function detectMessageType($update) {
-        return $this->telegramAPI->detectMessageType($update);
+    public function detectMessageType($object) {
+        if ($object instanceof Update) {
+            $object = $object->getMessage();
+        }
+
+        $types = [
+            'audio', 'document', 'photo', 'sticker', 'video',
+            'voice', 'contact', 'location', 'text', 'left_chat_member',
+            'left_chat_participant', 'new_chat_participant', 'new_chat_member'
+        ];
+
+        $result = $object->keys()
+            ->intersect($types)
+            ->pop();
+
+        return $result;
+    }
+
+    /**
+     * Ask if the update or message has the specified type
+     *
+     * @param Update $update
+     * @param string $type
+     * @return bool
+     */
+    public function isMessageType($update, $type) {
+        return $this->telegramAPI->isMessageType($type, $update);
+    }
+
+    /**
+     * @param        $command_name
+     * @param        $arguments
+     * @param Update $update
+     * @return mixed
+     */
+    public function triggerCommand($command_name, $arguments, $update) {
+        return $this->telegramAPI->getCommandBus()->execute($command_name, $arguments, $update);
     }
 
     /**
@@ -172,8 +209,7 @@ class TelegramService {
      * @return string
      */
     public function getDocumentURL($document) {
-        try
-        {
+        try {
             $token = $this->telegramAPI->getAccessToken();
             $file = $this->getFileWithID($document->getFileId());
             return 'https://api.telegram.org/file/bot' . $token . '/' . $file->getFilePath();
@@ -185,11 +221,11 @@ class TelegramService {
 
     /**
      * @param $chat_id
-     * @param $user_id
      * @param $message
-     * @return string
+     * @return array
+     * @throws \Exception
      */
-    public function sendTelegramMessage($chat_id, $user_id, $message) {
+    public function sendTelegramMessage($chat_id, $message) {
         try {
             $response = $this->telegramAPI->sendMessage([
                 'chat_id' => $chat_id,
@@ -199,11 +235,17 @@ class TelegramService {
             $message_id = $response->getMessageId();
             $user_id = $response->getFrom()->get('id');
             $chat_id = $response->getChat()->get('id');
-            return $this->zendeskUtils->getExternalID([$user_id, $chat_id, $message_id]);
+
+            return [
+              'user_id' => $user_id,
+              'chat_id' => $chat_id,
+              'message_id' => $message_id,
+              'message'  => $message
+            ];
 
         } catch (\Exception $exception) {
             Log::error($exception->getMessage());
-            return "";
+            throw $exception;
         }
     }
 
