@@ -23,6 +23,7 @@ class NewChatMember extends MessageType {
             $this->parent_id,
             $this->message_date,
             $this->getAuthorExternalID(),
-            $this->user_firstname . ' ' . $this->user_lastname);
+            $this->getAuthorName()
+        );
     }
 }

@@ -70,4 +70,10 @@ abstract class MessageType implements IMessageType {
     protected function getExternalID() {
         return $this->zendeskUtils->getExternalID([$this->parent_id, $this->message_id]);
     }
+
+    protected function getAuthorName() {
+        return $this->user_firstname .
+        $this->user_lastname ? ' ' . $this->user_lastname : '' .
+            '(' . $this->user_username . ')';
+    }
 }

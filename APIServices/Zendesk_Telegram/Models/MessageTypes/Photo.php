@@ -21,7 +21,7 @@ class Photo extends FilesMessageType {
         }
 
         $photoURL = $this->telegramService->getPhotoURL($current_photo);
-        $message = $this->message->getCaption() ? $this->message->getCaption() : $this->user_firstname . ' ' . $this->user_lastname . ' sent a Photo';
+        $message = $this->message->getCaption() ? $this->message->getCaption() : $this->getAuthorName() . ' sent a Photo';
         $link = $this->getLocalURLFromExternalURL($photoURL);
 
         $basic_response = $this->zendeskUtils->getBasicResponse(
@@ -31,7 +31,7 @@ class Photo extends FilesMessageType {
             $this->parent_id,
             $this->message_date,
             $this->getAuthorExternalID(),
-            $this->user_firstname . ' ' . $this->user_lastname);
+            $this->getAuthorName());
 
         $response = $this->zendeskUtils->addHtmlMessageToBasicResponse($basic_response,
             view('telegram.photo_viewer', [
