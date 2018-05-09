@@ -28,6 +28,7 @@ class Text extends MessageType {
         {
             $response = $this->zendeskUtils->addHtmlMessageToBasicResponse($response,
                 view('telegram.replay_message', [
+                    'message' => $message,
                     'reply_text' => $reply->getText()
                 ])->render()
             );

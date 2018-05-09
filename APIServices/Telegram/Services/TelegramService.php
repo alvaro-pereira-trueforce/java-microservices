@@ -221,11 +221,11 @@ class TelegramService {
 
     /**
      * @param $chat_id
-     * @param $user_id
      * @param $message
-     * @return string
+     * @return array
+     * @throws \Exception
      */
-    public function sendTelegramMessage($chat_id, $user_id, $message) {
+    public function sendTelegramMessage($chat_id, $message) {
         try {
             $response = $this->telegramAPI->sendMessage([
                 'chat_id' => $chat_id,
@@ -235,11 +235,17 @@ class TelegramService {
             $message_id = $response->getMessageId();
             $user_id = $response->getFrom()->get('id');
             $chat_id = $response->getChat()->get('id');
-            return $this->zendeskUtils->getExternalID([$user_id, $chat_id, $message_id]);
+
+            return [
+              'user_id' => $user_id,
+              'chat_id' => $chat_id,
+              'message_id' => $message_id,
+              'message'  => $message
+            ];
 
         } catch (\Exception $exception) {
             Log::error($exception->getMessage());
-            return "";
+            throw $exception;
         }
     }
 

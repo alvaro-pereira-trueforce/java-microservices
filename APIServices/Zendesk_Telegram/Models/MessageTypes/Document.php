@@ -10,7 +10,7 @@ class Document extends FilesMessageType {
         $documentURL = $this->telegramService->getDocumentURL($document);
 
         $message = $this->message->getCaption() ? $this->message->getCaption() :
-            $this->user_firstname . ' ' . $this->user_lastname.' sent a Document.';
+            $this->user_firstname . ' ' . $this->user_lastname.' sent a Document';
 
         $basic_response = $this->zendeskUtils->getBasicResponse(
             $this->getExternalID(),
