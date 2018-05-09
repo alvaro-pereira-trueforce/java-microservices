@@ -15,4 +15,27 @@ abstract class FilesMessageType extends MessageType {
         Storage::put($name, $contents);
         return Storage::url($name);
     }
+
+    protected function getValidCaptionMessage($file_type)
+    {
+        return $this->message->getCaption() ? $this->message->getCaption() :
+            $this->getAuthorName() . ' sent a '.$file_type;
+    }
+
+    protected function getBasicDocumentResponse($file_type, $external_url)
+    {
+        $message = $this->getValidCaptionMessage($file_type);
+        $basic_response = $this->zendeskUtils->getBasicResponse(
+            $this->getExternalID(),
+            $message,
+            'thread_id',
+            $this->parent_id,
+            $this->message_date,
+            $this->getAuthorExternalID(),
+            $this->getAuthorName()
+        );
+        $link = $this->getLocalURLFromExternalURL($external_url);
+
+        return $this->zendeskUtils->addFilesURLToBasicResponse($basic_response, [$link]);
+    }
 }

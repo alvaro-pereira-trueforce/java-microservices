@@ -3,9 +3,6 @@
 namespace APIServices\Zendesk_Telegram\Models\MessageTypes;
 
 
-class Audio implements IMessageType {
+class Audio extends FilesMessageType {
 
-    function getTransformedMessage($message) {
-        // TODO: Implement getTransformedMessage() method.
-    }
 }
