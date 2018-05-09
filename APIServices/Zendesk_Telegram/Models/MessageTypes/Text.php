@@ -21,13 +21,13 @@ class Text extends MessageType {
             $this->parent_id,
             $this->message_date,
             $this->getAuthorExternalID(),
-            $this->user_firstname . ' ' . $this->user_lastname);
+            $this->getAuthorName());
 
         $reply = $this->message->getReplyToMessage();
-        if($reply)
-        {
+        if ($reply) {
             $response = $this->zendeskUtils->addHtmlMessageToBasicResponse($response,
                 view('telegram.replay_message', [
+                    'message' => $message,
                     'reply_text' => $reply->getText()
                 ])->render()
             );

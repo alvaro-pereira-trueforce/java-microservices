@@ -8,6 +8,8 @@ use App\Repositories\ManifestRepository;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Log;
+use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
+use Symfony\Component\HttpKernel\Exception\ServiceUnavailableHttpException;
 
 class ZendeskController extends Controller {
 
@@ -98,17 +100,24 @@ class ZendeskController extends Controller {
         return response()->json($response);
     }
 
-    public function channelback(Request $request, TelegramService $service) {
-        $parent_id = explode(':', $request->parent_id);
-        $message = $request->message;
+    public function channelback(Request $request, ChannelService $service) {
+        try
+        {
+            $params = explode(':', $request->parent_id);
+            $message = $request->message;
+            $parent_id = $params[0];
+            $message_id = $params[1];
 
-    //$metadata['token']
-        $external_id = $service->sendTelegramMessage($parent_id[1], $parent_id[0] , $message);
+            $external_id = $service->channelBackRequest($parent_id, $message_id, $message);
 
-        $response = [
-            'external_id' => $external_id
-        ];
-        return response()->json($response);
+            $response = [
+                'external_id' => $external_id
+            ];
+            return response()->json($response);
+        }catch (\Exception $exception)
+        {
+            throw new ServiceUnavailableHttpException($exception->getMessage());
+        }
     }
 
     public function clickthrough(Request $request) {

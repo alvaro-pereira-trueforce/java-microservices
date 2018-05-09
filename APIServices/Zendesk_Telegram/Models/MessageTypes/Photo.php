@@ -3,12 +3,25 @@
 namespace APIServices\Zendesk_Telegram\Models\MessageTypes;
 
 
+use Telegram\Bot\Objects\PhotoSize;
+
 class Photo extends FilesMessageType {
 
     function getTransformedMessage() {
-        $photoSize = $this->message->getPhoto();
-        $photoURL = $this->telegramService->getPhotoURL($photoSize[3]);
-        $message = $this->message->getCaption() ? $this->message->getCaption() : $this->user_firstname. ' ' . $this->user_lastname.' sent a Photo:';
+
+        $photoSizes = $this->message->getPhoto();
+
+        $maxSize = 0;
+        $current_photo = null;
+        foreach ($photoSizes as $photo) {
+            if ((int)$photo['file_size'] > $maxSize) {
+                $maxSize = $photo['file_size'];
+                $current_photo = $photo;
+            }
+        }
+
+        $photoURL = $this->telegramService->getPhotoURL($current_photo);
+        $message = $this->message->getCaption() ? $this->message->getCaption() : $this->getAuthorName() . ' sent a Photo';
         $link = $this->getLocalURLFromExternalURL($photoURL);
 
         $basic_response = $this->zendeskUtils->getBasicResponse(
@@ -18,11 +31,11 @@ class Photo extends FilesMessageType {
             $this->parent_id,
             $this->message_date,
             $this->getAuthorExternalID(),
-            $this->user_firstname . ' ' . $this->user_lastname);
+            $this->getAuthorName());
 
         $response = $this->zendeskUtils->addHtmlMessageToBasicResponse($basic_response,
             view('telegram.photo_viewer', [
-                'title' => ' ',
+                'title' => '',
                 'photoURL' => env('APP_URL') . $link,
                 'message' => $message
             ])->render()
