@@ -80,4 +80,8 @@ abstract class MessageType implements IMessageType {
 
         return $author_name . ' ' . $this->user_lastname . ' ' . $user_name;
     }
+
+    function getTransformedMessage() {
+        return null;
+    }
 }

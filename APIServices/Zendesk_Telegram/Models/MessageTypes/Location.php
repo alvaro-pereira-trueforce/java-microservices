@@ -3,6 +3,6 @@
 namespace APIServices\Zendesk_Telegram\Models\MessageTypes;
 
 
-class Location {
+class Location extends FilesMessageType {
 
 }

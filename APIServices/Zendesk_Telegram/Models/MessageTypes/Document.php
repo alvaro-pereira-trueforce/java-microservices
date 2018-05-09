@@ -8,22 +8,6 @@ class Document extends FilesMessageType {
     function getTransformedMessage() {
         $document = $this->message->getDocument();
         $documentURL = $this->telegramService->getDocumentURL($document);
-
-        $message = $this->message->getCaption() ? $this->message->getCaption() :
-            $this->getAuthorName() . ' sent a Document';
-
-        $basic_response = $this->zendeskUtils->getBasicResponse(
-            $this->getExternalID(),
-            $message,
-            'thread_id',
-            $this->parent_id,
-            $this->message_date,
-            $this->getAuthorExternalID(),
-            $this->getAuthorName()
-        );
-
-        $link = $this->getLocalURLFromExternalURL($documentURL);
-
-        return $this->zendeskUtils->addFilesURLToBasicResponse($basic_response, [$link]);
+        return $this->getBasicDocumentResponse('Document', $documentURL);
     }
 }

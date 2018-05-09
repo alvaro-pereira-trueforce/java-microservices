@@ -2,6 +2,6 @@
 namespace APIServices\Zendesk_Telegram\Models\MessageTypes;
 
 
-class Voice {
+class Voice extends FilesMessageType {
 
 }

@@ -3,8 +3,6 @@
 namespace APIServices\Zendesk_Telegram\Models\MessageTypes;
 
 
-use Telegram\Bot\Objects\PhotoSize;
-
 class Photo extends FilesMessageType {
 
     function getTransformedMessage() {
@@ -21,7 +19,7 @@ class Photo extends FilesMessageType {
         }
 
         $photoURL = $this->telegramService->getPhotoURL($current_photo);
-        $message = $this->message->getCaption() ? $this->message->getCaption() : $this->getAuthorName() . ' sent a Photo';
+        $message = $this->getValidCaptionMessage('Photo');
         $link = $this->getLocalURLFromExternalURL($photoURL);
 
         $basic_response = $this->zendeskUtils->getBasicResponse(

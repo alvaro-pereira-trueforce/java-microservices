@@ -205,7 +205,7 @@ class TelegramService {
     }
 
     /**
-     * @param Document $document
+     * @param $document
      * @return string
      */
     public function getDocumentURL($document) {

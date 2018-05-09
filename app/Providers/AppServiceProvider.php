@@ -9,6 +9,7 @@ use APIServices\Zendesk_Telegram\Models\MessageTypes\NewChatMember;
 use APIServices\Zendesk_Telegram\Models\MessageTypes\Photo;
 use APIServices\Zendesk_Telegram\Models\MessageTypes\Text;
 use APIServices\Zendesk_Telegram\Models\MessageTypes\UnknownType;
+use APIServices\Zendesk_Telegram\Models\MessageTypes\Video;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\ServiceProvider;
@@ -46,6 +47,7 @@ class AppServiceProvider extends ServiceProvider {
         $this->app->bind('telegram.left_chat_participant', LeftChatMember::class);
         $this->app->bind('telegram.new_chat_member', NewChatMember::class);
         $this->app->bind('telegram.new_chat_participant', NewChatMember::class);
+        $this->app->bind('telegram.video', Video::class);
         $this->app->bind('telegram.', UnknownType::class);
 
         $this->app->when(TelegramService::class)
@@ -60,7 +62,7 @@ class AppServiceProvider extends ServiceProvider {
 
         $message_types = [
             Text::class, Photo::class, Document::class, UnknownType::class,
-            LeftChatMember::class, NewChatMember::class
+            LeftChatMember::class, NewChatMember::class, Video::class
         ];
 
         foreach ($message_types as $type) {
