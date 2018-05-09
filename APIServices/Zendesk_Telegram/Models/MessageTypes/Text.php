@@ -24,8 +24,7 @@ class Text extends MessageType {
             $this->getAuthorName());
 
         $reply = $this->message->getReplyToMessage();
-        if($reply)
-        {
+        if ($reply) {
             $response = $this->zendeskUtils->addHtmlMessageToBasicResponse($response,
                 view('telegram.replay_message', [
                     'message' => $message,
