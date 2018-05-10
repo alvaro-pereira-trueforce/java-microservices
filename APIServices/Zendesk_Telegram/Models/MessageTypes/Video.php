@@ -30,7 +30,7 @@ class Video extends FilesMessageType {
                 view('telegram.photo_viewer', [
                     'title' => '',
                     'photoURL' => env('APP_URL') . $thumbURL,
-                    'message' => ''
+                    'message' => $basic_document_response['message']
                 ])->render()
             );
         }catch (\Exception $exception)
