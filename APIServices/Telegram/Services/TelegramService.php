@@ -182,21 +182,6 @@ class TelegramService {
     }
 
     /**
-     * @param PhotoSize $fileSize
-     * @return string
-     */
-    public function getPhotoURL($fileSize) {
-        try {
-            $token = $this->telegramAPI->getAccessToken();
-            $file = $this->getFileWithID($fileSize['file_id']);
-            return 'https://api.telegram.org/file/bot' . $token . '/' . $file->getFilePath();
-        } catch (\Exception $exception) {
-            Log::error($exception->getMessage());
-            return "";
-        }
-    }
-
-    /**
      * @param $file_id
      * @return \Telegram\Bot\Objects\File
      */
@@ -205,17 +190,18 @@ class TelegramService {
     }
 
     /**
-     * @param $document
+     * @param $document_id
      * @return string
+     * @throws $exception
      */
-    public function getDocumentURL($document) {
+    public function getDocumentURL($document_id) {
         try {
             $token = $this->telegramAPI->getAccessToken();
-            $file = $this->getFileWithID($document->getFileId());
+            $file = $this->getFileWithID($document_id);
             return 'https://api.telegram.org/file/bot' . $token . '/' . $file->getFilePath();
         } catch (\Exception $exception) {
             Log::error($exception->getMessage());
-            return "";
+            throw $exception;
         }
     }
 
@@ -296,5 +282,21 @@ class TelegramService {
         $model = $this->repository->getModel();
         $channels = $model->where('zendesk_app_id', '=', $subdomain)->get();
         return $channels;
+    }
+
+    /**
+     * @return string
+     * @throws \Exception
+     */
+    public function getCurrentUUID()
+    {
+        try
+        {
+            $model = $this->repository->getByToken($this->telegramAPI->getAccessToken())->first();
+            return $model->uuid;
+        }catch (\Exception $exception)
+        {
+            throw $exception;
+        }
     }
 }

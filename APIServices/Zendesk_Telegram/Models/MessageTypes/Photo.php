@@ -18,9 +18,9 @@ class Photo extends FilesMessageType {
             }
         }
 
-        $photoURL = $this->telegramService->getPhotoURL($current_photo);
+        $photoURL = $this->telegramService->getDocumentURL($current_photo['file_id']);
         $message = $this->getValidCaptionMessage('Photo');
-        $link = $this->getLocalURLFromExternalURL($photoURL);
+        $link = $this->getLocalURLFromExternalURL($photoURL, $current_photo['file_id']);
 
         $basic_response = $this->zendeskUtils->getBasicResponse(
             $this->getExternalID(),

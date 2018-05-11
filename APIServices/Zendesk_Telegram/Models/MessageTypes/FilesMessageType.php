@@ -2,18 +2,11 @@
 
 namespace APIServices\Zendesk_Telegram\Models\MessageTypes;
 
-
-use APIServices\Telegram\Services\TelegramService;
-use APIServices\Zendesk\Utility;
-use Illuminate\Support\Facades\Storage;
-
 abstract class FilesMessageType extends MessageType {
 
-    public function getLocalURLFromExternalURL($external_url) {
-        $contents = file_get_contents($external_url);
+    public function getLocalURLFromExternalURL($external_url, $file_id) {
         $name = substr($external_url, strrpos($external_url, '/') + 1);
-        Storage::put($name, $contents);
-        return Storage::url($name);
+        return '/files/'.$name.'?uuid='.$this->telegramService->getCurrentUUID().'&id='.$file_id;
     }
 
     protected function getValidCaptionMessage($file_type)
@@ -22,7 +15,7 @@ abstract class FilesMessageType extends MessageType {
             $this->getAuthorName() . ' sent a '.$file_type;
     }
 
-    protected function getBasicDocumentResponse($file_type, $external_url)
+    protected function getBasicDocumentResponse($file_type, $external_url, $file_id)
     {
         $message = $this->getValidCaptionMessage($file_type);
         $basic_response = $this->zendeskUtils->getBasicResponse(
@@ -34,7 +27,7 @@ abstract class FilesMessageType extends MessageType {
             $this->getAuthorExternalID(),
             $this->getAuthorName()
         );
-        $link = $this->getLocalURLFromExternalURL($external_url);
+        $link = $this->getLocalURLFromExternalURL($external_url, $file_id);
 
         return $this->zendeskUtils->addFilesURLToBasicResponse($basic_response, [$link]);
     }

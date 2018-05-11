@@ -13,12 +13,12 @@ class Voice extends FilesMessageType {
             {
                 $this->telegramService->sendTelegramMessage(
                     $this->chat_id,
-                    'Our support size limit was reached, please try to send smaller Audios'
+                    'Our support size limit was reached (5MB), please try to send smaller Audios'
                 );
                 return null;
             }
-            $documentURL = $this->telegramService->getDocumentURL($voice);
-            return $this->getBasicDocumentResponse('Message Voice', $documentURL);
+            $documentURL = $this->telegramService->getDocumentURL($voice->getFileId());
+            return $this->getBasicDocumentResponse('Message Voice', $documentURL, $voice->getFileId());
         }catch (\Exception $exception)
         {
             return null;
