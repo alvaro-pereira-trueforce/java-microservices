@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\App;
 class InstagramRepository extends Repository
 {
     /**
-     * @return TelegramChannel
+     * @return InstagramChannel
      */
     public function getModel()
     {
@@ -18,7 +18,7 @@ class InstagramRepository extends Repository
     }
     /***
      * @param array $data ['token', 'zendesk_app_id']
-     * @return TelegramChannel
+     * @return InstagramChannel
      */
     public function create(array $data)
     {

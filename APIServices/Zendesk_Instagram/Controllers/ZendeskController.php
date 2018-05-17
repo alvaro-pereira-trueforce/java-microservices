@@ -2,14 +2,13 @@
 
 namespace APIServices\Zendesk_Instagram\Controllers;
 
-use APIServices\Instagram\Logic\BubbleSorting;
+use APIServices\Facebook\Services\FacebookService;
 use APIServices\Instagram\Services\InstagramService;
 use APIServices\Zendesk_Instagram\Models\Services\ZendeskChannelService;
 use App\Http\Controllers\Controller;
 use App\Repositories\ManifestRepository;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
-use Carbon\Carbon;
 
 class ZendeskController extends Controller
 {
@@ -57,7 +56,7 @@ class ZendeskController extends Controller
         return $recent_messages;
     }
 
-    public function adminUI(Request $request, InstagramService $service) {
+    public function adminUI(Request $request) {
         $name = $request->name; //will be null on empty
         $metadata = json_decode($request->metadata, true); //will be null on empty
         $state = json_decode($request->state, true); //will be null on empty
@@ -65,52 +64,74 @@ class ZendeskController extends Controller
         $subdomain = $request->subdomain;
         $submitURL = env('APP_URL') . '/instagram/admin_ui_2';
 
-        $accounts = $service->getByZendeskAppID($subdomain);
-        return view('instagram.admin_ui', [
-            'return_url' => $return_url,
-            'subdomain' => $subdomain,
-            'name' => $name,
-            'submitURL' => $submitURL,
-            'current_accounts' => $accounts
-        ]);
+        if(!$metadata)
+        {
+            return view('instagram.admin_ui', [
+                'app_id' => env('FACEBOOK_APP_ID'),
+                'graph_version' => env('FACEBOOK_DEFAULT_GRAPH_VERSION'),
+                'return_url' => $return_url,
+                'subdomain' => $subdomain,
+                'name' => $name,
+                'submitURL' => $submitURL
+            ]);
+        }
     }
 
-    public function admin_ui_2(Request $request, InstagramService $service) {
-        $token = $request->token;
+    public function admin_ui_2(Request $request, FacebookService $service) {
         $return_url = $request->return_url;
         $subdomain = $request->subdomain;
         $name = $request->name;
         $submitURL = $request->submitURL;
-        $accounts = $service->getByZendeskAppID($subdomain);
+        $cookieString = $request->token;
 
-        if (!$token || !$name) {
-            $errors = ['Both fields are required.'];
-            return view('instagram.admin_ui', ['return_url' => $return_url, 'subdomain' =>
-                $subdomain, 'name' => $name, 'submitURL' => $submitURL, 'current_accounts' =>
-                $accounts,
-                'errors' => $errors]);
+        try
+        {
+            $accessToken = $service->getAuthentication($cookieString);
+            $pages = $service->getUserPages();
+            return view('instagram.admin_ui_valid_user',[
+                'app_id' => env('FACEBOOK_APP_ID'),
+                'graph_version' => env('FACEBOOK_DEFAULT_GRAPH_VERSION'),
+                'return_url' => $return_url,
+                'subdomain' => $subdomain,
+                'name' => $name,
+                'submitURL' => env('APP_URL') . '/instagram/',
+                'accessToken' => $accessToken,
+                'pages' => $pages
+            ]);
+
+        }catch (\Exception $exception)
+        {
+            Log::error($exception->getMessage());
+            return view('instagram.admin_ui', [
+                'app_id' => env('FACEBOOK_APP_ID'),
+                'graph_version' => env('FACEBOOK_DEFAULT_GRAPH_VERSION'),
+                'return_url' => $return_url,
+                'subdomain' => $subdomain,
+                'name' => $name,
+                'submitURL' => $submitURL,
+                'errors' => [$exception->getMessage()]
+            ]);
         }
-        $metadata = $service->registerNewIntegration($name, $token, $subdomain);
-
-        if (!$metadata) {
-            $errors = ['There was an error processing your data, please check your information or contact support.'];
-            return view('instagram.admin_ui', ['return_url' => $return_url, 'subdomain' =>
-                $subdomain, 'name' => $name, 'submitURL' => $submitURL, 'current_accounts' =>
-                $accounts,
-                'errors' => $errors]);
-        }
-
-        if (array_key_exists('error', $metadata)) {
-            $errors = ['That Instagram token is already registered.'];
-            return view('instagram.admin_ui', ['return_url' => $return_url, 'subdomain' =>
-                $subdomain, 'name' => $name, 'submitURL' => $submitURL, 'current_accounts' =>
-                $accounts,
-                'errors' => $errors]);
-        }
-
         return view('instagram.post_metadata', ['return_url' => $return_url, 'name' => $name, 'metadata' => json_encode($metadata)]);
     }
 
+
+    public function admin_validate_page(Request $request, FacebookService $service)
+    {
+        $page_id = $request->page_id;
+        $access_token = $request->access_token;
+
+    }
+    public function admin_ui_submit(Request $request, FacebookService $service)
+    {
+        $return_url = $request->return_url;
+        $subdomain = $request->subdomain;
+        $name = $request->name;
+        $submitURL = $request->submitURL;
+        $instagram_id = $request->instagram_id;
+
+        dd($request->all());
+    }
     public function clickthrough(Request $request) {
         Log::info($request->all());
     }
