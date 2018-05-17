@@ -53,42 +53,41 @@
             </div>
 
             <div class="form-group">
-                <input type="submit" class="btn btn-primary">
+                <button id="send_request" class="btn btn-primary">Submit</button>
             </div>
-
-
         </form>
     </div>
 </div>
 
 <script>
+    $('#form_setup').on('keypress', function (e) {
+        var keyCode = e.keyCode || e.which;
+        if (keyCode === 13) {
+            e.preventDefault();
+            return false;
+        }
+    });
 
-    $('#form_setup').submit(function(event) {
+    $('#send_request').on('click', function (event) {
         event.preventDefault();
         hideError();
-
-        var page_id = document.getElementById('page_id').value;
-        var access_token = document.getElementById('token').value;
-
-        $.post('{{$submitURL.'admin_validate_page'}}',
-            {
-                page_id: page_id,
-                access_token: access_token
-            },
-            function (data, status) {
-                console.log(status);
-                console.log(data);
-            });
-        event.preventDefault();
-        return;
-
         var text = document.getElementById('name').value;
         if (!text) {
             showError('The integration name is required.');
             return;
         }
-
-        //this.submit();
+        var page_id = document.getElementById('page_id').value;
+        var access_token = document.getElementById('token').value;
+        $.post('{{$submitURL.'admin_validate_page'}}', {
+            page_id: page_id,
+            access_token: access_token
+        }).done(function (result) {
+            document.getElementById('instagram_id').value = result.instagram_id;
+            $('#form_setup').submit();
+        }).fail(function (xhr, status, message) {
+            showError('The page does not have an instagram account, Please use the instagram ' +
+                'application to create a facebook page.');
+        });
     });
 
     function hideError() {
