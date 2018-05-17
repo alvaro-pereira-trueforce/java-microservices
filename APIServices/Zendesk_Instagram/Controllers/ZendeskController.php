@@ -130,7 +130,7 @@ class ZendeskController extends Controller {
         $accessToken = $request->access_token;
         $submitURL = $request->submitURL;
         $instagram_id = $request->instagram_id;
-
+        $instagram_id = null;
         if (!$return_url && $subdomain && !$name && !$instagram_id)
         {
             return view('instagram.admin_ui', [
@@ -140,7 +140,7 @@ class ZendeskController extends Controller {
                 'subdomain' => $subdomain,
                 'name' => $name,
                 'submitURL' => $submitURL,
-                'errors' => [$exception->getMessage()]
+                'errors' => ['There is a problem with instagram configuration please try again.']
             ]);
         }
     }

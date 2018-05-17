@@ -22,28 +22,19 @@ class InstagramService
 
     protected $repository;
 
-    protected $instagramAPI;
-
     protected $zendeskUtils;
 
     public function __construct(
-
         DatabaseManager $database,
         Dispatcher $dispatcher,
         InstagramRepository $repository,
-        InstagramLogic $instagramLogic,
         Utility $zendeskUtils
     )
     {
         $this->database = $database;
         $this->dispatcher = $dispatcher;
         $this->repository = $repository;
-        $this->instagramAPI = $instagramLogic;
         $this->zendeskUtils = $zendeskUtils;
-
-        $this->instagramAPI->setApiKey('c133bd0821124643a3a0b5fbe77ee729');
-        $this->instagramAPI->setApiSecret('308973f7f4944f699a223c74ba687979');
-        $this->instagramAPI->setApiCallback('https://twitter.com/soysantizeta');
     }
 
     public function getAll($options = [])
@@ -71,16 +62,6 @@ class InstagramService
     {
         $model = $this->getById($uuid);
         return $model->delete();
-    }
-
-    /**
-     * @param $token
-     * @return Api
-     */
-    private function getInstagramInstance($token)
-    {
-        $this->instagramAPI->setAccessToken($token);
-        return $this->instagramAPI;
     }
 
     /**
@@ -204,13 +185,14 @@ class InstagramService
             return "";
         }
         try {
-            $this->instagramAPI->setAccessToken($instagramModel->token);
+            /*
             $array = array('text' => $message);
             $response = $this->instagramAPI->postUserMedia(true, $post_id, $array);
             $comments = json_decode(json_encode($response), True);
             $comment_data = $comments['data'];
             $comment_id = $comment_data['id'];
-            return $this->zendeskUtils->getExternalID([$comment_id]);
+            return $this->zendeskUtils->getExternalID([$comment_id]);*/
+            return '';
         } catch (\Exception $exception) {
             Log::error($exception->getMessage());
             return "";
