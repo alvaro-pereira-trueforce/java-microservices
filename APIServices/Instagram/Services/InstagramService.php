@@ -14,8 +14,7 @@ use Illuminate\Database\QueryException;
 use Illuminate\Events\Dispatcher;
 
 
-class InstagramService
-{
+class InstagramService {
     protected $database;
 
     protected $dispatcher;
@@ -29,28 +28,24 @@ class InstagramService
         Dispatcher $dispatcher,
         InstagramRepository $repository,
         Utility $zendeskUtils
-    )
-    {
+    ) {
         $this->database = $database;
         $this->dispatcher = $dispatcher;
         $this->repository = $repository;
         $this->zendeskUtils = $zendeskUtils;
     }
 
-    public function getAll($options = [])
-    {
+    public function getAll($options = []) {
         return $this->repository->get($options);
     }
 
-    public function create($data)
-    {
+    public function create($data) {
         $user = $this->repository->create($data);
         return $user;
     }
 
 
-    public function update($uuid, array $data)
-    {
+    public function update($uuid, array $data) {
         $model = $this->getRequestedModel($uuid);
 
         $this->repository->update($model, $data);
@@ -58,8 +53,7 @@ class InstagramService
         return $model;
     }
 
-    public function delete($uuid)
-    {
+    public function delete($uuid) {
         $model = $this->getById($uuid);
         return $model->delete();
     }
@@ -68,13 +62,11 @@ class InstagramService
      * @param $uuid
      * @return null|Api
      */
-    private function getInstagramActiveInstanse($uuid)
-    {
+    private function getInstagramActiveInstanse($uuid) {
         return $this->getInstagramInstance($this->getTokenFromUUID($uuid));
     }
 
-    private function getRequestedModel($uuid)
-    {
+    private function getRequestedModel($uuid) {
         $model = $this->repository->getByUUID($uuid);
 
         if (is_null($model)) {
@@ -83,8 +75,7 @@ class InstagramService
         return $model;
     }
 
-    public function getById($uuid, array $options = [])
-    {
+    public function getById($uuid, array $options = []) {
         $model = $this->getRequestedModel($uuid);
         return $model;
     }
@@ -93,8 +84,7 @@ class InstagramService
      * @param $uuid
      * @return string token
      */
-    private function getTokenFromUUID($uuid)
-    {
+    private function getTokenFromUUID($uuid) {
         $telegramModel = $this->repository->getByUUID($uuid);
 
         if ($telegramModel == null) {
@@ -103,8 +93,7 @@ class InstagramService
         return $telegramModel->token;
     }
 
-    public function getUpdatedAt($uuid)
-    {
+    public function getUpdatedAt($uuid) {
         $instagramModel = $this->repository->getByUUID($uuid);
         if ($instagramModel == null) {
             return null;
@@ -112,8 +101,7 @@ class InstagramService
         return $instagramModel->updated_at;
     }
 
-    public function getInstagramUpdatesMedia($uuid)
-    {
+    public function getInstagramUpdatesMedia($uuid) {
         try {
             $instagram = $this->getInstagramActiveInstanse($uuid);
             $updates = array($instagram->getUserMedia($auth = true, $id = 'self', $limit = 0));
@@ -126,8 +114,7 @@ class InstagramService
         }
     }
 
-    public function getInstagramUpdatesComments($uuid, $post_id)
-    {
+    public function getInstagramUpdatesComments($uuid, $post_id) {
         try {
             $instagram = $this->getInstagramActiveInstanse($uuid);
             $comments = array($instagram->getMediaComments($post_id, true));
@@ -140,29 +127,25 @@ class InstagramService
         }
     }
 
-    public function registerNewIntegration($name, $token, $subdomain)
-    {
-        try {
-            $model = $this->repository->create([
-                'token' => $token,
-                'zendesk_app_id' => $subdomain,
-                'integration_name' => $name
-            ]);
-            return [
-                'token' => $model->uuid,
-                'integration_name' => $model->integration_name,
-                'zendesk_app_id' => $model->zendesk_app_id
-            ];
-        } catch (QueryException $exception) {
-            return ["error" => ""];
-        } catch (\Exception $exception) {
-            Log::info($exception);
-            return null;
-        }
+    /**
+     * @param $name
+     * @param $token
+     * @param $subdomain
+     * @param $instagram_id
+     * @param $page_id
+     * @return array|null
+     */
+    public function registerNewIntegration($name, $token, $subdomain, $instagram_id, $page_id) {
+        return json_encode([
+            'integration_name' => $name,
+            'zendesk_app_id' => $subdomain,
+            'token' => $token,
+            'instagram_id' => $instagram_id,
+            'page_id' => $page_id
+        ]);
     }
 
-    public function getMetadataFromSavedIntegration($uuid)
-    {
+    public function getMetadataFromSavedIntegration($uuid) {
         $current_channel = $this->getById($uuid);
         return [
             'token' => $current_channel->uuid,
@@ -171,15 +154,13 @@ class InstagramService
         ];
     }
 
-    public function getByZendeskAppID($subdomain)
-    {
+    public function getByZendeskAppID($subdomain) {
         $model = $this->repository->getModel();
         $channels = $model->where('zendesk_app_id', '=', $subdomain)->get();
         return $channels;
     }
 
-    public function sendInstagramMessage($post_id, $uuid, $message)
-    {
+    public function sendInstagramMessage($post_id, $uuid, $message) {
         $instagramModel = $this->repository->getByUUID($uuid);
         if ($instagramModel == null) {
             return "";

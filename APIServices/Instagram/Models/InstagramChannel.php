@@ -16,6 +16,6 @@ class InstagramChannel extends Model {
      * @var array
      */
     protected $fillable = [
-        'token', 'zendesk_app_id', 'integration_name'
+        'token', 'zendesk_app_id', 'integration_name', 'instagram_id', 'page_id'
     ];
 }

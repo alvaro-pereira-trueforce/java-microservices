@@ -128,21 +128,24 @@ class ZendeskController extends Controller {
         $subdomain = $request->subdomain;
         $name = $request->name;
         $accessToken = $request->access_token;
-        $submitURL = $request->submitURL;
         $instagram_id = $request->instagram_id;
-        $instagram_id = null;
-        if (!$return_url && $subdomain && !$name && !$instagram_id)
-        {
+        $page_id = $request->page_id;
+
+        if (!$name || !$instagram_id || !$page_id) {
             return view('instagram.admin_ui', [
                 'app_id' => env('FACEBOOK_APP_ID'),
                 'graph_version' => env('FACEBOOK_DEFAULT_GRAPH_VERSION'),
                 'return_url' => $return_url,
                 'subdomain' => $subdomain,
                 'name' => $name,
-                'submitURL' => $submitURL,
+                'submitURL' => env('APP_URL') . '/instagram/admin_ui_2',
                 'errors' => ['There is a problem with instagram configuration please try again.']
             ]);
         }
+
+        $metadata = $service->registerNewIntegration($name, $accessToken, $subdomain,
+            $instagram_id,
+            $page_id);
     }
 
     public function clickthrough(Request $request) {

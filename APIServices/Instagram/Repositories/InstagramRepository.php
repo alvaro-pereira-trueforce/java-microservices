@@ -17,7 +17,7 @@ class InstagramRepository extends Repository
         return App::make(InstagramChannel::class);
     }
     /***
-     * @param array $data ['token', 'zendesk_app_id']
+     * @param array $data ['token', 'zendesk_app_id', 'instagram_id','page_id','integration_name']
      * @return InstagramChannel
      */
     public function create(array $data)

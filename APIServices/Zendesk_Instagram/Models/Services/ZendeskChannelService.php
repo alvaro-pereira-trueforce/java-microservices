@@ -5,8 +5,6 @@ namespace APIServices\Zendesk_Instagram\Models\Services;
 
 use APIServices\Instagram\Services\InstagramService;
 use APIServices\Zendesk\Utility;
-use Illuminate\Support\Facades\App;
-use Illuminate\Support\Facades\Log;
 
 class ZendeskChannelService
 {
@@ -33,7 +31,8 @@ class ZendeskChannelService
     }
 
     /**
-     * @param $metadata
+     * @param $uuid
+     * @param $state_date
      * @return array
      */
     public function getUpdates($uuid, $state_date)
