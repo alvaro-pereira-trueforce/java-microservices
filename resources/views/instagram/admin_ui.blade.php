@@ -15,39 +15,42 @@
         <h3 class="panel-title">Instagram configuration</h3>
     </div>
     <div class="panel-body">
-        <form id="form_setup" method="post" action="{{$submitURL}}">
+
+        @if (!$name)
+            <p>Welcome, Please authenticate with your Facebook Account in order to in order to
+                start working with the Instagram Channel service.</p>
+        @else
+            <p>Welcome back.</p>
+        @endif
+
+        <form id="form_setup" method="post" action="{{$submitURL.'admin_ui_2'}}">
             <div class="form-group">
                 <label>Integration Name:</label>
                 <input type="text" name="name" id="name" class="form-control" value="{{$name}}">
             </div>
-            <input type="hidden"
+            <input type="hidden" id="return_url"
                    name="return_url" value="{{$return_url}}">
-            <input type="hidden"
+            <input type="hidden" id="subdomain"
                    name="subdomain" value="{{$subdomain}}">
-            <input type="hidden"
-                   name="submitURL" value="{{$submitURL}}">
-            <input id="token" type="hidden"
-                   name="token">
-            @if($errors)
-                @foreach ($errors as $error)
-                    <div id="error" class="alert alert-danger" role="alert">
-                        {{$error}}
-                    </div>
-                @endforeach
-            @endif
-            <div id="error" class="alert alert-danger hide" role="alert"></div>
+            <input type="hidden" id="uuid"
+                   name="uuid">
+            <div class="form-group">
+                <div id="error" class="alert alert-danger hide" role="alert"></div>
+            </div>
         </form>
 
         <div id="spinner" class="loader center hide m-b-10"></div>
+
         <a class="btn btn-block btn-social btn-facebook center" style="max-width: 200px"
-           onClick="logInWithFacebook()">
-            <span class="fa fa-facebook"></span> Log in with Facebook
+           target="_blank"
+           onclick="return startFacebookProcess()"
+        >
+            <span class="fa fa-facebook"></span>Connect To Facebook
         </a>
     </div>
 </div>
 
 <script>
-
     $('#form_setup').on('keypress', function (e) {
         var keyCode = e.keyCode || e.which;
         if (keyCode === 13) {
@@ -56,28 +59,75 @@
         }
     });
 
-    logInWithFacebook = function () {
-        hideError();
-        showSpinner();
-        var form = document.forms['form_setup'];
-        var text = document.getElementById('name').value;
-        if (!text) {
+    function enableItem(id) {
+        var item = document.getElementById(id);
+        item.readOnly = false;
+    }
+
+    function disableItem(id) {
+        var item = document.getElementById(id);
+        item.readOnly = true;
+    }
+
+    var waiting = false;
+    var count = 0;
+
+    function startFacebookProcess() {
+        var name = document.getElementById('name').value;
+        var subdomain = document.getElementById('subdomain').value;
+
+        if (!name) {
             showError('The integration name is required.');
-            hideSpinner();
             return;
         }
 
-        FB.login(function (response) {
+        if (waiting) {
+            return;
+        }
+
+        disableItem('name');
+        hideError();
+        showSpinner();
+        waiting = true;
+        count = 0;
+        create_facebook_registration(name, subdomain);
+    }
+    
+    function create_facebook_registration(integration_name, subdomain) {
+        $.post('{{$submitURL.'admin_create_facebook_registration'}}', {
+            name: integration_name,
+            subdomain: subdomain
+        }).done(function (response) {
+            var url = "https://www.facebook.com/v3" +
+                ".0/dialog/oauth?client_id={{$app_id}}&redirect_uri={{{$submitURL
+            .'admin_facebook_auth'}}}&state={\"uuid\":\""+response+"\"}";
+            window.open(url);
+            timeout(response)
+        })
+    }
+    
+    function timeout(uuid) {
+        $.post('{{$submitURL.'admin_wait_facebook'}}', {
+            uuid: uuid
+        }).done(function (response) {
+            document.getElementById('uuid').value = response;
+            $('#form_setup').submit();
             hideSpinner();
-            if (response.authResponse) {
-                document.getElementById("token").value = document.cookie;
-                form.submit();
-            } else {
-                showError('Login with facebook was cancel, try again.');
+            waiting = false;
+        }).fail(function (xhr, status, message) {
+            count++;
+            if (count > 20) {
+                enableItem('name');
+                waiting = false;
+                hideSpinner();
+                showError('The facebook authentication timeout was reached. Please, Try again.');
+                return;
             }
+            setTimeout(function () {
+                timeout(uuid);
+            }, 1000);
         });
-        return false;
-    };
+    }
 
     function showSpinner() {
         var spinner = document.getElementById("spinner");
@@ -100,25 +150,6 @@
         errorField.classList.remove('hide');
         document.cookie = "";
     }
-
-    window.fbAsyncInit = function () {
-        FB.init({
-            appId: '{{$app_id}}',
-            cookie: true, // This is important, it's not enabled by default
-            version: '{{$graph_version}}'
-        });
-    };
-
-    (function (d, s, id) {
-        var js, fjs = d.getElementsByTagName(s)[0];
-        if (d.getElementById(id)) {
-            return;
-        }
-        js = d.createElement(s);
-        js.id = id;
-        js.src = "//connect.facebook.net/en_US/sdk.js";
-        fjs.parentNode.insertBefore(js, fjs);
-    }(document, 'script', 'facebook-jssdk'));
 </script>
 
 </body>

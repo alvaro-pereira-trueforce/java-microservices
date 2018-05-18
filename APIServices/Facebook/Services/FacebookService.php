@@ -4,17 +4,19 @@ namespace APIServices\Facebook\Services;
 
 
 use APIServices\Facebook\Models\Facebook;
+use APIServices\Facebook\Repositories\FacebookRepository;
 use Facebook\Exceptions\FacebookResponseException;
 use Facebook\Exceptions\FacebookSDKException;
-use Facebook\GraphNodes\GraphUser;
 use Illuminate\Support\Facades\Log;
 
 class FacebookService {
 
     protected $api;
+    protected $repository;
 
-    public function __construct(Facebook $api) {
+    public function __construct(Facebook $api, FacebookRepository $repository) {
         $this->api = $api;
+        $this->repository = $repository;
     }
 
     public function userHasPages($pages) {
@@ -65,6 +67,26 @@ class FacebookService {
     }
 
     /**
+     * Get AccessToken from user registration status
+     * @param $uuid
+     * @return string
+     * @throws \Exception
+     */
+    public function getAccessTokenForNewRegistrationUser($uuid)
+    {
+        try
+        {
+            $model = $this->repository->getByUUID($uuid);
+            $access_token = $model->facebook_token;
+            $model->delete();
+            return $access_token;
+        }catch (\Exception $exception)
+        {
+            throw $exception;
+        }
+    }
+
+        /**
      * Get User pages
      *
      * @return array
