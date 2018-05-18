@@ -73,6 +73,7 @@ class ZendeskController extends Controller {
                     'submitURL' => $submitURL
                 ]);
             }
+            dd($metadata);
         } catch (\Exception $exception) {
             throw new BadRequestHttpException("There is a problem please contact with support.");
         }
