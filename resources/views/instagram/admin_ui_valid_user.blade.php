@@ -73,7 +73,7 @@
         hideError();
         var text = document.getElementById('name').value;
         if (!text) {
-            showError('The integration name is required.');
+            showError('The integration name is required (Ex: Business Clients Support).');
             return;
         }
         var page_id = document.getElementById('page_id').value;

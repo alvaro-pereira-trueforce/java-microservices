@@ -17,8 +17,7 @@
     <div class="panel-body">
 
         @if (!$name)
-            <p>Welcome, Please authenticate with your Facebook Account in order to in order to
-                start working with the Instagram Channel service.</p>
+            <p>Welcome, please authenticate first with your Facebook Account in order to start working with the Instagram Channel service.</p>
         @else
             <p>Welcome back.</p>
         @endif
@@ -77,7 +76,7 @@
         var subdomain = document.getElementById('subdomain').value;
 
         if (!name) {
-            showError('The integration name is required.');
+            showError('The integration name is required (Ex: Business Clients Support).');
             return;
         }
 
