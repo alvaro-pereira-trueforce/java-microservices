@@ -105,6 +105,7 @@ class ZendeskController extends Controller {
     }
 
     public function admin_facebook_auth(Request $request, Client $client, FacebookRepository $repository) {
+        Log::debug($request->all());
         try {
             $response = $client->request('GET', 'https://graph.facebook.com/v3.0/oauth/access_token', [
                 'query' => [
@@ -115,6 +116,7 @@ class ZendeskController extends Controller {
                 ]
             ]);
             $facebook_data = json_decode($response->getBody()->getContents(), true);
+            Log::debug($facebook_data);
             $state = json_decode($request->state, true);
             if (array_key_exists('uuid', $state) && array_key_exists('access_token', $facebook_data)) {
                 $facebook_registration = $repository->getByUUID($state['uuid']);
@@ -163,9 +165,9 @@ class ZendeskController extends Controller {
                 'app_id' => env('FACEBOOK_APP_ID'),
                 'return_url' => $return_url,
                 'subdomain' => $subdomain,
-                'name' => $name,
+                'name' => null,
                 'submitURL' => $submitURL,
-                'errors' => ['There was an error processing your request please contact support.']
+                'errors' => [$exception->getMessage()]
             ]);
         }
 

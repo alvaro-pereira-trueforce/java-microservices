@@ -34,6 +34,13 @@
             <input type="hidden" id="uuid"
                    name="uuid">
             <div class="form-group">
+                @if($errors)
+                    @foreach ($errors as $error)
+                        <div class="alert alert-danger" role="alert">
+                            {{$error}}
+                        </div>
+                    @endforeach
+                @endif
                 <div id="error" class="alert alert-danger hide" role="alert"></div>
             </div>
         </form>
