@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use APIServices\Facebook\Models\Facebook;
 use Facebook\Facebook as FB;
+use Illuminate\Http\Request;
 use Illuminate\Support\ServiceProvider;
 
 class FacebookServiceProvider extends ServiceProvider {
@@ -28,5 +29,44 @@ class FacebookServiceProvider extends ServiceProvider {
         $this->app->when(Facebook::class)
             ->needs('$config')
             ->give($facebookData);
+
+        $request = $this->app->make(Request::class);
+        $metadata = json_decode($request->metadata, true);
+        $state = json_decode($request->state, true);
+        $state = !!$state ? $state : [];
+
+        $this->app->when(Facebook::class)
+            ->needs('$access_token')
+            ->give(function () use ($metadata) {
+                $access_token = '';
+                if ($metadata) {
+                    $access_token = $metadata['token'];
+                }
+                return $access_token;
+            });
+
+        $this->app->when(Facebook::class)
+            ->needs('$instagram_id')
+            ->give(function () use ($metadata) {
+                $instagram_id = '';
+                if ($metadata) {
+                    $instagram_id = $metadata['instagram_id'];
+                }
+                return $instagram_id;
+            });
+
+        $this->app->when(Facebook::class)
+            ->needs('$page_id')
+            ->give(function () use ($metadata) {
+                $page_id = '';
+                if ($metadata) {
+                    $page_id = $metadata['page_id'];
+                }
+                return $page_id;
+            });
+
+        $this->app->when(Facebook::class)
+            ->needs('$state')
+            ->give($state);
     }
 }

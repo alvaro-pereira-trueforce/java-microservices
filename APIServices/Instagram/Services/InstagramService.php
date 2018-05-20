@@ -2,10 +2,9 @@
 
 namespace APIServices\Instagram\Services;
 
+use APIServices\Facebook\Models\Facebook;
 use APIServices\Zendesk\Utility;
 use Illuminate\Support\Facades\Log;
-
-use APIServices\Instagram\Repositories\ChannelRepository;
 use Illuminate\Database\DatabaseManager;
 use Illuminate\Events\Dispatcher;
 
@@ -17,29 +16,33 @@ class InstagramService {
 
     protected $zendeskUtils;
 
+    protected $facebookAPI;
+
     public function __construct(
         DatabaseManager $database,
         Dispatcher $dispatcher,
-        Utility $zendeskUtils
+        Utility $zendeskUtils,
+        Facebook $facebookAPI
     ) {
         $this->database = $database;
         $this->dispatcher = $dispatcher;
         $this->zendeskUtils = $zendeskUtils;
+        $this->facebookAPI = $facebookAPI;
     }
 
 
-    public function getInstagramUpdatesMedia($uuid) {
+    public function getInstagramPosts() {
         try {
+            //$this->facebookAPI->getPost();
             return [];
         } catch (\Exception $exception) {
             Log::error($exception->getMessage());
-            return [];
+            throw $exception;
         }
     }
 
-    public function getInstagramUpdatesComments($uuid, $post_id) {
+    public function getInstagramCommentsFromPost($post_id, ?$limit=0) {
         try {
-
             return [];
         } catch (\Exception $exception) {
             Log::error($exception->getMessage());

@@ -5,7 +5,7 @@ namespace APIServices\Zendesk_Instagram\Controllers;
 use APIServices\Facebook\Repositories\FacebookRepository;
 use APIServices\Facebook\Services\FacebookService;
 use APIServices\Instagram\Services\InstagramService;
-use APIServices\Zendesk_Instagram\Models\Services\ZendeskChannelService;
+use APIServices\Zendesk_Instagram\Services\ZendeskChannelService;
 use App\Http\Controllers\Controller;
 use App\Repositories\ManifestRepository;
 use Illuminate\Http\Request;
@@ -29,19 +29,11 @@ class ZendeskController extends Controller {
         Log::info($request);
         $metadata = json_decode($request->metadata, true);
         $state = json_decode($request->state, true);
-        if ($state != null) {
-            $new_state = $state;
-            $updates = $service->getUpdates($metadata['token'], $state['most_recent_item_timestamp']);
-        } else {
-            $new_state = $service->pullState($metadata['token']);
-            $updates = $service->getUpdates($metadata['token'], $new_state['most_recent_item_timestamp']);
-        }
-        $response = [
-            'external_resources' => $updates,
-            'state' => json_encode($new_state)
-        ];
-        Log::info($response);
-        return response()->json($response);
+
+        $updates = $service->getUpdates();
+
+        Log::info($updates);
+        return response()->json($updates);
     }
 
     function getMessages($updates, $state) {
