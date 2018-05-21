@@ -27,7 +27,16 @@ class ZendeskController extends Controller {
 
     public function pull(ZendeskChannelService $service) {
         Log::info("Zendesk Request: Pull");
-        return response()->json($service->getUpdates());
+
+        $updates = $service->getUpdates();
+        $response = [
+            'external_resources' => $updates,
+            'state' => ""
+        ];
+        Log::debug(json_encode($response));
+        return response()->json($response);
+
+        //return response()->json($service->getUpdates());
     }
 
     function getMessages($updates, $state) {
