@@ -100,4 +100,51 @@ class Facebook extends FB {
             throw  $exception;
         }
     }
+
+    /**
+     * @param $instagram_id
+     * @param int $limit
+     * @return array
+     * @throws \Exception
+     */
+    public function getMedia($instagram_id,$limit=0) {
+        try {
+            $url_media = '/'.$instagram_id.'/media?fields=id,media_type,caption,media_url,thumbnail_url,permalink,username,timestamp,comments_count&limit=' . $limit;
+            return $this->getRequest($url_media);
+        } catch (\Exception $exception) {
+            throw  $exception;
+        }
+    }
+
+    /**
+     * @param $media_id
+     * @param int $limit
+     * @return array
+     * @throws \Exception
+     */
+    public function getComment($media_id,$limit=0) {
+        try {
+            //17921734867137807/comments?fields=id,text,username,timestamp,replies{id,text,username,timestamp}&limit=10
+            $url_comment = '/'.$media_id.'/comments?fields=id,text,username,timestamp,replies{id,text,username,timestamp}&limit='.$limit;
+            return $this->getRequest($url_comment);
+        } catch (\Exception $exception) {
+            throw  $exception;
+        }
+    }
+
+    /**
+     * @param $media_id
+     * @param $message
+     * @return mixed
+     * @throws \Exception
+     */
+    public function postComment($media_id,$message) {
+        try {
+            //17921734867137807/comments?fields=id,text,username,timestamp,replies{id,text,username,timestamp}&limit=10
+            $url_comment = '/'.$media_id.'/comments?message=' . $message;
+            return $this->postRequest($url_comment);
+        } catch (\Exception $exception) {
+            throw  $exception;
+        }
+    }
 }
