@@ -27,6 +27,7 @@ class Facebook extends FB {
     public function __construct(array $config = [], $access_token = '', $instagram_id = '',
                                 $page_id = '', $state = []) {
         try {
+            parent::__construct($config);
             if ($access_token && $access_token != '') {
                 $this->setDefaultAccessToken($access_token);
                 $user = $this->get('/me');
@@ -37,7 +38,7 @@ class Facebook extends FB {
                 $this->page_id = $page_id;
             }
 
-            parent::__construct($config);
+
         } catch (FacebookSDKException $exception) {
             throw $exception;
         }

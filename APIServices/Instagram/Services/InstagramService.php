@@ -18,6 +18,13 @@ class InstagramService {
 
     protected $facebookAPI;
 
+    /**
+     * InstagramService constructor.
+     * @param DatabaseManager $database
+     * @param Dispatcher $dispatcher
+     * @param Utility $zendeskUtils
+     * @param Facebook $facebookAPI
+     */
     public function __construct(
         DatabaseManager $database,
         Dispatcher $dispatcher,
@@ -30,7 +37,11 @@ class InstagramService {
         $this->facebookAPI = $facebookAPI;
     }
 
-
+    /**
+     * @param $limit
+     * @return array
+     * @throws \Exception
+     */
     public function getInstagramPosts($limit) {
         try {
             return $this->facebookAPI->getPosts($limit);
@@ -40,7 +51,12 @@ class InstagramService {
         }
     }
 
-    public function getInstagramCommentsFromPost($post_id, $limit) {
+    /**
+     * @param $post_id
+     * @param $limit
+     * @return array
+     */
+    public function getInstagramCommentsFromPost($post_id, $limit=0) {
         try {
             return $this->facebookAPI->getComments($post_id,$limit);
         } catch (\Exception $exception) {

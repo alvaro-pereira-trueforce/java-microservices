@@ -25,15 +25,9 @@ class ZendeskController extends Controller {
         return response()->json($this->manifest->getByName('Instagram Channel'));
     }
 
-    public function pull(Request $request, ZendeskChannelService $service) {
-        Log::info($request);
-        $metadata = json_decode($request->metadata, true);
-        $state = json_decode($request->state, true);
-
-        $updates = $service->getUpdates();
-
-        Log::info($updates);
-        return response()->json($updates);
+    public function pull(ZendeskChannelService $service) {
+        Log::info("Zendesk Request: Pull");
+        return response()->json($service->getUpdates());
     }
 
     function getMessages($updates, $state) {
