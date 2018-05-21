@@ -120,4 +120,37 @@ class FacebookService {
             throw new \Exception('The page does not have an instagram account, Please use the instagram application to create a facebook page.');
         }
     }
+
+    public function getInstagramMedia($token,$instagram_id,$limit) {
+        try
+        {
+            $this->setAccessToken($token);
+            return $this->api->getMedia($instagram_id,$limit);
+        }catch (\Exception $exception)
+        {
+            throw new \Exception('The page does not have an instagram account, Please use the instagram application to create a facebook page.');
+        }
+    }
+
+    public function getInstagramComment($token,$media_id,$limit) {
+        try
+        {
+            $this->setAccessToken($token);
+            return $this->api->getComment($media_id,$limit);
+        }catch (\Exception $exception)
+        {
+            throw new \Exception('The Comment.');
+        }
+    }
+
+    public function postInstagramComment($token,$media_id,$message) {
+        try
+        {
+            $this->setAccessToken($token);
+            return $this->api->postComment($media_id,$message);
+        }catch (\Exception $exception)
+        {
+            throw new \Exception('The comment Error');
+        }
+    }
 }
