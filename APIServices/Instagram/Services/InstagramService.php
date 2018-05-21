@@ -31,19 +31,18 @@ class InstagramService {
     }
 
 
-    public function getInstagramPosts() {
+    public function getInstagramPosts($limit) {
         try {
-            //$this->facebookAPI->getPost();
-            return [];
+            return $this->facebookAPI->getPosts($limit);
         } catch (\Exception $exception) {
             Log::error($exception->getMessage());
             throw $exception;
         }
     }
 
-    public function getInstagramCommentsFromPost($post_id, $limit = 0) {
+    public function getInstagramCommentsFromPost($post_id, $limit) {
         try {
-            return [];
+            return $this->facebookAPI->getComments($post_id,$limit);
         } catch (\Exception $exception) {
             Log::error($exception->getMessage());
             return [];

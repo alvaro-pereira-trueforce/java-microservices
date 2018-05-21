@@ -24,7 +24,7 @@ class ZendeskChannelService {
     public function getUpdates() {
         try
         {
-            $posts = $this->instagram_service->getInstagramPosts();
+            $posts = $this->instagram_service->getInstagramPosts(199);
             $transformedMessages = [];
             foreach ($posts as $post) {
                 if (count($transformedMessages) > 195) {
