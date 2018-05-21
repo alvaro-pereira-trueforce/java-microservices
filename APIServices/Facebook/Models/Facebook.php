@@ -21,27 +21,24 @@ class Facebook extends FB {
      * @param string $access_token
      * @param string $instagram_id
      * @param string $page_id
-     * @param array $state
+     * @param array  $state
      * @throws FacebookSDKException
      */
-    public function __construct(array $config = [], ?$access_token = '', ?$instagram_id='',
-                                ?$page_id='', ?$state = []) {
-        try
-        {
-            if($access_token && $access_token!= '')
-            {
+    public function __construct(array $config = [], $access_token = '', $instagram_id = '',
+                                $page_id = '', $state = []) {
+        try {
+            if ($access_token && $access_token != '') {
                 $this->setDefaultAccessToken($access_token);
                 $user = $this->get('/me');
                 $user->getGraphUser();
+                $this->state = $state;
+                $this->access_token = $access_token;
+                $this->instagram_id = $instagram_id;
+                $this->page_id = $page_id;
             }
-            $this->state = $state;
-            $this->access_token = $access_token;
-            $this->instagram_id = $instagram_id;
-            $this->page_id = $page_id;
 
             parent::__construct($config);
-        }catch (FacebookSDKException $exception)
-        {
+        } catch (FacebookSDKException $exception) {
             throw $exception;
         }
     }
@@ -94,7 +91,7 @@ class Facebook extends FB {
      */
     public function getPageInstagramID($page_id) {
         try {
-            $response = $this->getRequest('/'.$page_id.'?fields=instagram_business_account');
+            $response = $this->getRequest('/' . $page_id . '?fields=instagram_business_account');
             return $response['instagram_business_account']['id'];
         } catch (\Exception $exception) {
             throw  $exception;
