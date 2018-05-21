@@ -2,113 +2,205 @@
 
 namespace APIServices\Zendesk_Instagram\Controllers;
 
-use APIServices\Instagram\Logic\BubbleSorting;
+use APIServices\Facebook\Repositories\FacebookRepository;
+use APIServices\Facebook\Services\FacebookService;
 use APIServices\Instagram\Services\InstagramService;
-use APIServices\Zendesk_Instagram\Models\Services\ZendeskChannelService;
+use APIServices\Zendesk_Instagram\Services\ZendeskChannelService;
 use App\Http\Controllers\Controller;
 use App\Repositories\ManifestRepository;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
-use Carbon\Carbon;
+use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
+use GuzzleHttp\Client;
 
-class ZendeskController extends Controller
-{
+class ZendeskController extends Controller {
     protected $manifest;
 
     public function __construct(ManifestRepository $repository) {
         $this->manifest = $repository;
     }
 
-    public function getManifest(Request $request)
-    {
+    public function getManifest(Request $request) {
         Log::info("Zendesk Request: " . $request);
         return response()->json($this->manifest->getByName('Instagram Channel'));
     }
 
-    public function pull(Request $request, ZendeskChannelService $service)
-    {
-        Log::info($request);
-        $metadata = json_decode($request->metadata, true);
-        $state = json_decode($request->state, true);
-        if ($state != null) {
-            $new_state = $state;
-            $updates = $service->getUpdates($metadata['token'], $state['most_recent_item_timestamp']);
-        } else {
-            $new_state = $service->pullState($metadata['token']);
-            $updates = $service->getUpdates($metadata['token'], $new_state['most_recent_item_timestamp']);
-        }
-        $response = [
-            'external_resources' => $updates,
-            'state' => json_encode($new_state)
-        ];
-        Log::info($response);
-        return response()->json($response);
+    public function pull(ZendeskChannelService $service) {
+        Log::info("Zendesk Request: Pull");
+        return response()->json($service->getUpdates());
     }
 
-    function getMessages($updates, $state)
-    {
+    function getMessages($updates, $state) {
         Log::info("GET MESAGE: " . $state);
         $recent_messages = [];
-        foreach ($updates as $data){
-            if ($data["created_at"]>=$state){
-                array_push($recent_messages,$data);
+        foreach ($updates as $data) {
+            if ($data["created_at"] >= $state) {
+                array_push($recent_messages, $data);
             }
         }
         return $recent_messages;
     }
 
-    public function adminUI(Request $request, InstagramService $service) {
+    public function adminUI(Request $request) {
         $name = $request->name; //will be null on empty
         $metadata = json_decode($request->metadata, true); //will be null on empty
         $state = json_decode($request->state, true); //will be null on empty
         $return_url = $request->return_url;
         $subdomain = $request->subdomain;
-        $submitURL = env('APP_URL') . '/instagram/admin_ui_2';
+        $submitURL = env('APP_URL') . '/instagram/';
 
-        $accounts = $service->getByZendeskAppID($subdomain);
-        return view('instagram.admin_ui', [
-            'return_url' => $return_url,
-            'subdomain' => $subdomain,
-            'name' => $name,
-            'submitURL' => $submitURL,
-            'current_accounts' => $accounts
-        ]);
+        try {
+            if (!$metadata) {
+                return view('instagram.admin_ui', [
+                    'app_id' => env('FACEBOOK_APP_ID'),
+                    'return_url' => $return_url,
+                    'subdomain' => $subdomain,
+                    'name' => $name,
+                    'submitURL' => $submitURL
+                ]);
+            }
+            dd($metadata);
+        } catch (\Exception $exception) {
+            throw new BadRequestHttpException("There is a problem please contact with support.");
+        }
     }
 
-    public function admin_ui_2(Request $request, InstagramService $service) {
-        $token = $request->token;
+    public function admin_create_facebook_registration(Request $request, FacebookRepository $repository) {
+        try {
+            $newUserToConfirm = $repository->updateOrCreate([
+                'zendesk_domain_name' => $request->subdomain,
+            ], [
+                'integration_name' => $request->name,
+                'zendesk_domain_name' => $request->subdomain,
+                'status' => false
+            ]);
+            return response()->json($newUserToConfirm->uuid, 200);
+        } catch (\Exception $exception) {
+            throw new BadRequestHttpException($exception->getMessage());
+        }
+    }
+
+    public function admin_wait_facebook(Request $request, FacebookRepository $repository) {
+        if ($request->uuid) {
+            $newUserToConfirm = $repository->getByUUID($request->uuid);
+
+            if ($newUserToConfirm && $newUserToConfirm->status) {
+                return response()->json($newUserToConfirm->uuid, 200);
+            }
+        }
+        return response()->json('', 408);
+    }
+
+    public function admin_facebook_auth(Request $request, Client $client, FacebookRepository $repository) {
+        Log::debug($request->all());
+        try {
+            $response = $client->request('GET', 'https://graph.facebook.com/v3.0/oauth/access_token', [
+                'query' => [
+                    'client_id' => env('FACEBOOK_APP_ID'),
+                    'redirect_uri' => env('APP_URL') . '/instagram/admin_facebook_auth',
+                    'client_secret' => env('FACEBOOK_APP_SECRET'),
+                    'code' => $request->code
+                ]
+            ]);
+            $facebook_data = json_decode($response->getBody()->getContents(), true);
+            Log::debug($facebook_data);
+            $state = json_decode($request->state, true);
+            if (array_key_exists('uuid', $state) && array_key_exists('access_token', $facebook_data)) {
+                $facebook_registration = $repository->getByUUID($state['uuid']);
+                if ($facebook_registration) {
+                    $facebook_registration->fill([
+                        'facebook_token' => $facebook_data['access_token'],
+                        'status' => true
+                    ]);
+                    $facebook_registration->save();
+                }
+            }
+        } catch (\Exception $exception) {
+            Log::error($exception->getMessage());
+        }
+        return view('close_tab_helper');
+    }
+
+    public function admin_ui_2(Request $request, FacebookService $service) {
         $return_url = $request->return_url;
         $subdomain = $request->subdomain;
         $name = $request->name;
-        $submitURL = $request->submitURL;
-        $accounts = $service->getByZendeskAppID($subdomain);
+        $submitURL = env('APP_URL') . '/instagram/';
 
-        if (!$token || !$name) {
-            $errors = ['Both fields are required.'];
-            return view('instagram.admin_ui', ['return_url' => $return_url, 'subdomain' =>
-                $subdomain, 'name' => $name, 'submitURL' => $submitURL, 'current_accounts' =>
-                $accounts,
-                'errors' => $errors]);
+        try {
+            if (!$request->token) {
+                $accessToken = $service->getAccessTokenForNewRegistrationUser($request->uuid);
+            } else {
+                $accessToken = $request->token;
+            }
+
+            $service->setAccessToken($accessToken);
+            $pages = $service->getUserPages();
+
+            return view('instagram.admin_ui_valid_user', [
+                'return_url' => $return_url,
+                'subdomain' => $subdomain,
+                'name' => $name,
+                'submitURL' => $submitURL,
+                'accessToken' => $accessToken,
+                'pages' => $pages
+            ]);
+
+        } catch (\Exception $exception) {
+            Log::error($exception->getMessage());
+            return view('instagram.admin_ui', [
+                'app_id' => env('FACEBOOK_APP_ID'),
+                'return_url' => $return_url,
+                'subdomain' => $subdomain,
+                'name' => null,
+                'submitURL' => $submitURL,
+                'errors' => [$exception->getMessage()]
+            ]);
         }
-        $metadata = $service->registerNewIntegration($name, $token, $subdomain);
 
-        if (!$metadata) {
-            $errors = ['There was an error processing your data, please check your information or contact support.'];
-            return view('instagram.admin_ui', ['return_url' => $return_url, 'subdomain' =>
-                $subdomain, 'name' => $name, 'submitURL' => $submitURL, 'current_accounts' =>
-                $accounts,
-                'errors' => $errors]);
+    }
+
+
+    public function admin_validate_page(Request $request, FacebookService $service) {
+        $page_id = $request->page_id;
+        $accessToken = $request->access_token;
+        $service->setAccessToken($accessToken);
+        try {
+            return response()->json([
+                'instagram_id' => $service->getInstagramAccountFromUserPage($page_id)
+            ], 200);
+        } catch (\Exception $exception) {
+            throw new BadRequestHttpException($exception->getMessage());
+        }
+    }
+
+    public function admin_ui_submit(Request $request, InstagramService $service) {
+        $return_url = $request->return_url;
+        $subdomain = $request->subdomain;
+        $name = $request->name;
+        $accessToken = $request->token;
+        $instagram_id = $request->instagram_id;
+        $page_id = $request->page_id;
+        $submitURL = env('APP_URL') . '/instagram/';
+
+        if (!$name || !$instagram_id || !$page_id) {
+            return view('instagram.admin_ui', [
+                'app_id' => env('FACEBOOK_APP_ID'),
+                'return_url' => $return_url,
+                'subdomain' => $subdomain,
+                'name' => $name,
+                'submitURL' => $submitURL,
+                'errors' => ['There was an error processing your request please contact support.']
+            ]);
         }
 
-        if (array_key_exists('error', $metadata)) {
-            $errors = ['That Instagram token is already registered.'];
-            return view('instagram.admin_ui', ['return_url' => $return_url, 'subdomain' =>
-                $subdomain, 'name' => $name, 'submitURL' => $submitURL, 'current_accounts' =>
-                $accounts,
-                'errors' => $errors]);
-        }
-
-        return view('instagram.post_metadata', ['return_url' => $return_url, 'name' => $name, 'metadata' => json_encode($metadata)]);
+        $metadata = $service->registerNewIntegration($name,
+            $accessToken,
+            $subdomain,
+            $instagram_id,
+            $page_id
+        );
+        return view('instagram.post_metadata', ['return_url' => $return_url, 'name' => $name, 'metadata' => $metadata]);
     }
 
     public function clickthrough(Request $request) {
@@ -128,30 +220,6 @@ class ZendeskController extends Controller
         return response()->json('ok', 200);
     }
 
-    public function handleSubmitForAdminUI(Request $request, InstagramService $service) {
-        try {
-            $metadata = $service->getMetadataFromSavedIntegration($request->account['uuid']);
-            return view('instagram.post_metadata', [
-                'return_url' => $request->return_url,
-                'name' => $request->account['integration_name'],
-                'metadata' => json_encode($metadata)
-            ]);
-        } catch (\Exception $exception) {
-            return response()->json($exception->getMessage(), 404);
-        }
-    }
-
-    public function handleDeleteForAdminUI($uuid, Request $request, InstagramService $service)
-    {
-        try
-        {
-            $result = $service->delete($uuid);
-            return $this->adminUI($request, $service);
-        }catch (\Exception $exception)
-        {
-            return response()->json($exception->getMessage(), 404);
-        }
-    }
 
     public function channelback(Request $request, InstagramService $service) {
         $metadata = json_decode($request->metadata, true);

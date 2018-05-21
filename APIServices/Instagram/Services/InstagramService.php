@@ -2,215 +2,106 @@
 
 namespace APIServices\Instagram\Services;
 
-use APIServices\Instagram\Logic\InstagramLogic;
-use APIServices\Instagram\Repositories\InstagramRepository;
+use APIServices\Facebook\Models\Facebook;
 use APIServices\Zendesk\Utility;
 use Illuminate\Support\Facades\Log;
-
-use APIServices\Instagram\Repositories\ChannelRepository;
 use Illuminate\Database\DatabaseManager;
-use Illuminate\Database\Eloquent\ModelNotFoundException;
-use Illuminate\Database\QueryException;
 use Illuminate\Events\Dispatcher;
 
 
-class InstagramService
-{
+class InstagramService {
     protected $database;
 
     protected $dispatcher;
 
-    protected $repository;
-
-    protected $instagramAPI;
-
     protected $zendeskUtils;
 
-    public function __construct(
+    protected $facebookAPI;
 
+    /**
+     * InstagramService constructor.
+     * @param DatabaseManager $database
+     * @param Dispatcher $dispatcher
+     * @param Utility $zendeskUtils
+     * @param Facebook $facebookAPI
+     */
+    public function __construct(
         DatabaseManager $database,
         Dispatcher $dispatcher,
-        InstagramRepository $repository,
-        InstagramLogic $instagramLogic,
-        Utility $zendeskUtils
-    )
-    {
+        Utility $zendeskUtils,
+        Facebook $facebookAPI
+    ) {
         $this->database = $database;
         $this->dispatcher = $dispatcher;
-        $this->repository = $repository;
-        $this->instagramAPI = $instagramLogic;
         $this->zendeskUtils = $zendeskUtils;
-
-        $this->instagramAPI->setApiKey('c133bd0821124643a3a0b5fbe77ee729');
-        $this->instagramAPI->setApiSecret('308973f7f4944f699a223c74ba687979');
-        $this->instagramAPI->setApiCallback('https://twitter.com/soysantizeta');
+        $this->facebookAPI = $facebookAPI;
     }
 
-    public function getAll($options = [])
-    {
-        return $this->repository->get($options);
-    }
-
-    public function create($data)
-    {
-        $user = $this->repository->create($data);
-        return $user;
-    }
-
-
-    public function update($uuid, array $data)
-    {
-        $model = $this->getRequestedModel($uuid);
-
-        $this->repository->update($model, $data);
-
-        return $model;
-    }
-
-    public function delete($uuid)
-    {
-        $model = $this->getById($uuid);
-        return $model->delete();
+    public function getOwnerInstagram() {
+        try {
+            return $this->facebookAPI->getOwnerInstagram();
+        } catch (\Exception $exception) {
+            Log::error($exception->getMessage());
+            throw $exception;
+        }
     }
 
     /**
+     * @param $limit
+     * @return array
+     * @throws \Exception
+     */
+    public function getInstagramPosts($limit) {
+        try {
+            return $this->facebookAPI->getPosts($limit);
+        } catch (\Exception $exception) {
+            Log::error($exception->getMessage());
+            throw $exception;
+        }
+    }
+
+    /**
+     * @param $post_id
+     * @param $limit
+     * @return array
+     */
+    public function getInstagramCommentsFromPost($post_id, $limit=1000) {
+        try {
+            return $this->facebookAPI->getComments($post_id,$limit);
+        } catch (\Exception $exception) {
+            Log::error($exception->getMessage());
+            return [];
+        }
+    }
+
+    /**
+     * @param $name
      * @param $token
-     * @return Api
+     * @param $subdomain
+     * @param $instagram_id
+     * @param $page_id
+     * @return array|null
      */
-    private function getInstagramInstance($token)
-    {
-        $this->instagramAPI->setAccessToken($token);
-        return $this->instagramAPI;
+    public function registerNewIntegration($name, $token, $subdomain, $instagram_id, $page_id) {
+        return json_encode([
+            'integration_name' => $name,
+            'zendesk_app_id' => $subdomain,
+            'token' => $token,
+            'instagram_id' => $instagram_id,
+            'page_id' => $page_id
+        ]);
     }
 
-    /**
-     * @param $uuid
-     * @return null|Api
-     */
-    private function getInstagramActiveInstanse($uuid)
-    {
-        return $this->getInstagramInstance($this->getTokenFromUUID($uuid));
-    }
-
-    private function getRequestedModel($uuid)
-    {
-        $model = $this->repository->getByUUID($uuid);
-
-        if (is_null($model)) {
-            throw new ModelNotFoundException();
-        }
-        return $model;
-    }
-
-    public function getById($uuid, array $options = [])
-    {
-        $model = $this->getRequestedModel($uuid);
-        return $model;
-    }
-
-    /**
-     * @param $uuid
-     * @return string token
-     */
-    private function getTokenFromUUID($uuid)
-    {
-        $telegramModel = $this->repository->getByUUID($uuid);
-
-        if ($telegramModel == null) {
-            return "";
-        }
-        return $telegramModel->token;
-    }
-
-    public function getUpdatedAt($uuid)
-    {
-        $instagramModel = $this->repository->getByUUID($uuid);
-        if ($instagramModel == null) {
-            return null;
-        }
-        return $instagramModel->updated_at;
-    }
-
-    public function getInstagramUpdatesMedia($uuid)
-    {
+    public function sendInstagramMessage($post_id, $uuid, $message) {
         try {
-            $instagram = $this->getInstagramActiveInstanse($uuid);
-            $updates = array($instagram->getUserMedia($auth = true, $id = 'self', $limit = 0));
-            $updates = json_decode(json_encode($updates), True);
-            $updates_data = $updates[0]['data'];
-            return $updates_data;
-        } catch (\Exception $exception) {
-            Log::error($exception->getMessage());
-            return [];
-        }
-    }
-
-    public function getInstagramUpdatesComments($uuid, $post_id)
-    {
-        try {
-            $instagram = $this->getInstagramActiveInstanse($uuid);
-            $comments = array($instagram->getMediaComments($post_id, true));
-            $comments = json_decode(json_encode($comments), True);
-            $comments_data = $comments[0]['data'];
-            return $comments_data;
-        } catch (\Exception $exception) {
-            Log::error($exception->getMessage());
-            return [];
-        }
-    }
-
-    public function registerNewIntegration($name, $token, $subdomain)
-    {
-        try {
-            $model = $this->repository->create([
-                'token' => $token,
-                'zendesk_app_id' => $subdomain,
-                'integration_name' => $name
-            ]);
-            return [
-                'token' => $model->uuid,
-                'integration_name' => $model->integration_name,
-                'zendesk_app_id' => $model->zendesk_app_id
-            ];
-        } catch (QueryException $exception) {
-            return ["error" => ""];
-        } catch (\Exception $exception) {
-            Log::info($exception);
-            return null;
-        }
-    }
-
-    public function getMetadataFromSavedIntegration($uuid)
-    {
-        $current_channel = $this->getById($uuid);
-        return [
-            'token' => $current_channel->uuid,
-            'integration_name' => $current_channel->integration_name,
-            'zendesk_app_id' => $current_channel->zendesk_app_id
-        ];
-    }
-
-    public function getByZendeskAppID($subdomain)
-    {
-        $model = $this->repository->getModel();
-        $channels = $model->where('zendesk_app_id', '=', $subdomain)->get();
-        return $channels;
-    }
-
-    public function sendInstagramMessage($post_id, $uuid, $message)
-    {
-        $instagramModel = $this->repository->getByUUID($uuid);
-        if ($instagramModel == null) {
-            return "";
-        }
-        try {
-            $this->instagramAPI->setAccessToken($instagramModel->token);
+            /*
             $array = array('text' => $message);
             $response = $this->instagramAPI->postUserMedia(true, $post_id, $array);
             $comments = json_decode(json_encode($response), True);
             $comment_data = $comments['data'];
             $comment_id = $comment_data['id'];
-            return $this->zendeskUtils->getExternalID([$comment_id]);
+            return $this->zendeskUtils->getExternalID([$comment_id]);*/
+            return '';
         } catch (\Exception $exception) {
             Log::error($exception->getMessage());
             return "";

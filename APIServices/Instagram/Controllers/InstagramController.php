@@ -2,42 +2,25 @@
 
 namespace APIServices\Instagram\Controllers;
 
+use APIServices\Facebook\Services\FacebookService;
 use APIServices\Instagram\Models;
-use APIServices\Instagram\Logic\InstagramLogic;
-use APIServices\Instagram\Services\InstagramService;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
 class InstagramController extends Controller
 {
-    protected $instagram;
+    protected $facebookService;
 
-    public function __construct(InstagramLogic $instagramLogic)
+    public function __construct(FacebookService $facebookService)
     {
-        $this->instagram = $instagramLogic;
-        $this->instagram->setApiKey('c133bd0821124643a3a0b5fbe77ee729');
-        $this->instagram->setApiSecret('308973f7f4944f699a223c74ba687979');
-        $this->instagram->setApiCallback('https://twitter.com/soysantizeta');
+        $this->facebookService =$facebookService;
     }
 
-    public function getMediaComments($token,$id_media)
+    public function getMedia($token,$instagram_id,$limit)
     {
-        $this->instagram->setAccessToken($token);
         try {
-            $comments = $this->instagram->getMediaComments($id_media, true);
-            return response()->json($comments, 200);
-        } catch (Exception $e) {
-            Log::info($e->getMessage());
-            return response()->json($e, 500);
-        }
-    }
-
-    public function getAllUserMedia($token)
-    {
-        $this->instagram->setAccessToken($token);
-        try {
-            $user_media = $this->instagram->getUserMedia(true);
+            $user_media = $this->facebookService->getInstagramMedia($token,$instagram_id,$limit);
             return response()->json($user_media, 200);
         } catch (Exception $e) {
             Log::info($e->getMessage());
@@ -45,13 +28,22 @@ class InstagramController extends Controller
         }
     }
 
-    public function postMediaComments($token,$id_media)
+    public function getComment($token,$media_id,$limit)
     {
-        $this->instagram->setAccessToken($token);
         try {
-            $array = array('text'=>'como estan este es un post para zendesk');
-            $user_media = $this->instagram->postUserMedia(true,$id_media,$array,0);
-            return response()->json($user_media, 200);
+            $user_comment = $this->facebookService->getInstagramComment($token,$media_id,$limit);
+            return response()->json($user_comment, 200);
+        } catch (Exception $e) {
+            Log::info($e->getMessage());
+            return response()->json($e, 500);
+        }
+    }
+
+    public function postComment($token,$media_id,$message)
+    {
+        try {
+            $user_comment_id = $this->facebookService->postInstagramComment($token,$media_id,$message);
+            return response()->json($user_comment_id, 200);
         } catch (Exception $e) {
             Log::info($e->getMessage());
             return response()->json($e, 500);
