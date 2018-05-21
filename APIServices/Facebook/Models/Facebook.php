@@ -67,6 +67,20 @@ class Facebook extends FB {
     }
 
     /**
+     * @param string $endpoint
+     * @return mixed
+     * @throws FacebookSDKException
+     */
+    protected function postRequest($endpoint) {
+        try {
+            $response = json_decode($this->post($endpoint)->getBody(), true);
+            return $response;
+        } catch (FacebookSDKException $exception) {
+            throw $exception;
+        }
+    }
+
+    /**
      * Get User Pages
      *
      * @return array
