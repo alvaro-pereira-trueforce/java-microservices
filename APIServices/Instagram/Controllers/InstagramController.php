@@ -2,9 +2,8 @@
 
 namespace APIServices\Instagram\Controllers;
 
+use APIServices\Facebook\Services\FacebookService;
 use APIServices\Instagram\Models;
-use APIServices\Instagram\Logic\InstagramLogic;
-use APIServices\Instagram\Services\InstagramService;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
