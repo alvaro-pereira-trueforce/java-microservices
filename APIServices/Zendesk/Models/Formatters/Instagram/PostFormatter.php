@@ -39,11 +39,12 @@ class PostFormatter extends Formatter {
     {
         try{
             $post_id = $this->post['id'];
+            $created_at = date("c", strtotime($this->post['timestamp']));
             return [
                 'external_id' => $post_id,
                 'message' => $this->getFooterPage(),
                 'thread_id' => $this->utility->getExternalID([$this->owner['id'], $post_id]),
-                'created_at' => $this->post['timestamp'],
+                'created_at' => $created_at,
                 'author' => [
                     'external_id' => $this->post['username'],
                     'name' => $this->post['username'],

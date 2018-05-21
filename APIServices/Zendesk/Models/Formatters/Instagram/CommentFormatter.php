@@ -40,11 +40,12 @@ class CommentFormatter extends Formatter {
     function getTransformedMessage()
     {
         try{
+            $created_at = date("c", strtotime($this->comment['timestamp']));
             return [
                 'external_id' => $this->comment['id'],
                 'message' => $this->comment['text'],
                 'thread_id' => $this->utility->getExternalID($this->thread_id),
-                'created_at' => $this->comment['timestamp'],
+                'created_at' => $created_at,
                 'author' => [
                     'external_id' => $this->comment['username'],
                     'name' => $this->comment['username']
