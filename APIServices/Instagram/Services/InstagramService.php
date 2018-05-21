@@ -41,7 +41,7 @@ class InstagramService {
         }
     }
 
-    public function getInstagramCommentsFromPost($post_id, ?$limit=0) {
+    public function getInstagramCommentsFromPost($post_id, $limit = 0) {
         try {
             return [];
         } catch (\Exception $exception) {
