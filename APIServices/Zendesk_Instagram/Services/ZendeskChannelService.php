@@ -79,4 +79,18 @@ class ZendeskChannelService {
             return ['Message Error: ' + $exception->getMessage()];
         }
     }
+
+    public function sendInstagramMessage($post_id, $message) {
+        try {
+
+            //$array = array('text' => $message);
+            $comment = $this->instagram_service->sendInstagramMessage($post_id,$message);
+            Log::debug("COMENTE ID");
+            Log::debug($comment);
+            return $comment['id'];
+        } catch (\Exception $exception) {
+            Log::error($exception->getMessage());
+            return "";
+        }
+    }
 }

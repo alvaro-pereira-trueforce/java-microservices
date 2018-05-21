@@ -39,6 +39,21 @@ class ZendeskController extends Controller {
         //return response()->json($service->getUpdates());
     }
 
+    public function channelback(Request $request,ZendeskChannelService  $service) {
+
+        //$metadata = json_decode($request->metadata, true);
+        Log::info($request);
+        $thread_post_id = explode(':', $request->thread_id);
+        Log::info("THREAD ID");
+        Log::info($thread_post_id);
+        $message = $request->message;
+        $external_id = $service->sendInstagramMessage($thread_post_id[1], $message);
+        $response = [
+            'external_id' => $external_id
+        ];
+        return response()->json($response);
+    }
+
     function getMessages($updates, $state) {
         Log::info("GET MESAGE: " . $state);
         $recent_messages = [];
@@ -227,18 +242,5 @@ class ZendeskController extends Controller {
 
     public function successReturn() {
         return response()->json('ok', 200);
-    }
-
-
-    public function channelback(Request $request, InstagramService $service) {
-        $metadata = json_decode($request->metadata, true);
-        Log::info($request);
-        $thread_post_id = explode(':', $request->thread_id);
-        $message = $request->message;
-        $external_id = $service->sendInstagramMessage($thread_post_id[1], $metadata['token'], $message);
-        $response = [
-            'external_id' => $external_id
-        ];
-        return response()->json($response);
     }
 }

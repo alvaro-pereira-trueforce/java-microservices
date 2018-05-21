@@ -92,16 +92,9 @@ class InstagramService {
         ]);
     }
 
-    public function sendInstagramMessage($post_id, $uuid, $message) {
+    public function sendInstagramMessage($post_id,$message) {
         try {
-            /*
-            $array = array('text' => $message);
-            $response = $this->instagramAPI->postUserMedia(true, $post_id, $array);
-            $comments = json_decode(json_encode($response), True);
-            $comment_data = $comments['data'];
-            $comment_id = $comment_data['id'];
-            return $this->zendeskUtils->getExternalID([$comment_id]);*/
-            return '';
+            return $this->facebookAPI->postComment($post_id,$message);
         } catch (\Exception $exception) {
             Log::error($exception->getMessage());
             return "";
