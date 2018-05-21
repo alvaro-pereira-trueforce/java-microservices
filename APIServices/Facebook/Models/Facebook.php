@@ -114,11 +114,24 @@ class Facebook extends FB {
     }
 
     /**
+     * @return array
+     * @throws \Exception
+     */
+    public function getOwnerInstagram() {
+        try {
+            $url_get_owner = '/'.$this->instagram_id.'?fields=id,name,username,profile_picture_url';
+            return $this->getRequest($url_get_owner);
+        } catch (\Exception $exception) {
+            throw  $exception;
+        }
+    }
+
+    /**
      * @param int $limit
      * @return array
      * @throws \Exception
      */
-    public function getPosts($limit=0) {
+    public function getPosts($limit=1000) {
         try {
             $url_post = '/'.$this->instagram_id.'/media?fields=id,media_type,caption,media_url,thumbnail_url,permalink,username,timestamp,comments_count&limit=' . $limit;
             return $this->getRequest($url_post);
@@ -133,7 +146,7 @@ class Facebook extends FB {
      * @return array
      * @throws \Exception
      */
-    public function getComments($post_id,$limit=0) {
+    public function getComments($post_id,$limit=1000) {
         try {
             $url_comments = '/'.$post_id.'/comments?fields=id,text,username,timestamp,replies{id,text,username,timestamp}&limit='.$limit;
             return $this->getRequest($url_comments);

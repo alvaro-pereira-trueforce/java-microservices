@@ -16,7 +16,7 @@ class ZendeskChannelService {
 
     public function __construct(InstagramService $instagramService) {
         $this->instagram_service = $instagramService;
-        $this->chanel_type = 'instagram';
+        $this->chanel_type = 'INSTAGRAM';
     }
 
     /**
@@ -25,49 +25,58 @@ class ZendeskChannelService {
     public function getUpdates()
     {
         try {
+            $owner_post = $this->instagram_service->getOwnerInstagram();
             $response = $this->instagram_service->getInstagramPosts(199);
             $posts = $response['data'];
-            Log::info($posts);
             //It is done to start with the oldest post, to show properly in Zendes.
-            $posts = array_reverse($posts, true);
-            Log::debug($posts);
+            $posts = array_reverse($posts, false);
             $transformedMessages = [];
             foreach ($posts as $post) {
                 if (count($transformedMessages) > 195) {
                     break;
                 }
                 /** @var PostFormatter $formatter */
-                $formatter = App::makeWith(PostFormatter::class, [
+                $formatter = App::makeWith($this->chanel_type . '.' . $post['media_type'], [
+                    'owner' => $owner_post,
                     'post' => $post
+
                 ]);
                 $message = $formatter->getTransformedMessage();
                 array_push($transformedMessages, $message);
+
                 $post_id = $post['id'];
                 if ($post['comments_count'] > 0) {
-                    $comments = $this->instagram_service->getInstagramCommentsFromPost($post_id);
+                    $response = $this->instagram_service->getInstagramCommentsFromPost($post_id);
+                    $comments = $response['data'];
                     //It is done to start with the oldest post, to show properly in Zendes.
-                    $comments = array_reverse($comments, true);
+                    $comments = array_reverse($comments, false);
+                    Log::debug($comments);
                     foreach ($comments as $comment) {
                         if (count($transformedMessages) > 195) {
                             break;
                         }
                         /** @var CommentFormatter $formatter */
                         $formatter = App::makeWith(CommentFormatter::class, [
-                            'comment' => $comment,
-                            'post_id' => $post_id
+                            'thread_id' => [
+                                'user_id'=>$owner_post['id'],
+                                'post_id'=>$post_id,
+                            ],
+                            'comment' => $comment
                         ]);
                         $message = $formatter->getTransformedMessage();
                         array_push($transformedMessages, $message);
                     }
                 }
             }
-            return $posts;
+            Log::debug($transformedMessages);
+            return $transformedMessages;
         } catch (\Exception $exception) {
-            return [
-                'external_resources' => [],
-                'state' => '{}',
-                'metadata_needs_update' => true
-            ];
+//            return [
+//                'external_resources' => [],
+//                'state' => '{}',
+//                'metadata_needs_update' => true
+//            ];
+            return ['Message Error: ' + $exception->getMessage()];
         }
     }
 }

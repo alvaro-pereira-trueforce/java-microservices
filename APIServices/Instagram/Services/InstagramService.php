@@ -37,6 +37,15 @@ class InstagramService {
         $this->facebookAPI = $facebookAPI;
     }
 
+    public function getOwnerInstagram() {
+        try {
+            return $this->facebookAPI->getOwnerInstagram();
+        } catch (\Exception $exception) {
+            Log::error($exception->getMessage());
+            throw $exception;
+        }
+    }
+
     /**
      * @param $limit
      * @return array
@@ -56,7 +65,7 @@ class InstagramService {
      * @param $limit
      * @return array
      */
-    public function getInstagramCommentsFromPost($post_id, $limit=0) {
+    public function getInstagramCommentsFromPost($post_id, $limit=1000) {
         try {
             return $this->facebookAPI->getComments($post_id,$limit);
         } catch (\Exception $exception) {
