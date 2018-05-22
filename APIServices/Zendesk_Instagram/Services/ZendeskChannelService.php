@@ -60,7 +60,6 @@ class ZendeskChannelService {
                     continue;
                 }
                 if ($post_timestamp > $this->state['last_post_date']) {
-                    Log::info("THE POST ID: " .$post_id .' IS HIGHT WHAT: '. $this->state['last_post_date']);
                     array_push($transformedMessages, $this->getUpdatesPosts($owner_post,$post));
                 }
                 $response = $this->instagram_service->getInstagramCommentsFromPost($post_id);
@@ -69,7 +68,6 @@ class ZendeskChannelService {
                 $comments = array_reverse($comments, false);
                 $last_comment_date = null;
                 foreach ($comments as $comment) {
-                    Log::info("HAVE COMMENT");
                     if (count($transformedMessages) > 199) {
                         break;
                     }
@@ -79,9 +77,11 @@ class ZendeskChannelService {
                     $last_comment_date = $comment_track->last_comment_date;
                     if ($comment_timestamp >= $last_comment_date) {
                         array_push($transformedMessages, $this->getUpdatesComments($owner_post, $post_id, $comment));
+                        $last_comment_date = $comment_timestamp;
                     }
                 }
-                $this->instagram_service->updatePost($post_id, $last_comment_date);
+               $this->instagram_service->updatePost($post_id, $last_comment_date);
+
             }
             //To Zendesk Pull
             $response = [
@@ -126,7 +126,6 @@ class ZendeskChannelService {
 
     private function expire($date)
     {
-        Log::info("IN EXPIRE:" . $date);
         $date = new Carbon($date);
         return $date->diffInMinutes(Carbon::now()) > (int)env('TIME_EXPIRE_FOR_TICKETS_IN_MINUTES_INSTAGRAM');
     }

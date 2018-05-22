@@ -65,7 +65,8 @@ class PostFormatter extends Formatter {
         if (array_key_exists('caption', $this->post)){
             return $this->post['caption'];
         }else{
-            $media_type = strtolower($this->post['media_type']);
+
+            $media_type = ucfirst(strtolower($this->post['media_type']));
             return $this->owner['username'] . 'has posted a ' . $media_type ;
         }
     }
