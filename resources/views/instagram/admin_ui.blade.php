@@ -19,7 +19,8 @@
         @if (!$name)
             <p>Welcome, please authenticate first with your Facebook Account in order to start working with the Instagram Channel service.</p>
         @else
-            <p>Welcome back.</p>
+            <p>Welcome back. In order to update your order authentication please use the
+                following button to log in with your Facebook Account.</p>
         @endif
 
         <form id="form_setup" method="post" action="{{$submitURL.'admin_ui_2'}}">
