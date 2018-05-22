@@ -103,8 +103,6 @@ class ZendeskController extends Controller {
     public function channelback(Request $request, ChannelService $service) {
         try
         {
-            Log::debug($request->all());
-
             $external_id = $service->channelBackRequest($request->parent_id, $request->message);
 
             $response = [
