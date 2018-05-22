@@ -7,9 +7,9 @@ use APIServices\Zendesk\Utility;
 
 class VideoPostFormatter extends PostFormatter {
     /**
-     * Receive a post to be converted.
+     * Receive a post Video to be converted.
      *
-     * @param $post
+     * @param $post video
      * @param $utility
      */
     public function __construct($owner, $post, Utility $utility)

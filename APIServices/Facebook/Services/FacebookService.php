@@ -121,6 +121,13 @@ class FacebookService {
         }
     }
 
+    /**
+     * @param $token
+     * @param $instagram_id
+     * @param $limit
+     * @return mixed
+     * @throws \Exception
+     */
     public function getInstagramMedia($token,$instagram_id,$limit) {
         try
         {
@@ -132,6 +139,13 @@ class FacebookService {
         }
     }
 
+    /**
+     * @param $token
+     * @param $media_id
+     * @param $limit
+     * @return mixed
+     * @throws \Exception
+     */
     public function getInstagramComment($token,$media_id,$limit) {
         try
         {
@@ -143,6 +157,13 @@ class FacebookService {
         }
     }
 
+    /**
+     * @param $token
+     * @param $media_id
+     * @param $message
+     * @return mixed
+     * @throws \Exception
+     */
     public function postInstagramComment($token,$media_id,$message) {
         try
         {

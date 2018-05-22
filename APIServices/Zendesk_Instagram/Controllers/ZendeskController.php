@@ -39,13 +39,14 @@ class ZendeskController extends Controller {
         //return response()->json($service->getUpdates());
     }
 
+    /**
+     * @param Request $request
+     * @param ZendeskChannelService $service
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function channelback(Request $request,ZendeskChannelService  $service) {
-
-        //$metadata = json_decode($request->metadata, true);
         Log::info($request);
         $thread_post_id = explode(':', $request->thread_id);
-        Log::info("THREAD ID");
-        Log::info($thread_post_id);
         $message = $request->message;
         $external_id = $service->sendInstagramMessage($thread_post_id[1], $message);
         $response = [
@@ -54,6 +55,11 @@ class ZendeskController extends Controller {
         return response()->json($response);
     }
 
+    /**
+     * @param $updates
+     * @param $state
+     * @return array
+     */
     function getMessages($updates, $state) {
         Log::info("GET MESAGE: " . $state);
         $recent_messages = [];
@@ -65,6 +71,10 @@ class ZendeskController extends Controller {
         return $recent_messages;
     }
 
+    /**
+     * @param Request $request
+     * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
+     */
     public function adminUI(Request $request) {
         $name = $request->name; //will be null on empty
         $metadata = json_decode($request->metadata, true); //will be null on empty
@@ -89,6 +99,11 @@ class ZendeskController extends Controller {
         }
     }
 
+    /**
+     * @param Request $request
+     * @param FacebookRepository $repository
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function admin_create_facebook_registration(Request $request, FacebookRepository $repository) {
         try {
             $newUserToConfirm = $repository->updateOrCreate([
@@ -104,6 +119,11 @@ class ZendeskController extends Controller {
         }
     }
 
+    /**
+     * @param Request $request
+     * @param FacebookRepository $repository
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function admin_wait_facebook(Request $request, FacebookRepository $repository) {
         if ($request->uuid) {
             $newUserToConfirm = $repository->getByUUID($request->uuid);
@@ -115,6 +135,12 @@ class ZendeskController extends Controller {
         return response()->json('', 408);
     }
 
+    /**
+     * @param Request $request
+     * @param Client $client
+     * @param FacebookRepository $repository
+     * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
+     */
     public function admin_facebook_auth(Request $request, Client $client, FacebookRepository $repository) {
         Log::debug($request->all());
         try {
@@ -145,6 +171,11 @@ class ZendeskController extends Controller {
         return view('close_tab_helper');
     }
 
+    /**
+     * @param Request $request
+     * @param FacebookService $service
+     * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
+     */
     public function admin_ui_2(Request $request, FacebookService $service) {
         $return_url = $request->return_url;
         $subdomain = $request->subdomain;
@@ -184,7 +215,11 @@ class ZendeskController extends Controller {
 
     }
 
-
+    /**
+     * @param Request $request
+     * @param FacebookService $service
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function admin_validate_page(Request $request, FacebookService $service) {
         $page_id = $request->page_id;
         $accessToken = $request->access_token;
@@ -198,6 +233,11 @@ class ZendeskController extends Controller {
         }
     }
 
+    /**
+     * @param Request $request
+     * @param InstagramService $service
+     * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
+     */
     public function admin_ui_submit(Request $request, InstagramService $service) {
         $return_url = $request->return_url;
         $subdomain = $request->subdomain;
@@ -227,19 +267,33 @@ class ZendeskController extends Controller {
         return view('instagram.post_metadata', ['return_url' => $return_url, 'name' => $name, 'metadata' => $metadata]);
     }
 
+    /**
+     * @param Request $request
+     */
     public function clickthrough(Request $request) {
         Log::info($request->all());
     }
 
+    /**
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function healthcheck(Request $request) {
         return $this->successReturn();
     }
 
+    /**
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function event_callback(Request $request) {
         Log::debug("Event On Zendesk: \n" . $request . "\n");
         return $this->successReturn();
     }
 
+    /**
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function successReturn() {
         return response()->json('ok', 200);
     }

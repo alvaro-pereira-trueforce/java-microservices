@@ -10,10 +10,19 @@ use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Log;
 
 class ZendeskChannelService {
-
+    /**
+     * @var InstagramService
+     */
     protected $instagram_service;
+    /**
+     * @var string
+     */
     protected $chanel_type;
 
+    /**
+     * ZendeskChannelService constructor.
+     * @param InstagramService $instagramService
+     */
     public function __construct(InstagramService $instagramService) {
         $this->instagram_service = $instagramService;
         $this->chanel_type = 'INSTAGRAM';
@@ -80,13 +89,14 @@ class ZendeskChannelService {
         }
     }
 
+    /**
+     * @param $post_id
+     * @param $message
+     * @return string
+     */
     public function sendInstagramMessage($post_id, $message) {
         try {
-
-            //$array = array('text' => $message);
             $comment = $this->instagram_service->sendInstagramMessage($post_id,$message);
-            Log::debug("COMENTE ID");
-            Log::debug($comment);
             return $comment['id'];
         } catch (\Exception $exception) {
             Log::error($exception->getMessage());

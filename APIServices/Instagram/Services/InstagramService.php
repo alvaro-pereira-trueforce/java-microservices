@@ -37,6 +37,10 @@ class InstagramService {
         $this->facebookAPI = $facebookAPI;
     }
 
+    /**
+     * @return array
+     * @throws \Exception
+     */
     public function getOwnerInstagram() {
         try {
             return $this->facebookAPI->getOwnerInstagram();
@@ -92,6 +96,11 @@ class InstagramService {
         ]);
     }
 
+    /**
+     * @param $post_id
+     * @param $message
+     * @return mixed|string
+     */
     public function sendInstagramMessage($post_id,$message) {
         try {
             return $this->facebookAPI->postComment($post_id,$message);
