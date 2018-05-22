@@ -47,6 +47,8 @@ class ZendeskChannelService {
             //It is done to start with the oldest post, to show properly in Zendes.
             $posts = array_reverse($posts, false);
             $post_timestamp = $this->state;
+            Log::info("Printinf State");
+            Log::debug($post_timestamp);
             $transformedMessages = [];
             foreach ($posts as $post) {
                 if (count($transformedMessages) > 195) {
@@ -55,10 +57,12 @@ class ZendeskChannelService {
                 $post_id = $post['id'];
                 $post_timestamp = date("c", strtotime($post['timestamp']));
                 if ($this->expire($post_timestamp)) {
+                    Log::info("EXPIRED POST ID: " .$post_id .' DATE: '. $post_timestamp );
                     $this->instagram_service->removePost($post_id);
                     continue;
                 }
                 if ($post_timestamp > $this->state) {
+                    Log::info("THE POST ID: " .$post_id .' IS HIGHT WHAT: '. $this->state);
                     array_push($transformedMessages, $this->getUpdatesPosts($post));
                 }
                 $response = $this->instagram_service->getInstagramCommentsFromPost($post_id);
@@ -67,6 +71,7 @@ class ZendeskChannelService {
                 $comments = array_reverse($comments, false);
                 $last_comment_date = null;
                 foreach ($comments as $comment) {
+                    Log::info("HAVE COMMENT");
                     if (count($transformedMessages) > 199) {
                         break;
                     }
