@@ -48,9 +48,6 @@ class ZendeskChannelService {
             //It is done to start with the oldest post, to show properly in Zendes.
             $posts = array_reverse($posts, false);
             $post_timestamp = $this->state;
-            Log::info("Printinf State");
-            Log::debug($post_timestamp);
-            Log::debug($posts);
             $transformedMessages = [];
             foreach ($posts as $post) {
                 if (count($transformedMessages) > 195) {
@@ -58,20 +55,14 @@ class ZendeskChannelService {
                 }
                 $post_id = $post['id'];
                 $post_timestamp = date("c", strtotime($post['timestamp']));
-                Log::info("PASO TIMESTAMP: " . $post_timestamp);
                 if ($this->expire($post_timestamp)) {
-                    Log::info("EXPIRED POST ID: " .$post_id .' DATE: '. $post_timestamp );
                     $this->instagram_service->removePost($post_id);
                     continue;
                 }
-                Log::info("PASO EXPIRE");
-                Log::info("STATE" . $post_timestamp);
-                Log::info("POST_TIMESTAMP" . $this->state['last_post_date']);
                 if ($post_timestamp > $this->state['last_post_date']) {
                     Log::info("THE POST ID: " .$post_id .' IS HIGHT WHAT: '. $this->state['last_post_date']);
                     array_push($transformedMessages, $this->getUpdatesPosts($owner_post,$post));
                 }
-                Log::info("PASO CONDITION STATE");
                 $response = $this->instagram_service->getInstagramCommentsFromPost($post_id);
                 $comments = $response['data'];
                 //It is done to start with the oldest post, to show properly in Zendes.
@@ -82,13 +73,10 @@ class ZendeskChannelService {
                     if (count($transformedMessages) > 199) {
                         break;
                     }
-
-                    Log::debug($comment['timestamp']);
                     $comment_timestamp = date("c", strtotime($comment['timestamp']));
                     $comment_timestamp = new Carbon($comment_timestamp);
                     $comment_track = $this->instagram_service->commentTrack($post_id,$comment_timestamp);
                     $last_comment_date = $comment_track->last_comment_date;
-                    Log::info("PREGUNTANDO: Coments:" .$comment_timestamp . " last" . $last_comment_date);
                     if ($comment_timestamp >= $last_comment_date) {
                         array_push($transformedMessages, $this->getUpdatesComments($owner_post, $post_id, $comment));
                     }
@@ -100,6 +88,7 @@ class ZendeskChannelService {
                 'external_resources' => $transformedMessages,
                 'state' => json_encode(['last_post_date' => sprintf('%s', $post_timestamp)])
             ];
+            Log::debug($response);
             return $response;
         } catch (\Exception $exception) {
 //            return [
@@ -139,10 +128,6 @@ class ZendeskChannelService {
     {
         Log::info("IN EXPIRE:" . $date);
         $date = new Carbon($date);
-        $difference = $date->diffInMinutes(Carbon::now());
-        $date_env = (int)env('TIME_EXPIRE_FOR_TICKETS_IN_MINUTES_INSTAGRAM');
-        Log::info("EXPIRE_COUNT: " .$date_env);
-        Log::info("DIFERENCE: " . $difference);
         return $date->diffInMinutes(Carbon::now()) > (int)env('TIME_EXPIRE_FOR_TICKETS_IN_MINUTES_INSTAGRAM');
     }
 
