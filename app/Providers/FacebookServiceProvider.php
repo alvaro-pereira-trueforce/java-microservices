@@ -70,9 +70,5 @@ class FacebookServiceProvider extends ServiceProvider {
                 }
                 return $page_id;
             });
-
-        $this->app->when(Facebook::class)
-            ->needs('$state')
-            ->give($state);
     }
 }

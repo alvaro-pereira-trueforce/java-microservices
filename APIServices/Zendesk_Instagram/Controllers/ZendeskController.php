@@ -8,6 +8,7 @@ use APIServices\Instagram\Services\InstagramService;
 use APIServices\Zendesk_Instagram\Services\ZendeskChannelService;
 use App\Http\Controllers\Controller;
 use App\Repositories\ManifestRepository;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
@@ -25,26 +26,23 @@ class ZendeskController extends Controller {
         return response()->json($this->manifest->getByName('Instagram Channel'));
     }
 
+    /**
+     * @param ZendeskChannelService $service
+     * @return JsonResponse
+     */
     public function pull(ZendeskChannelService $service) {
         Log::info("Zendesk Request: Pull");
-
         $updates = $service->getUpdates();
-        $response = [
-            'external_resources' => $updates,
-            'state' => ""
-        ];
-        Log::debug(json_encode($response));
-        return response()->json($response);
-
-        //return response()->json($service->getUpdates());
+        Log::debug(json_encode($updates));
+        return response()->json($updates);
     }
 
     /**
-     * @param Request $request
+     * @param Request               $request
      * @param ZendeskChannelService $service
      * @return \Illuminate\Http\JsonResponse
      */
-    public function channelback(Request $request,ZendeskChannelService  $service) {
+    public function channelback(Request $request, ZendeskChannelService $service) {
         Log::info($request);
         $thread_post_id = explode(':', $request->thread_id);
         $message = $request->message;
@@ -55,21 +53,6 @@ class ZendeskController extends Controller {
         return response()->json($response);
     }
 
-    /**
-     * @param $updates
-     * @param $state
-     * @return array
-     */
-    function getMessages($updates, $state) {
-        Log::info("GET MESAGE: " . $state);
-        $recent_messages = [];
-        foreach ($updates as $data) {
-            if ($data["created_at"] >= $state) {
-                array_push($recent_messages, $data);
-            }
-        }
-        return $recent_messages;
-    }
 
     /**
      * @param Request $request
@@ -84,23 +67,20 @@ class ZendeskController extends Controller {
         $submitURL = env('APP_URL') . '/instagram/';
 
         try {
-            if (!$metadata) {
-                return view('instagram.admin_ui', [
-                    'app_id' => env('FACEBOOK_APP_ID'),
-                    'return_url' => $return_url,
-                    'subdomain' => $subdomain,
-                    'name' => $name,
-                    'submitURL' => $submitURL
-                ]);
-            }
-            dd($metadata);
+            return view('instagram.admin_ui', [
+                'app_id' => env('FACEBOOK_APP_ID'),
+                'return_url' => $return_url,
+                'subdomain' => $subdomain,
+                'name' => $name,
+                'submitURL' => $submitURL
+            ]);
         } catch (\Exception $exception) {
             throw new BadRequestHttpException("There is a problem please contact with support.");
         }
     }
 
     /**
-     * @param Request $request
+     * @param Request            $request
      * @param FacebookRepository $repository
      * @return \Illuminate\Http\JsonResponse
      */
@@ -120,7 +100,7 @@ class ZendeskController extends Controller {
     }
 
     /**
-     * @param Request $request
+     * @param Request            $request
      * @param FacebookRepository $repository
      * @return \Illuminate\Http\JsonResponse
      */
@@ -136,13 +116,12 @@ class ZendeskController extends Controller {
     }
 
     /**
-     * @param Request $request
-     * @param Client $client
+     * @param Request            $request
+     * @param Client             $client
      * @param FacebookRepository $repository
      * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
      */
     public function admin_facebook_auth(Request $request, Client $client, FacebookRepository $repository) {
-        Log::debug($request->all());
         try {
             $response = $client->request('GET', 'https://graph.facebook.com/v3.0/oauth/access_token', [
                 'query' => [
@@ -172,7 +151,7 @@ class ZendeskController extends Controller {
     }
 
     /**
-     * @param Request $request
+     * @param Request         $request
      * @param FacebookService $service
      * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
      */
@@ -216,7 +195,7 @@ class ZendeskController extends Controller {
     }
 
     /**
-     * @param Request $request
+     * @param Request         $request
      * @param FacebookService $service
      * @return \Illuminate\Http\JsonResponse
      */
@@ -234,7 +213,7 @@ class ZendeskController extends Controller {
     }
 
     /**
-     * @param Request $request
+     * @param Request          $request
      * @param InstagramService $service
      * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
      */
@@ -264,7 +243,13 @@ class ZendeskController extends Controller {
             $instagram_id,
             $page_id
         );
-        return view('instagram.post_metadata', ['return_url' => $return_url, 'name' => $name, 'metadata' => $metadata]);
+        $state = '{"last_post_date":"' . gmdate('Y-m-d\TH:i:s\Z', Carbon::now()->timestamp) . '"}';
+        return view('instagram.post_metadata', [
+            'return_url' => $return_url,
+            'name' => $name,
+            'metadata' => $metadata,
+            'state' => $state
+        ]);
     }
 
     /**

@@ -57,8 +57,9 @@ class PostFormatter extends Formatter {
     }
 
     /**
-     * @return string Footer page  of the post or in case it does not exist,
+     * Get Footer page  of the post or in case it does not exist,
      * returns the user name plus the type of multimeia that has been posted.
+     * @return string
      */
     function getFooterPage(){
         if (array_key_exists('caption', $this->post)){
