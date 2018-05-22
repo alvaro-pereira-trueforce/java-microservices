@@ -2,27 +2,22 @@
 
 namespace APIServices\Zendesk_Telegram\Services;
 
-
 use APIServices\Telegram\Services\TelegramService;
 use APIServices\Zendesk\Utility;
 use APIServices\Zendesk_Telegram\Models\MessageTypes\IMessageType;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Log;
-use Telegram\Bot\Objects\Message;
 
 class ChannelService {
 
     protected $telegram_service;
     protected $zendeskUtils;
     protected $chanel_type;
-    protected $ticketService;
 
-    public function __construct(TelegramService $telegramService, Utility $zendeskUtils,
-                                TicketService $ticketService) {
+    public function __construct(TelegramService $telegramService, Utility $zendeskUtils) {
         $this->telegram_service = $telegramService;
         $this->zendeskUtils = $zendeskUtils;
         $this->chanel_type = 'telegram';
-        $this->ticketService = $ticketService;
     }
 
     /**
@@ -41,13 +36,10 @@ class ChannelService {
 
             try {
                 $message_type = $this->telegram_service->detectMessageType($update);
-                $message = $update->getMessage();
-                $parent_id = $this->getParentID($message);
 
                 /** @var $updateType IMessageType */
                 $updateType = App::makeWith($this->chanel_type . '.' . $message_type, [
                     'update' => $update,
-                    'parent_id' => $parent_id
                 ]);
                 $message = $updateType->getTransformedMessage();
                 if ($message)
@@ -60,49 +52,30 @@ class ChannelService {
         return $transformedMessages;
     }
 
-    /**
-     * @param Message $message
-     * @return string
-     */
-    protected function getParentID($message) {
-        $reply = $message->getReplyToMessage();
-
-        if ($reply) {
-            $parent_id = $this->zendeskUtils->getExternalID([
-                $reply->getChat()->get('id'),
-                $reply->getFrom()->get('id')
-            ]);
-        } else {
-            $parent_id = $this->zendeskUtils->getExternalID([
-                $message->getChat()->getId(),
-                $message->getFrom()->getId()
-            ]);
-        }
-
-        return $this->ticketService->getValidParentID($parent_id);
-    }
 
     /**
      * Send a channel back request
      *
-     * @param string $parent_id  Parent Identifier
-     * @param string $message_id Message Identifier
-     * @param string $message    Message Text
+     * @param string $parent_id Parent Identifier
+     * @param string $message   Message Text
      * @return string External Identifier
      * @throws \Exception
      */
-    public function channelBackRequest($parent_id, $message_id, $message) {
+    public function channelBackRequest($parent_id, $message) {
         try {
-            $external_parent_id = $this->ticketService->getExternalParentIDFromParentID($parent_id);
-            $params = explode(':', $external_parent_id);
+            $params = explode(':', $parent_id);
+            $parent_uuid = $params[0];
+            $chat_id = $params[1];
+            $user_id = $params[2];
+            $message_id = $params[3];
 
-            $chat_id = $params[0];
-
-            $this->telegram_service->sendTelegramMessage($chat_id, $message);
+            $result = $this->telegram_service->sendTelegramMessage($chat_id, $message);
 
             return $this->zendeskUtils->getExternalID([
-                $parent_id,
-                $message_id
+                $parent_uuid,
+                $chat_id,
+                $user_id,
+                $result['message_id']
             ]);
         } catch (\Exception $exception) {
             throw $exception;
