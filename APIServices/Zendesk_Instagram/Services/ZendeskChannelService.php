@@ -65,9 +65,11 @@ class ZendeskChannelService {
                     continue;
                 }
                 Log::info("PASO EXPIRE");
-                if ($post_timestamp > $this->state) {
-                    Log::info("THE POST ID: " .$post_id .' IS HIGHT WHAT: '. $this->state);
-                    array_push($transformedMessages, $this->getUpdatesPosts($post));
+                Log::info("STATE" . $post_timestamp);
+                Log::info("POST_TIMESTAMP" . $this->state['last_post_date']);
+                if ($post_timestamp > $this->state['last_post_date']) {
+                    Log::info("THE POST ID: " .$post_id .' IS HIGHT WHAT: '. $this->state['last_post_date']);
+                    array_push($transformedMessages, $this->getUpdatesPosts($owner_post,$post));
                 }
                 Log::info("PASO CONDITION STATE");
                 $response = $this->instagram_service->getInstagramCommentsFromPost($post_id);
@@ -138,8 +140,10 @@ class ZendeskChannelService {
         Log::info("IN EXPIRE:" . $date);
         $date = new Carbon($date);
         $difference = $date->diffInMinutes(Carbon::now());
+        $date_env = (int)env('TIME_EXPIRE_FOR_TICKETS_IN_MINUTES_INSTAGRAM');
+        Log::info("EXPIRE_COUNT: " .$date_env);
         Log::info("DIFERENCE: " . $difference);
-        return $date->diffInMinutes(Carbon::now()) < (int)env('TIME_EXPIRE_FOR_TICKETS_IN_MINUTES_INSTAGRAM');
+        return $date->diffInMinutes(Carbon::now()) > (int)env('TIME_EXPIRE_FOR_TICKETS_IN_MINUTES_INSTAGRAM');
     }
 
     /**
