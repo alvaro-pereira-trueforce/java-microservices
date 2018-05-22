@@ -5,6 +5,8 @@ namespace APIServices\Zendesk_Telegram\Models\MessageTypes;
 
 use APIServices\Telegram\Services\TelegramService;
 use APIServices\Zendesk\Utility;
+use APIServices\Zendesk_Telegram\Services\TicketService;
+use Illuminate\Support\Facades\App;
 use Telegram\Bot\Objects\Message;
 use Telegram\Bot\Objects\Update;
 
@@ -35,6 +37,7 @@ abstract class MessageType implements IMessageType {
     protected $parent_id;
     protected $state;
     protected $telegramService;
+    protected $ticketService;
 
     /**
      * MessageType constructor.
@@ -42,11 +45,10 @@ abstract class MessageType implements IMessageType {
      * @param Utility         $zendeskUtils
      * @param Update          $update
      * @param array           $state
-     * @param string          $parent_id
      * @param TelegramService $telegramService
+     * @param TicketService   $ticketService
      */
-    public function __construct(Utility $zendeskUtils, $update, $state, $parent_id,
-                                TelegramService $telegramService) {
+    public function __construct(TicketService $ticketService, Utility $zendeskUtils, $update, $state, TelegramService $telegramService) {
         $this->zendeskUtils = $zendeskUtils;
         $this->update = $update;
         $this->message = $update->getMessage();
@@ -59,8 +61,9 @@ abstract class MessageType implements IMessageType {
         $this->user_firstname = $this->message->getFrom()->getFirstName();
         $this->user_lastname = $this->message->getFrom()->getLastName();
         $this->state = $state;
-        $this->parent_id = $parent_id;
         $this->telegramService = $telegramService;
+        $this->ticketService = $ticketService;
+        $this->parent_id = $this->getParentID($this->message);
     }
 
     protected function getAuthorExternalID() {
@@ -83,5 +86,28 @@ abstract class MessageType implements IMessageType {
 
     function getTransformedMessage() {
         return null;
+    }
+
+
+    /**
+     * @param Message $message
+     * @return string
+     */
+    protected function getParentID($message) {
+        $reply = $message->getReplyToMessage();
+
+        if ($reply) {
+            $parent_id = $this->zendeskUtils->getExternalID([
+                $reply->getChat()->get('id'),
+                $reply->getFrom()->get('id')
+            ]);
+        } else {
+            $parent_id = $this->zendeskUtils->getExternalID([
+                $message->getChat()->getId(),
+                $message->getFrom()->getId()
+            ]);
+        }
+        $parent_uuid = $this->ticketService->getValidParentID($parent_id);
+        return $this->zendeskUtils->getExternalID([$parent_uuid, $parent_id]);
     }
 }
