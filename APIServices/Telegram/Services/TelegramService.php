@@ -139,25 +139,34 @@ class TelegramService {
      * Detect Message Type Based on Update or Message Object.
      *
      * @param Update|Message $object
-     *
-     * @return string|null
+     * @throws \Exception
+     * @return string
      */
     public function detectMessageType($object) {
-        if ($object instanceof Update) {
-            $object = $object->getMessage();
+        try {
+            if ($object instanceof Update) {
+                if ($object->has('message')) {
+                    $object = $object->getMessage();
+                    $types = [
+                        'audio', 'document', 'photo', 'sticker', 'video',
+                        'voice', 'contact', 'location', 'text', 'left_chat_member',
+                        'left_chat_participant', 'new_chat_participant', 'new_chat_member'
+                    ];
+
+                    $result = $object->keys()
+                        ->intersect($types)
+                        ->pop();
+                    return $result;
+                }
+
+                if ($object->has('edited_message')) {
+                    return 'edited';
+                }
+            }
+            throw new \Exception('Unknown Type');
+        } catch (\Exception $exception) {
+            throw $exception;
         }
-
-        $types = [
-            'audio', 'document', 'photo', 'sticker', 'video',
-            'voice', 'contact', 'location', 'text', 'left_chat_member',
-            'left_chat_participant', 'new_chat_participant', 'new_chat_member'
-        ];
-
-        $result = $object->keys()
-            ->intersect($types)
-            ->pop();
-
-        return $result;
     }
 
     /**
@@ -223,10 +232,10 @@ class TelegramService {
             $chat_id = $response->getChat()->get('id');
 
             return [
-              'user_id' => $user_id,
-              'chat_id' => $chat_id,
-              'message_id' => $message_id,
-              'message'  => $message
+                'user_id' => $user_id,
+                'chat_id' => $chat_id,
+                'message_id' => $message_id,
+                'message' => $message
             ];
 
         } catch (\Exception $exception) {
@@ -288,14 +297,11 @@ class TelegramService {
      * @return string
      * @throws \Exception
      */
-    public function getCurrentUUID()
-    {
-        try
-        {
+    public function getCurrentUUID() {
+        try {
             $model = $this->repository->getByToken($this->telegramAPI->getAccessToken())->first();
             return $model->uuid;
-        }catch (\Exception $exception)
-        {
+        } catch (\Exception $exception) {
             throw $exception;
         }
     }

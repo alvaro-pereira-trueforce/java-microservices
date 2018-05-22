@@ -6,6 +6,7 @@ use APIServices\Telegram\Services\TelegramService;
 use APIServices\Zendesk_Telegram\Models\MessageTypes\Audio;
 use APIServices\Zendesk_Telegram\Models\MessageTypes\Contact;
 use APIServices\Zendesk_Telegram\Models\MessageTypes\Document;
+use APIServices\Zendesk_Telegram\Models\MessageTypes\Edited;
 use APIServices\Zendesk_Telegram\Models\MessageTypes\LeftChatMember;
 use APIServices\Zendesk_Telegram\Models\MessageTypes\Location;
 use APIServices\Zendesk_Telegram\Models\MessageTypes\NewChatMember;
@@ -43,13 +44,14 @@ class TelegramServiceProvider extends ServiceProvider {
         $this->app->bind('telegram.voice', Voice::class);
         $this->app->bind('telegram.contact', Contact::class);
         $this->app->bind('telegram.location', Location::class);
+        $this->app->bind('telegram.edited', Edited::class);
         $this->app->bind('telegram.', UnknownType::class);
 
         $this->app->when(TelegramService::class)
             ->needs('$uuid')
             ->give(function () use ($metadata) {
                 $uuid = '';
-                if ($metadata) {
+                if ($metadata && array_key_exists('token', $metadata)) {
                     $uuid = $metadata['token'];
                 }
                 return $uuid;
@@ -58,7 +60,7 @@ class TelegramServiceProvider extends ServiceProvider {
         $message_types = [
             Text::class, Photo::class, Document::class, UnknownType::class,
             LeftChatMember::class, NewChatMember::class, Video::class,
-            Voice::class, Audio::class, Contact::class, Location::class
+            Voice::class, Audio::class, Contact::class, Location::class, Edited::class
         ];
 
         foreach ($message_types as $type) {
