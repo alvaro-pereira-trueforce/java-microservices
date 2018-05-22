@@ -3,6 +3,7 @@
 namespace APIServices\Zendesk_Telegram\Models\MessageTypes;
 
 
+use Carbon\Carbon;
 use Telegram\Bot\Objects\Message;
 
 class Edited extends EventMessageType {
@@ -10,7 +11,7 @@ class Edited extends EventMessageType {
     function getTransformedMessage() {
         $edited_message = new Message($this->update->get('edited_message'));
         $this->message = $edited_message;
-        $this->message_id = $this->message->getMessageId();
+        $this->message_id = $this->message->getMessageId().Carbon::now();
         $this->user_id = $this->message->getFrom()->getId();
         $this->chat_id = $this->message->getChat()->getId();
         $this->chat_type = $this->message->getChat()->getType();
