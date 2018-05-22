@@ -45,7 +45,7 @@ class FacebookServiceProvider extends ServiceProvider {
             ->needs('$access_token')
             ->give(function () use ($metadata) {
                 $access_token = '';
-                if ($metadata) {
+                if ($metadata && array_key_exists('token',$metadata)) {
                     $access_token = $metadata['token'];
                 }
                 return $access_token;
@@ -55,7 +55,7 @@ class FacebookServiceProvider extends ServiceProvider {
             ->needs('$instagram_id')
             ->give(function () use ($metadata) {
                 $instagram_id = '';
-                if ($metadata) {
+                if ($metadata && array_key_exists('instagram_id',$metadata)) {
                     $instagram_id = $metadata['instagram_id'];
                 }
                 return $instagram_id;
@@ -65,7 +65,7 @@ class FacebookServiceProvider extends ServiceProvider {
             ->needs('$page_id')
             ->give(function () use ($metadata) {
                 $page_id = '';
-                if ($metadata) {
+                if ($metadata && array_key_exists('page_id',$metadata)) {
                     $page_id = $metadata['page_id'];
                 }
                 return $page_id;
