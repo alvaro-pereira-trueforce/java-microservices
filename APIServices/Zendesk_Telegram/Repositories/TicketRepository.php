@@ -1,10 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: pablo.daza
- * Date: 5/7/18
- * Time: 11:02 AM
- */
 
 namespace APIServices\Zendesk_Telegram\Repositories;
 
