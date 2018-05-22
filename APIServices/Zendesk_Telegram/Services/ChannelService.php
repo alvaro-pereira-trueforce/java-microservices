@@ -36,7 +36,6 @@ class ChannelService {
 
             try {
                 $message_type = $this->telegram_service->detectMessageType($update);
-
                 /** @var $updateType IMessageType */
                 $updateType = App::makeWith($this->chanel_type . '.' . $message_type, [
                     'update' => $update,
