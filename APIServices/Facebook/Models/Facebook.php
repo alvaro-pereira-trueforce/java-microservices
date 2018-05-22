@@ -12,7 +12,6 @@ class Facebook extends FB {
     protected $access_token;
     protected $instagram_id;
     protected $page_id;
-    protected $state;
 
     /**
      * Facebook constructor.
@@ -21,18 +20,16 @@ class Facebook extends FB {
      * @param string $access_token
      * @param string $instagram_id
      * @param string $page_id
-     * @param array  $state
      * @throws FacebookSDKException
      */
     public function __construct(array $config = [], $access_token = '', $instagram_id = '',
-                                $page_id = '', $state = []) {
+                                $page_id = '') {
         try {
             parent::__construct($config);
             if ($access_token && $access_token != '') {
                 $this->setDefaultAccessToken($access_token);
                 $user = $this->get('/me');
                 $user->getGraphUser();
-                $this->state = $state;
                 $this->access_token = $access_token;
                 $this->instagram_id = $instagram_id;
                 $this->page_id = $page_id;
