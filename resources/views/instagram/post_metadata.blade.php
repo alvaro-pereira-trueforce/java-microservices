@@ -9,6 +9,9 @@
     <input type="hidden"
            name="metadata"
            value="{{$metadata}}">
+    <input type="hidden"
+           name="state"
+           value="{{$state}}">
 </form>
 <script type="text/javascript">
     // Post the form
