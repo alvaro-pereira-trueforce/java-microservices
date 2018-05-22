@@ -29,7 +29,7 @@ class ZendeskChannelService {
      * @param InstagramService $instagramService
      * @param array $state
      */
-    public function __construct(InstagramService $instagramService,$state = []) {
+    public function __construct(InstagramService $instagramService, $state = []) {
         $this->instagram_service = $instagramService;
         $this->chanel_type = 'INSTAGRAM';
         $this->state = $state;
@@ -46,39 +46,45 @@ class ZendeskChannelService {
             $posts = $response['data'];
             //It is done to start with the oldest post, to show properly in Zendes.
             $posts = array_reverse($posts, false);
+            $post_timestamp = $this->state;
             $transformedMessages = [];
             foreach ($posts as $post) {
                 if (count($transformedMessages) > 195) {
                     break;
                 }
+                $post_id = $post['id'];
                 $post_timestamp = date("c", strtotime($post['timestamp']));
                 if ($this->expire($post_timestamp)) {
-                    if ($post_timestamp > $this->state) {
-                        array_push($transformedMessages, $this->getUpdatesPosts($post));
-                        if ($post['comments_count'] > 0) {
-                            $post_id = $post['id'];
-                            $response = $this->instagram_service->getInstagramCommentsFromPost($post_id);
-                            $comments = $response['data'];
-                            //It is done to start with the oldest post, to show properly in Zendes.
-                            $comments = array_reverse($comments, false);
-                            foreach ($comments as $comment) {
-                                if (count($transformedMessages) > 199) {
-                                    break;
-                                }
-                                $comment_timestamp = date("c", strtotime($comment['timestamp']));
-                                $last_comment_date = getDate($post_id);
-                                if ($comment_timestamp > $last_comment_date) {
-                                    array_push($transformedMessages, $this->getUpdatesComments($owner_post, $post_id, $comment));
-                                }
-                            }
-                        }
-                    }
-                } else {
-                    deletePost($post['id']);
+                    $this->instagram_service->removePost($post_id);
+                    continue;
                 }
+                if ($post_timestamp > $this->state) {
+                    array_push($transformedMessages, $this->getUpdatesPosts($post));
+                }
+                $response = $this->instagram_service->getInstagramCommentsFromPost($post_id);
+                $comments = $response['data'];
+                //It is done to start with the oldest post, to show properly in Zendes.
+                $comments = array_reverse($comments, false);
+                $last_comment_date = null;
+                foreach ($comments as $comment) {
+                    if (count($transformedMessages) > 199) {
+                        break;
+                    }
+                    $comment_track = $this->instagram_service->commentTrack($post_id,$comment['timestamp']);
+                    $last_comment_date = $comment_track->last_comment_date;
+                    $comment_timestamp = date("c", strtotime($comment['timestamp']));
+                    if ($comment_timestamp >= $last_comment_date) {
+                        array_push($transformedMessages, $this->getUpdatesComments($owner_post, $post_id, $comment));
+                    }
+                }
+                $this->instagram_service->updatePost($post_id, $last_comment_date);
             }
-            Log::debug($transformedMessages);
-            return $transformedMessages;
+            //To Zendesk Pull
+            $response = [
+                'external_resources' => $transformedMessages,
+                'state' => json_encode(['last_post_date' => sprintf('%s', $post_timestamp)])
+            ];
+            return $response;
         } catch (\Exception $exception) {
 //            return [
 //                'external_resources' => [],
@@ -88,7 +94,6 @@ class ZendeskChannelService {
             return ['Message Error: ' + $exception->getMessage()];
         }
     }
-
 
     private function getUpdatesPosts($owner_post, $post)
     {

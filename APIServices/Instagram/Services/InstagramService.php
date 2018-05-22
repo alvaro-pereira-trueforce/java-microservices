@@ -2,6 +2,7 @@
 
 namespace APIServices\Instagram\Services;
 
+use APIServices\Zendesk_Instagram\Repositories\CommentTrackerRepository;
 use APIServices\Facebook\Models\Facebook;
 use APIServices\Zendesk\Utility;
 use Illuminate\Support\Facades\Log;
@@ -18,6 +19,8 @@ class InstagramService {
 
     protected $facebookAPI;
 
+    protected $comment_tracker_repository;
+
     /**
      * InstagramService constructor.
      * @param DatabaseManager $database
@@ -29,12 +32,14 @@ class InstagramService {
         DatabaseManager $database,
         Dispatcher $dispatcher,
         Utility $zendeskUtils,
-        Facebook $facebookAPI
+        Facebook $facebookAPI,
+        CommentTrackerRepository $comment_tracker_repository
     ) {
         $this->database = $database;
         $this->dispatcher = $dispatcher;
         $this->zendeskUtils = $zendeskUtils;
         $this->facebookAPI = $facebookAPI;
+        $this->comment_tracker_repository =$comment_tracker_repository;
     }
 
     /**
@@ -107,6 +112,68 @@ class InstagramService {
         } catch (\Exception $exception) {
             Log::error($exception->getMessage());
             return "";
+        }
+    }
+
+    /**
+     * @param $post_id
+     * @return CommentTrack|string
+     */
+    public function commentTrack($post_id,$date){
+        try {
+            $comment_tracker = $this->comment_tracker_repository->findByPostID($post_id);
+            if($comment_tracker==null){
+                return $this->comment_tracker_repository->create(
+                    [
+                        'post_id'=> $post_id,
+                        'last_comment_date' => $date
+                    ]
+                );
+            }
+            return $comment_tracker;
+        } catch (\Exception $exception) {
+            Log::error($exception->getMessage());
+            return "Not Exist the comment track.";
+        }
+    }
+
+    /**
+     * @param $post_id
+     * @return bool|string
+     */
+    public function removePost($post_id){
+        try {
+            return $this->comment_tracker_repository->deleteByPostID($post_id);
+        } catch (\Exception $exception) {
+            Log::error($exception->getMessage());
+            return "Not Exist the comment track.";
+        }
+    }
+
+    /**
+     * @param $post_id
+     * @param $date
+     * @return bool|string
+     */
+    public function updatePost($post_id, $date)
+    {
+        try {
+            if ($post_id != null && $date != null) {
+                $model = $this->comment_tracker_repository->findByPostID($post_id);
+                return $this->comment_tracker_repository->update($model, [
+                        'last_comment_date' => $date
+                    ]
+                );
+            } else {
+                return [
+                    'post_id' => $post_id,
+                    'last_comment_date' => $date
+                ];
+            }
+
+        } catch (\Exception $exception) {
+            Log::error($exception->getMessage());
+            return "Not Exist the comment track.";
         }
     }
 }

@@ -44,4 +44,27 @@ class CommentTrackerRepository extends RepositoryUUID {
         }
     }
 
+    /**
+     * @param Model $model
+     * @param array $data
+     * @return Model
+     */
+    public function update(Model $model, array $data)
+    {
+        $model->fill($data);
+        $model->save();
+        return $model;
+    }
+
+    /**
+     * @param array $data
+     * @return CommentTrack
+     */
+    public function create(array $data)
+    {
+        $model = $this->getModel();
+        $model->fill($data);
+        $model->save();
+        return $model;
+    }
 }
