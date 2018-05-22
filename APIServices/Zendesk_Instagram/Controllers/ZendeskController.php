@@ -8,6 +8,7 @@ use APIServices\Instagram\Services\InstagramService;
 use APIServices\Zendesk_Instagram\Services\ZendeskChannelService;
 use App\Http\Controllers\Controller;
 use App\Repositories\ManifestRepository;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
@@ -264,7 +265,13 @@ class ZendeskController extends Controller {
             $instagram_id,
             $page_id
         );
-        return view('instagram.post_metadata', ['return_url' => $return_url, 'name' => $name, 'metadata' => $metadata]);
+        $state = '{"last_post_date":"'.gmdate('Y-m-d\TH:i:s\Z', Carbon::now()->timestamp).'"}';
+        return view('instagram.post_metadata', [
+            'return_url' => $return_url,
+            'name' => $name,
+            'metadata' => $metadata,
+            'state'=> $state
+        ]);
     }
 
     /**
