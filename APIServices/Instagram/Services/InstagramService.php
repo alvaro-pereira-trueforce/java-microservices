@@ -123,6 +123,7 @@ class InstagramService {
         try {
             $comment_tracker = $this->comment_tracker_repository->findByPostID($post_id);
             if($comment_tracker==null){
+                Log::info("NULL: " .$post_id);
                 return $this->comment_tracker_repository->create(
                     [
                         'post_id'=> $post_id,
@@ -160,10 +161,9 @@ class InstagramService {
         try {
             if ($post_id != null && $date != null) {
                 $model = $this->comment_tracker_repository->findByPostID($post_id);
-                return $this->comment_tracker_repository->update($model, [
-                        'last_comment_date' => $date
-                    ]
-                );
+                $model->last_comment_date = $date;
+                $model->save();
+                return $model->toArray();
             } else {
                 return [
                     'post_id' => $post_id,

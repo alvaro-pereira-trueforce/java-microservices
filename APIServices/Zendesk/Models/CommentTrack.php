@@ -9,7 +9,6 @@ class CommentTrack extends ModelUUID {
 
     protected $fillable = [
       'post_id',
-      'comment_id',
-      'comment_date'
+      'last_comment_date'
     ];
 }
