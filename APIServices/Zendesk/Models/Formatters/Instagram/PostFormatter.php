@@ -5,6 +5,7 @@ namespace APIServices\Zendesk\Models\Formatters\Instagram;
 
 use APIServices\Zendesk\Utility;
 use Illuminate\Support\Facades\Log;
+use PhpParser\Node\Scalar\String_;
 
 class PostFormatter extends Formatter {
 
@@ -57,17 +58,9 @@ class PostFormatter extends Formatter {
     }
 
     /**
-     * Get Footer page  of the post or in case it does not exist,
-     * returns the user name plus the type of multimeia that has been posted.
-     * @return string
+     * @return String | null
      */
     function getFooterPage(){
-        if (array_key_exists('caption', $this->post)){
-            return $this->post['caption'];
-        }else{
-
-            $media_type = ucfirst(strtolower($this->post['media_type']));
-            return $this->owner['username'] . 'has posted a ' . $media_type ;
-        }
+        return array_key_exists('caption', $this->post)? $this->post['caption'] : null;
     }
 }

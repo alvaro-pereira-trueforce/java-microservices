@@ -36,4 +36,14 @@ class VideoPostFormatter extends PostFormatter {
             throw $exception;
         }
     }
+
+    function getFooterPage(){
+        $footer_page = parent::getFooterPage();
+        if ($footer_page!=null){
+            return $footer_page;
+        }else{
+            $media_type = ucfirst(strtolower($this->post['media_type']));
+            return $this->owner['username'] . ' has posted a ' . $media_type ;
+        }
+    }
 }
