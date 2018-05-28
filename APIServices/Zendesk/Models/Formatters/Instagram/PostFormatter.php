@@ -39,7 +39,7 @@ class PostFormatter extends Formatter {
     function getTransformedMessage()
     {
         try{
-            Log::info("DEBUGING .....................................................");
+            Log::info("DEBUGING .......................................................");
             $post_id = $this->post['id'];
             $created_at = date("c", strtotime($this->post['timestamp']));
             $data = ['priority'=>'higth'];
