@@ -40,7 +40,7 @@ class PostFormatter extends Formatter {
     {
         try{
             Log::info("Debuging...........................................");
-            $data = json_encode(['priority'=>'higth']);;
+            $data = json_encode(['priority'=>'high']);;
 
             $post_id = $this->post['id'];
             $created_at = date("c", strtotime($this->post['timestamp']));
