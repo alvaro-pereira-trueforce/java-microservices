@@ -51,6 +51,10 @@ class PostFormatter extends Formatter {
                     'external_id' => $this->post['username'],
                     'name' => $this->post['username'],
                     'image_url' => $this->owner['profile_picture_url']
+                ],
+                'display_info' => [[
+                    'type'=>'question'
+                ]
                 ]
             ];
         } catch (\Exception $exception) {
