@@ -39,8 +39,11 @@ class PostFormatter extends Formatter {
     function getTransformedMessage()
     {
         try{
+            Log::info("DEBUGING .......................................................");
             $post_id = $this->post['id'];
             $created_at = date("c", strtotime($this->post['timestamp']));
+            $data = ['priority'=>'higth'];
+           // $data = json_encode(['last_post_date' => sprintf('%s', $post_timestamp)])
             return [
                 'external_id' => $post_id,
                 'message' => $this->getFooterPage(),
@@ -50,6 +53,11 @@ class PostFormatter extends Formatter {
                     'external_id' => $this->post['username'],
                     'name' => $this->post['username'],
                     'image_url' => $this->owner['profile_picture_url']
+                ],
+                'display_info' => [[
+                    'type'=>'question',
+                    'data' => json_encode($data)
+                    ]
                 ]
             ];
         } catch (\Exception $exception) {
