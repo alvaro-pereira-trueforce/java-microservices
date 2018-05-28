@@ -39,6 +39,7 @@ class PostFormatter extends Formatter {
     function getTransformedMessage()
     {
         try{
+            Log::info("Debuging...........................................");
             $post_id = $this->post['id'];
             $created_at = date("c", strtotime($this->post['timestamp']));
             return [
@@ -50,6 +51,10 @@ class PostFormatter extends Formatter {
                     'external_id' => $this->post['username'],
                     'name' => $this->post['username'],
                     'image_url' => $this->owner['profile_picture_url']
+                ],
+                'display_info' => [[
+                    'type'=>'question'
+                ]
                 ]
             ];
         } catch (\Exception $exception) {
