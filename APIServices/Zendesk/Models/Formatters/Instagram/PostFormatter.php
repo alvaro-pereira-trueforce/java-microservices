@@ -40,6 +40,8 @@ class PostFormatter extends Formatter {
     {
         try{
             Log::info("Debuging...........................................");
+            $data = json_encode(['priority'=>'higth']);;
+
             $post_id = $this->post['id'];
             $created_at = date("c", strtotime($this->post['timestamp']));
             return [
@@ -53,8 +55,9 @@ class PostFormatter extends Formatter {
                     'image_url' => $this->owner['profile_picture_url']
                 ],
                 'display_info' => [[
-                    'type'=>'question'
-                ]
+                    'type'=>'com.zendesk.integration.channel.instagram.staging',
+                    'data'=>$data
+                  ]
                 ]
             ];
         } catch (\Exception $exception) {
