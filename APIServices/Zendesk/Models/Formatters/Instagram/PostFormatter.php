@@ -55,8 +55,7 @@ class PostFormatter extends Formatter {
                     'image_url' => $this->owner['profile_picture_url']
                 ],
                 'display_info' => [[
-                    'type'=>'question',
-                    'data' => json_encode($data)
+                    'type'=>'question'
                     ]
                 ]
             ];
