@@ -40,7 +40,7 @@ class TelegramService {
         $this->repository = $repository;
         $this->telegramAPI = $telegramAPI;
         $this->zendeskUtils = $zendeskUtils;
-        
+
         if($uuid && $uuid != '')
         {
             $token = $this->getTokenFromUUID($uuid);
