@@ -40,9 +40,12 @@ class TelegramService {
         $this->repository = $repository;
         $this->telegramAPI = $telegramAPI;
         $this->zendeskUtils = $zendeskUtils;
-
-        $token = $this->getTokenFromUUID($uuid);
-        $this->telegramAPI->setAccessToken($token);
+        
+        if($uuid && $uuid != '')
+        {
+            $token = $this->getTokenFromUUID($uuid);
+            $this->telegramAPI->setAccessToken($token);
+        }
     }
 
     public function getAll($options = []) {
