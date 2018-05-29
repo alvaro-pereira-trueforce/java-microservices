@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Log;
 use Telegram\Bot\Api;
 use Telegram\Bot\Exceptions\TelegramSDKException;
 use Telegram\Bot\Objects\Document;
+use Telegram\Bot\Objects\Message;
 use Telegram\Bot\Objects\PhotoSize;
 use Telegram\Bot\Objects\Update;
 
@@ -31,13 +32,20 @@ class TelegramService {
         Dispatcher $dispatcher,
         TelegramRepository $repository,
         Api $telegramAPI,
-        Utility $zendeskUtils
+        Utility $zendeskUtils,
+        $uuid
     ) {
         $this->database = $database;
         $this->dispatcher = $dispatcher;
         $this->repository = $repository;
         $this->telegramAPI = $telegramAPI;
         $this->zendeskUtils = $zendeskUtils;
+
+        if($uuid && $uuid != '')
+        {
+            $token = $this->getTokenFromUUID($uuid);
+            $this->telegramAPI->setAccessToken($token);
+        }
     }
 
     public function getAll($options = []) {
@@ -101,14 +109,6 @@ class TelegramService {
     }
 
     /**
-     * @param $token
-     * @return Api
-     */
-    private function getTelegramInstance($token) {
-        return $this->telegramAPI->setAccessToken($token);
-    }
-
-    /**
      * @param $uuid
      * @return string token
      */
@@ -122,24 +122,14 @@ class TelegramService {
     }
 
     /**
-     * @param $uuid
-     * @return null|Api
-     */
-    private function getTelegramActiveInstanse($uuid) {
-        return $this->getTelegramInstance($this->getTokenFromUUID($uuid));
-    }
-
-    /**
      * Get updates return all the messages from telegram converting the data for zendesk channel
      * pulling service.
      *
-     * @param string $uuid TelegramChannelUUID to retrieve the information from the database
      * @return Update[]
      */
-    public function getTelegramUpdates($uuid) {
+    public function getTelegramUpdates() {
         try {
-            $telegram = $this->getTelegramActiveInstanse($uuid);
-            $updates = $telegram->commandsHandler(false);
+            $updates = $this->telegramAPI->commandsHandler(false);
             return $updates;
 
         } catch (\Exception $exception) {
@@ -149,69 +139,93 @@ class TelegramService {
     }
 
     /**
-     * detect the type of the message
+     * Detect Message Type Based on Update or Message Object.
      *
-     * @param Update
+     * @param Update|Message $object
+     * @throws \Exception
      * @return string
      */
-    public function detectMessageType($update) {
-        return $this->telegramAPI->detectMessageType($update);
-    }
-
-    /**
-     * @param PhotoSize $fileSize
-     * @param string    $uuid
-     * @return string
-     */
-    public function getPhotoURL($fileSize, $uuid) {
+    public function detectMessageType($object) {
         try {
-            $token = $this->getTokenFromUUID($uuid);
-            $file = $this->getFileWithID($fileSize['file_id'], $uuid);
-            return 'https://api.telegram.org/file/bot' . $token . '/' . $file->getFilePath();
+            if ($object instanceof Update) {
+                if ($object->has('message')) {
+                    $object = $object->getMessage();
+                    $types = [
+                        'audio', 'document', 'photo', 'sticker', 'video',
+                        'voice', 'contact', 'location', 'text', 'left_chat_member',
+                        'left_chat_participant', 'new_chat_participant', 'new_chat_member'
+                    ];
+
+                    $result = $object->keys()
+                        ->intersect($types)
+                        ->pop();
+                    return $result;
+                }
+
+                if ($object->has('edited_message')) {
+                    return 'edited';
+                }
+            }
+            throw new \Exception('Unknown Type');
         } catch (\Exception $exception) {
-            Log::error($exception->getMessage());
-            return "";
+            throw $exception;
         }
     }
 
     /**
-     * @param $file_id
-     * @param $uuid
-     * @return \Telegram\Bot\Objects\File
+     * Ask if the update or message has the specified type
+     *
+     * @param Update $update
+     * @param string $type
+     * @return bool
      */
-    public function getFileWithID($file_id, $uuid) {
-        $telegram = $this->getTelegramActiveInstanse($uuid);
-        return $telegram->getFile(['file_id' => $file_id]);
+    public function isMessageType($update, $type) {
+        return $this->telegramAPI->isMessageType($type, $update);
     }
 
     /**
-     * @param Document $document
-     * @param          $uuid
-     * @return string
+     * @param        $command_name
+     * @param        $arguments
+     * @param Update $update
+     * @return mixed
      */
-    public function getDocumentURL($document, $uuid) {
-        try
-        {
-            $token = $this->getTokenFromUUID($uuid);
-            $file = $this->getFileWithID($document->getFileId(), $uuid);
+    public function triggerCommand($command_name, $arguments, $update) {
+        return $this->telegramAPI->getCommandBus()->execute($command_name, $arguments, $update);
+    }
+
+    /**
+     * @param $file_id
+     * @return \Telegram\Bot\Objects\File
+     */
+    public function getFileWithID($file_id) {
+        return $this->telegramAPI->getFile(['file_id' => $file_id]);
+    }
+
+    /**
+     * @param $document_id
+     * @return string
+     * @throws $exception
+     */
+    public function getDocumentURL($document_id) {
+        try {
+            $token = $this->telegramAPI->getAccessToken();
+            $file = $this->getFileWithID($document_id);
             return 'https://api.telegram.org/file/bot' . $token . '/' . $file->getFilePath();
         } catch (\Exception $exception) {
             Log::error($exception->getMessage());
-            return "";
+            throw $exception;
         }
     }
 
     /**
      * @param $chat_id
-     * @param $user_id
-     * @param $uuid
      * @param $message
-     * @return string
+     * @return array
+     * @throws \Exception
      */
-    public function sendTelegramMessage($chat_id, $user_id, $uuid, $message) {
+    public function sendTelegramMessage($chat_id, $message) {
         try {
-            $telegram = $this->getTelegramActiveInstanse($uuid);
-            $response = $telegram->sendMessage([
+            $response = $this->telegramAPI->sendMessage([
                 'chat_id' => $chat_id,
                 'text' => $message
             ]);
@@ -219,11 +233,17 @@ class TelegramService {
             $message_id = $response->getMessageId();
             $user_id = $response->getFrom()->get('id');
             $chat_id = $response->getChat()->get('id');
-            return $this->zendeskUtils->getExternalID([$user_id, $chat_id, $message_id]);
+
+            return [
+                'user_id' => $user_id,
+                'chat_id' => $chat_id,
+                'message_id' => $message_id,
+                'message' => $message
+            ];
 
         } catch (\Exception $exception) {
             Log::error($exception->getMessage());
-            return "";
+            throw $exception;
         }
     }
 
@@ -233,8 +253,8 @@ class TelegramService {
      */
     public function checkValidTelegramBot($token) {
         try {
-            $telegram = $this->getTelegramInstance($token);
-            return $telegram->getMe();
+            $this->telegramAPI->setAccessToken($token);
+            return $this->telegramAPI->getMe();
         } catch (\Exception $exception) {
             Log::error($exception->getMessage());
             return null;
@@ -274,5 +294,18 @@ class TelegramService {
         $model = $this->repository->getModel();
         $channels = $model->where('zendesk_app_id', '=', $subdomain)->get();
         return $channels;
+    }
+
+    /**
+     * @return string
+     * @throws \Exception
+     */
+    public function getCurrentUUID() {
+        try {
+            $model = $this->repository->getByToken($this->telegramAPI->getAccessToken())->first();
+            return $model->uuid;
+        } catch (\Exception $exception) {
+            throw $exception;
+        }
     }
 }

@@ -1,11 +1,11 @@
 {
-  "name": "Instagram Channel Bot",
+  "name": "Instagram Channel Develop",
   "author": {
     "name": "Sanntiago",
     "email": "support@zendesk.com"
   },
   "defaultLocale": "en",
   "private": true,
-  "version": "0.0.1",
+  "version": "0.0.2",
   "requirementsOnly": true
 }

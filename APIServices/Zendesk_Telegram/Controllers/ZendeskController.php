@@ -3,11 +3,13 @@
 namespace APIServices\Zendesk_Telegram\Controllers;
 
 use APIServices\Telegram\Services\TelegramService;
-use APIServices\Zendesk_Telegram\Models\Services\ChannelService;
+use APIServices\Zendesk_Telegram\Services\ChannelService;
 use App\Repositories\ManifestRepository;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Log;
+use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
+use Symfony\Component\HttpKernel\Exception\ServiceUnavailableHttpException;
 
 class ZendeskController extends Controller {
 
@@ -88,10 +90,8 @@ class ZendeskController extends Controller {
 
     public function pull(Request $request, ChannelService $service) {
         Log::debug($request);
-        $metadata = json_decode($request->metadata, true);
-        $state = json_decode($request->state, true);
 
-        $updates = $service->getUpdates($metadata);
+        $updates = $service->getUpdates();
         $response = [
             'external_resources' => $updates,
             'state' => ""
@@ -100,18 +100,19 @@ class ZendeskController extends Controller {
         return response()->json($response);
     }
 
-    public function channelback(Request $request, TelegramService $service) {
-        $metadata = json_decode($request->metadata, true);
-        $parent_id = explode(':', $request->parent_id);
-        $message = $request->message;
+    public function channelback(Request $request, ChannelService $service) {
+        try
+        {
+            $external_id = $service->channelBackRequest($request->parent_id, $request->message);
 
-
-        $external_id = $service->sendTelegramMessage($parent_id[1], $parent_id[0], $metadata['token'], $message);
-
-        $response = [
-            'external_id' => $external_id
-        ];
-        return response()->json($response);
+            $response = [
+                'external_id' => $external_id
+            ];
+            return response()->json($response);
+        }catch (\Exception $exception)
+        {
+            throw new ServiceUnavailableHttpException($exception->getMessage());
+        }
     }
 
     public function clickthrough(Request $request) {

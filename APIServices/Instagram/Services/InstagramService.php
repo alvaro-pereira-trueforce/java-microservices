@@ -2,277 +2,178 @@
 
 namespace APIServices\Instagram\Services;
 
-use APIServices\Instagram\Logic\InstagramLogic;
-use APIServices\Instagram\Repositories\InstagramRepository;
+use APIServices\Zendesk_Instagram\Repositories\CommentTrackerRepository;
+use APIServices\Facebook\Models\Facebook;
 use APIServices\Zendesk\Utility;
 use Illuminate\Support\Facades\Log;
-
-use APIServices\Instagram\Repositories\ChannelRepository;
 use Illuminate\Database\DatabaseManager;
-use Illuminate\Database\Eloquent\ModelNotFoundException;
-use Illuminate\Database\QueryException;
 use Illuminate\Events\Dispatcher;
 
 
-
-class InstagramService
-{
+class InstagramService {
     protected $database;
 
     protected $dispatcher;
 
-    protected $repository;
-
-    protected $instagramAPI;
-
     protected $zendeskUtils;
 
-    public function __construct(
+    protected $facebookAPI;
 
+    protected $comment_tracker_repository;
+
+    /**
+     * InstagramService constructor.
+     * @param DatabaseManager $database
+     * @param Dispatcher $dispatcher
+     * @param Utility $zendeskUtils
+     * @param Facebook $facebookAPI
+     */
+    public function __construct(
         DatabaseManager $database,
         Dispatcher $dispatcher,
-        InstagramRepository $repository,
-        InstagramLogic $instagramLogic,
-        Utility $zendeskUtils
-    )
-    {
-
-
+        Utility $zendeskUtils,
+        Facebook $facebookAPI,
+        CommentTrackerRepository $comment_tracker_repository
+    ) {
         $this->database = $database;
         $this->dispatcher = $dispatcher;
-        $this->repository = $repository;
-        $this->instagramAPI = $instagramLogic;
         $this->zendeskUtils = $zendeskUtils;
-
-        $this->instagramAPI->setApiKey('c133bd0821124643a3a0b5fbe77ee729');
-        $this->instagramAPI->setApiSecret('308973f7f4944f699a223c74ba687979');
-        $this->instagramAPI->setApiCallback('https://twitter.com/soysantizeta');
-    }
-
-    public function getAll($options = []) {
-        return $this->repository->get($options);
-    }
-
-    public function create($data) {
-        $user = $this->repository->create($data);
-        return $user;
-    }
-
-
-    public function update($uuid, array $data) {
-        $model = $this->getRequestedModel($uuid);
-
-        $this->repository->update($model, $data);
-
-        return $model;
-    }
-
-    public function delete($uuid) {
-        $model = $this->getById($uuid);
-        return $model->delete();
+        $this->facebookAPI = $facebookAPI;
+        $this->comment_tracker_repository =$comment_tracker_repository;
     }
 
     /**
+     * @return array
+     * @throws \Exception
+     */
+    public function getOwnerInstagram() {
+        try {
+            return $this->facebookAPI->getOwnerInstagram();
+        } catch (\Exception $exception) {
+            Log::error($exception->getMessage());
+            throw $exception;
+        }
+    }
+
+    /**
+     * @param $limit
+     * @return array
+     * @throws \Exception
+     */
+    public function getInstagramPosts($limit) {
+        try {
+            return $this->facebookAPI->getPosts($limit);
+        } catch (\Exception $exception) {
+            Log::error($exception->getMessage());
+            throw $exception;
+        }
+    }
+
+    /**
+     * @param $post_id
+     * @param $limit
+     * @return array
+     */
+    public function getInstagramCommentsFromPost($post_id, $limit=1000) {
+        try {
+            return $this->facebookAPI->getComments($post_id,$limit);
+        } catch (\Exception $exception) {
+            Log::error($exception->getMessage());
+            return [];
+        }
+    }
+
+    /**
+     * @param $name
      * @param $token
-     * @return Api
+     * @param $subdomain
+     * @param $instagram_id
+     * @param $page_id
+     * @return array|null
      */
-    private function getInstagramInstance($token)
-    {
-        $this->instagramAPI->setAccessToken($token);
-        return $this->instagramAPI;
+    public function registerNewIntegration($name, $token, $subdomain, $instagram_id, $page_id) {
+        return json_encode([
+            'integration_name' => $name,
+            'zendesk_app_id' => $subdomain,
+            'token' => $token,
+            'instagram_id' => $instagram_id,
+            'page_id' => $page_id
+        ]);
     }
 
-    private function getRequestedModel($uuid) {
-        $model = $this->repository->getByUUID($uuid);
-
-        if (is_null($model)) {
-            throw new ModelNotFoundException();
-        }
-        return $model;
-    }
-    public function getById($uuid, array $options = []) {
-        $model = $this->getRequestedModel($uuid);
-
-        return $model;
-    }
-
-    function pullState($uuid)
-    {
-        $instagramModel = $this->repository->getByUUID($uuid);
-        if ($instagramModel == null) {
-            return [];
-        }
-        $created_at = $instagramModel->updated_at;
-        $current_date = gmdate('Y-m-d\TH:i:s\Z', $created_at->getTimestamp());
-        return ['most_recent_item_timestamp' => sprintf('%s', $current_date)];
-    }
     /**
-     * Get updates return all the messages from telegram converting the data for zendesk channel
-     * pulling service.
-     *
-     * @param string $uuid TelegramChannelUUID to retrieve the information from the database
-     * @return array Zendesk External resources
+     * @param $post_id
+     * @param $message
+     * @return mixed|string
      */
-    public function getInstagramUpdates($uuid,$state_date)
-    {
-        $instagramModel = $this->repository->getByUUID($uuid);
-        if ($instagramModel == null) {
-            return [];
-        }
+    public function sendInstagramMessage($post_id,$message) {
         try {
-            //$telegram = $this->getTelegramInstance($instagramModel->token);
-            $this->instagramAPI->setAccessToken($instagramModel->token);
-            Log::info( $this->instagramAPI->getAccessToken());
-            $updates = array($this->instagramAPI->getUserMedia($auth = true, $id = 'self', $limit = 0));
-            $updates = json_decode(json_encode($updates), True);
-            $updates_data = $updates[0]['data'];
-            $transformedMessages = [];
-            foreach ($updates_data as $update) {
-                // must have a buffer in the future to catch only the first 200 messages and send
-                // it the leftover later. Maybe never happen an overflow.
-                if (count($transformedMessages) > 199) {
-                    break;
-                }
+            return $this->facebookAPI->postComment($post_id,$message);
+        } catch (\Exception $exception) {
+            Log::error($exception->getMessage());
+            return "";
+        }
+    }
 
-                $post_time = $update['created_time'];
-                $aux = gmdate('Y-m-d\TH:i:s\Z', $post_time);
-                if ($aux > $state_date){
-                    $post_id = $update['id'];
-                    $link = $update['link'];
-                    //data User
-                    $user = $update['user'];
-                    $user_name_post = $user['username'];
-                    $link_profile_picture_post = $user['profile_picture'];
-
-                    //Images of Post
-                    $images = $update['images'];
-                    $standard_resolution = $images['standard_resolution'];
-                    if ($update['caption']!=null){
-                        $caption = $update['caption'];
-                        $post_text = $caption['text'];
-                    }else{
-                        //Name to ticket
-                        $post_text = $user_name_post . ' Posted a photo';
-                        //Push post
-                        array_push($transformedMessages, [
-                            'external_id' => $this->zendeskUtils->getExternalID([$post_id]),
-                            'message' => $post_text,
-                            'html_message'=>sprintf('<p><img src=%s></p>',$standard_resolution['url']),
-                            'thread_id' => $this->zendeskUtils->getExternalID([$link, $post_id]),
-                            'created_at' => gmdate('Y-m-d\TH:i:s\Z', $post_time),
-                            'author' => [
-                                'external_id' => $this->zendeskUtils->getExternalID([$post_id, $user_name_post]),
-                                'name' => $user_name_post,
-                                "image_url"=> $link_profile_picture_post
-                            ]
-                        ]);
-                    }
-                    //Push post
-                    array_push($transformedMessages, [
-                        'external_id' => $this->zendeskUtils->getExternalID([$post_id]),
-                        'message' => $post_text,
-                        'html_message'=>sprintf($post_text.' <p><img src=%s></p>',$standard_resolution['url']),
-                        'thread_id' => $this->zendeskUtils->getExternalID([$link, $post_id]),
-                        'created_at' => gmdate('Y-m-d\TH:i:s\Z', $post_time),
-                        'author' => [
-                            'external_id' => $this->zendeskUtils->getExternalID([$post_id, $user_name_post]),
-                            'name' => $user_name_post,
-                            "image_url"=> $link_profile_picture_post
-                        ]
-                    ]);
-                    //
-                    $count_comments = $update['comments'];
-                    if($count_comments['count']>0){
-                        // Call comment
-                        $comments = array($this->instagramAPI->getMediaComments($post_id, true));
-                        $comments = json_decode(json_encode($comments), True);
-                        $comments_data = $comments[0]['data'];
-                        foreach ($comments_data as $comment) {
-                            $comment_id = $comment['id'];
-                            $user_name = $comment['from']['username'];
-                            $comment_time = $comment['created_time'];
-                            $comment_text = $comment['text'];
-                            // must have a buffer in the future to catch only the first 200 messages and send
-                            // it the leftover later. Maybe never happen an overflow.
-                            if (count($transformedMessages) > 199) {
-                                break;
-                            }
-                            array_push($transformedMessages, [
-                                'external_id' => $this->zendeskUtils->getExternalID([$comment_id]),
-                                'message' => $comment_text,
-                                'thread_id' => $this->zendeskUtils->getExternalID([$link, $post_id]),
-                                'created_at' => gmdate('Y-m-d\TH:i:s\Z', $comment_time),
-                                'author' => [
-                                    'external_id' => $this->zendeskUtils->getExternalID([$comment_id, $user_name]),
-                                    'name' => $user_name
-                                ]
-                            ]);
-                        }
-                    }
-                    Log::info($update);
-                }
+    /**
+     * @param $post_id
+     * @return CommentTrack|string
+     */
+    public function commentTrack($post_id,$date){
+        try {
+            $comment_tracker = $this->comment_tracker_repository->findByPostID($post_id);
+            if($comment_tracker==null){
+                Log::info("NULL: " .$post_id);
+                return $this->comment_tracker_repository->create(
+                    [
+                        'post_id'=> $post_id,
+                        'last_comment_date' => $date
+                    ]
+                );
             }
-            return $transformedMessages;
-
+            return $comment_tracker;
         } catch (\Exception $exception) {
             Log::error($exception->getMessage());
-            return [];
+            return "Not Exist the comment track.";
         }
     }
 
-    public function registerNewIntegration($name, $token, $subdomain) {
+    /**
+     * @param $post_id
+     * @return bool|string
+     */
+    public function removePost($post_id){
         try {
-            $model = $this->repository->create([
-                'token' => $token,
-                'zendesk_app_id' => $subdomain,
-                'integration_name' => $name
-            ]);
-            return [
-                'token' => $model->uuid,
-                'integration_name' => $model->integration_name,
-                'zendesk_app_id' => $model->zendesk_app_id
-            ];
-        } catch (QueryException $exception) {
-            return ["error" => ""];
+            return $this->comment_tracker_repository->deleteByPostID($post_id);
         } catch (\Exception $exception) {
-            Log::info($exception);
-            return null;
+            Log::error($exception->getMessage());
+            return "Not Exist the comment track.";
         }
     }
 
-    public function getMetadataFromSavedIntegration($uuid) {
-        $current_channel = $this->getById($uuid);
-        return [
-            'token' => $current_channel->uuid,
-            'integration_name' => $current_channel->integration_name,
-            'zendesk_app_id' => $current_channel->zendesk_app_id
-        ];
-    }
-
-    public function getByZendeskAppID($subdomain) {
-        $model = $this->repository->getModel();
-        $channels = $model->where('zendesk_app_id', '=', $subdomain)->get();
-        return $channels;
-    }
-
-    public function sendInstagramMessage($post_id, $uuid, $message)
+    /**
+     * @param $post_id
+     * @param $date
+     * @return bool|string
+     */
+    public function updatePost($post_id, $date)
     {
-        $instagramModel = $this->repository->getByUUID($uuid);
-        if ($instagramModel == null) {
-            return "";
-        }
         try {
-            $this->instagramAPI->setAccessToken($instagramModel->token);
-            $array = array('text' => $message);
-            $response = $this->instagramAPI->postUserMedia(true, $post_id, $array);
-            $comments = json_decode(json_encode($response), True);
-            Log::info($comments);
-            $comment_data = $comments['data'];
-            $comment_id = $comment_data['id'];
-            return $this->zendeskUtils->getExternalID([$comment_id]);
+            if ($post_id != null && $date != null) {
+                $model = $this->comment_tracker_repository->findByPostID($post_id);
+                $model->last_comment_date = $date;
+                $model->save();
+                return $model->toArray();
+            } else {
+                return [
+                    'post_id' => $post_id,
+                    'last_comment_date' => $date
+                ];
+            }
+
         } catch (\Exception $exception) {
             Log::error($exception->getMessage());
-            return "";
+            return "Not Exist the comment track.";
         }
     }
 }
