@@ -1,6 +1,6 @@
 <?php
 
-namespace APIServices\Commons\Tools\BasicEnum;
+namespace APIServices\Commons\Tools;
 
 abstract class BasicEnum
 {

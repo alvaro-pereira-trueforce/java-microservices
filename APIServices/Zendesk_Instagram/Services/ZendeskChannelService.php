@@ -43,15 +43,16 @@ class ZendeskChannelService {
     {
         $transformedMessages = [];
         $post_timestamp = $this->state;
-        $owner_post = $this->instagram_service->getOwner();
-        if ($owner_post->isError()){
+        $ownerPostEither = $this->instagram_service->getOwner();
+        if ($ownerPostEither->isError()){
             return $this->getResponsePull($transformedMessages,$post_timestamp);
         }
-        $response_post = $this->instagram_service->getPosts(199);
-        if ($response_post->isError()){
+        $owner = $ownerPostEither->success();
+        $postsEither = $this->instagram_service->getPosts(199);
+        if ($postsEither->isError()){
             return $this->getResponsePull($transformedMessages,$post_timestamp);
         }
-        $posts = $response_post['data'];
+        $posts = $postsEither->success();
         //It is done to start with the oldest post, to show properly in Zendes.
         $posts = array_reverse($posts, false);
         foreach ($posts as $post) {
@@ -65,11 +66,12 @@ class ZendeskChannelService {
                 continue;
             }
             if ($post_timestamp > $this->state['last_post_date']) {
-                array_push($transformedMessages, $this->getUpdatesPosts($owner_post,$post));
+                array_push($transformedMessages, $this->getUpdatesPosts($owner,$post));
             }
-            $response = $this->instagram_service->getCommentsFromPost($post_id);
-            if (!$response->isError()){
-                $comments = $response['data'];
+            $responseComment = $this->instagram_service->getCommentsFromPost($post_id);
+
+            if ($responseComment->isSuccess()){
+                $comments = $responseComment->success();
                 //It is done to start with the oldest post, to show properly in Zendes.
                 $comments = array_reverse($comments, false);
                 $last_comment_date = null;
@@ -79,11 +81,12 @@ class ZendeskChannelService {
                     }
                     $comment_timestamp = date("c", strtotime($comment['timestamp']));
                     $comment_timestamp = new Carbon($comment_timestamp);
-                    $comment_track = $this->instagram_service->commentTrack($post_id,$comment_timestamp);
-                    if ($comment_track->isSuccess()){
+                    $commentTrackEither = $this->instagram_service->commentTrack($post_id,$comment_timestamp);
+                    if ($commentTrackEither->isSuccess()){
+                        $comment_track = $commentTrackEither->success();
                         $last_comment_date = $comment_track->last_comment_date;
                         if ($comment_timestamp >= $last_comment_date) {
-                            array_push($transformedMessages, $this->getUpdatesComments($owner_post, $post_id, $comment));
+                            array_push($transformedMessages, $this->getUpdatesComments($owner, $post_id, $comment));
                             $last_comment_date = $comment_timestamp;
                         }
                     }

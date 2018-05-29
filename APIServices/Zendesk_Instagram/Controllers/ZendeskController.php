@@ -49,6 +49,7 @@ class ZendeskController extends Controller
     {
         Log::info("Zendesk Request: Pull");
         $updates = $service->getUpdates();
+        Log::debug($updates);
         return response()->json($updates);
     }
 

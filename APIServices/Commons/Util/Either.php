@@ -1,6 +1,6 @@
 <?php
 
-namespace APIServices\Commons\Util\Either;
+namespace APIServices\Commons\Util;
 
 class Either
 {

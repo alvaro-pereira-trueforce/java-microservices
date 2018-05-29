@@ -1,7 +1,6 @@
 <?php
-namespace APIServices\Commons\Tools\TypeError;
+namespace APIServices\Commons\Tools;
 
-use APIServices\Commons\Tools\BasicEnum\BasicEnum;
 
 class TypeError extends BasicEnum
 {

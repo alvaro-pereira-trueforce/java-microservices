@@ -1,8 +1,7 @@
 <?php
 
-namespace APIServices\Commons\Util\Errors;
+namespace APIServices\Commons\Util;
 
-use PhpParser\Node\Expr\Error;
 
 class Errors
 {

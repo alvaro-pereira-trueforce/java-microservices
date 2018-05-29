@@ -3,7 +3,7 @@
 namespace APIServices\Instagram\Services;
 
 use APIServices\Commons\Tools\TypeError\TypeError;
-use APIServices\Commons\Util\Either\Either;
+use APIServices\Commons\Util\Either;
 use APIServices\Commons\Util\Error\Error;
 use APIServices\Facebook\Services\FacebookService;
 use APIServices\Zendesk_Instagram\Repositories\CommentTrackerRepository;
@@ -66,7 +66,8 @@ class InstagramService {
      */
     public function getPosts($limit) {
         try {
-            $posts= $this->facebookService->getPosts($limit);
+            $responsePost= $this->facebookService->getPosts($limit);
+            $posts = $responsePost['data'];
             return Either::successCreate($posts);
         } catch (\Exception $exception) {
             Log::error($exception->getMessage());
@@ -81,7 +82,9 @@ class InstagramService {
      */
     public function getCommentsFromPost($post_id, $limit=1000) {
         try {
-            $comments = $this->facebookService->getComments($post_id,$limit);
+
+            $responseComments = $this->facebookService->getComments($post_id,$limit);
+            $comments = $responseComments['data'];
             return Either::successCreate($comments);
         } catch (\Exception $exception) {
             Log::error($exception->getMessage());

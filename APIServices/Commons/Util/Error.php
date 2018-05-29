@@ -1,7 +1,7 @@
 <?php
-namespace APIServices\Commons\Util\Error;
+namespace APIServices\Commons\Util;
 
-use APIServices\Commons\Tools\TypeError\TypeError;
+use APIServices\Commons\Tools\TypeError;
 
 class Error
 {
