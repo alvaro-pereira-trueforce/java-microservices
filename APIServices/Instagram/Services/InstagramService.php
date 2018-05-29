@@ -2,12 +2,11 @@
 
 namespace APIServices\Instagram\Services;
 
-use APIServices\Commons\Tools\TypeError\TypeError;
+use APIServices\Commons\Tools\TypeError;
 use APIServices\Commons\Util\Either;
-use APIServices\Commons\Util\Error\Error;
+use APIServices\Commons\UtilError;
 use APIServices\Facebook\Services\FacebookService;
 use APIServices\Zendesk_Instagram\Repositories\CommentTrackerRepository;
-use APIServices\Facebook\Models\Facebook;
 use APIServices\Zendesk\Utility;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Database\DatabaseManager;
@@ -56,7 +55,7 @@ class InstagramService {
             return Either::successCreate($owner);
         } catch (\Exception $exception) {
             Log::error($exception->getMessage());
-            return Either::errorCreate(new Error($exception->getMessage(),TypeError::SERVER_FACEBOOK_ERROR));
+            return Either::errorCreate(new Error('Failed to get Instagram Owner data.',TypeError::SERVER_FACEBOOK_ERROR));
         }
     }
 
@@ -71,7 +70,7 @@ class InstagramService {
             return Either::successCreate($posts);
         } catch (\Exception $exception) {
             Log::error($exception->getMessage());
-            return Either::errorCreate(new Error($exception->getMessage(),TypeError::SERVER_FACEBOOK_ERROR));
+            return Either::errorCreate(new Error('Error getting the Instagram post.',TypeError::SERVER_FACEBOOK_ERROR));
         }
     }
 
@@ -88,7 +87,7 @@ class InstagramService {
             return Either::successCreate($comments);
         } catch (\Exception $exception) {
             Log::error($exception->getMessage());
-            return Either::errorCreate(new Error($exception->getMessage(),TypeError::SERVER_FACEBOOK_ERROR));
+            return Either::errorCreate(new Error('Error getting the comments of the post.',TypeError::SERVER_FACEBOOK_ERROR));
         }
     }
 
@@ -131,7 +130,7 @@ class InstagramService {
             return Either::successCreate($commentTracker);
         } catch (\Exception $exception) {
             Log::error($exception->getMessage());
-            return Either::errorCreate(new Error($exception->getMessage(),TypeError::SERVER_FACEBOOK_ERROR));
+            return Either::errorCreate(new Error('Failed to get comment history.',TypeError::SERVER_FACEBOOK_ERROR));
         }
     }
 
@@ -145,7 +144,7 @@ class InstagramService {
             return Either::successCreate($commentTracker);
         } catch (\Exception $exception) {
             Log::error($exception->getMessage());
-            return Either::errorCreate(new Error($exception->getMessage(),TypeError::SERVER_FACEBOOK_ERROR));
+            return Either::errorCreate(new Error('Failed to delete comment history.',TypeError::SERVER_FACEBOOK_ERROR));
         }
     }
 
@@ -171,7 +170,7 @@ class InstagramService {
             }
         } catch (\Exception $exception) {
             Log::error($exception->getMessage());
-            return Either::errorCreate(new Error($exception->getMessage(),TypeError::SERVER_FACEBOOK_ERROR));
+            return Either::errorCreate(new Error('Error updating comment history.',TypeError::SERVER_FACEBOOK_ERROR));
         }
     }
 }

@@ -15,7 +15,7 @@ abstract class BasicEnum
     private function __construct()
     {
         /*
-          Preventing instance :)
+          Preventing instance
         */
     }
 

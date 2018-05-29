@@ -120,7 +120,7 @@ class Facebook extends FB
         try {
             $response = $this->getRequest('/' . $page_id . '?fields=instagram_business_account');
             return $response['instagram_business_account']['id'];
-        } catch (\Exception $exception) {
+        } catch (FacebookSDKException $exception) {
             throw  $exception;
         }
     }
@@ -134,7 +134,7 @@ class Facebook extends FB
         try {
             $url_get_owner = '/' . $this->instagram_id . '?fields=id,name,username,profile_picture_url';
             return $this->getRequest($url_get_owner);
-        } catch (\Exception $exception) {
+        } catch (FacebookSDKException $exception) {
             throw  $exception;
         }
     }
@@ -149,7 +149,7 @@ class Facebook extends FB
         try {
             $url_post = '/' . $this->instagram_id . '/media?fields=id,media_type,caption,media_url,thumbnail_url,permalink,username,timestamp,comments_count&limit=' . $limit;
             return $this->getRequest($url_post);
-        } catch (\Exception $exception) {
+        } catch (FacebookSDKException $exception) {
             throw  $exception;
         }
     }
@@ -165,7 +165,7 @@ class Facebook extends FB
         try {
             $url_comments = '/' . $post_id . '/comments?fields=id,text,username,timestamp,replies{id,text,username,timestamp}';
             return $this->getRequest($url_comments);
-        } catch (\Exception $exception) {
+        } catch (FacebookSDKException $exception) {
             throw  $exception;
         }
     }
@@ -181,7 +181,7 @@ class Facebook extends FB
         try {
             $url_comment = '/' . $post_id . '/comments?message=' . $message;
             return $this->postRequest($url_comment);
-        } catch (\Exception $exception) {
+        } catch (FacebookSDKException $exception) {
             throw  $exception;
         }
     }
