@@ -159,15 +159,15 @@ class ZendeskChannelService {
     /**
      * @param $post_id
      * @param $message
-     * @return string
+     * @throws \Exception
      */
-    public function sendInstagramMessage($post_id, $message) {
-        try {
-            $comment = $this->instagram_service->sendInstagramMessage($post_id,$message);
-            return $comment['id'];
-        } catch (\Exception $exception) {
-            Log::error($exception->getMessage());
-            return "";
+    public function sendInstagramMessage($post_id, $message)
+    {
+        $commentEither = $this->instagram_service->sendInstagramMessage($post_id, $message);
+        if ($commentEither->isError()) {
+            throw new \Exception($commentEither->error()->getMessage());
+        } else {
+            $commentEither->success();
         }
     }
 }

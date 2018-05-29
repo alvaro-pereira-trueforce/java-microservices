@@ -92,6 +92,21 @@ class InstagramService {
     }
 
     /**
+     * @param $post_id
+     * @param $message
+     * @return Either
+     */
+    public function sendInstagramMessage($post_id, $message) {
+        try {
+            $comment = $this->facebookService->sendMessage($post_id,$message);
+            return Either::successCreate($comment['id']);
+        } catch (\Exception $exception) {
+            Log::error($exception->getMessage());
+            return Either::errorCreate(new Error('Error commenting in the post.',TypeError::SERVER_FACEBOOK_ERROR));
+        }
+    }
+
+    /**
      * @param $name
      * @param $token
      * @param $subdomain
