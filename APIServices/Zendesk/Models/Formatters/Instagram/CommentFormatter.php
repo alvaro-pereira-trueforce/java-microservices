@@ -2,7 +2,6 @@
 
 namespace APIServices\Zendesk\Models\Formatters\Instagram;
 
-
 use APIServices\Zendesk\Utility;
 use Illuminate\Support\Facades\Log;
 

@@ -8,9 +8,17 @@ use Facebook\Facebook as FB;
 use Illuminate\Support\Facades\Log;
 
 class Facebook extends FB {
-
+    /**
+     * @var string
+     */
     protected $access_token;
+    /**
+     * @var string
+     */
     protected $instagram_id;
+    /**
+     * @var string
+     */
     protected $page_id;
 
     /**
