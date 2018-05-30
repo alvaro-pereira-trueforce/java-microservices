@@ -68,13 +68,13 @@ class ZendeskChannelService
                 continue;
             }
             if ($post_timestamp > $this->state['last_post_date']) {
-                array_push($transformedMessages, $this->getUpdatesPosts($owner, $post));
+                $transformedPosts = $this->getUpdatesPosts($owner, $post);
+                $transformedPosts == null ?: array_push($transformedMessages, $transformedPosts);
             }
             $responseComment = $this->instagram_service->getCommentsFromPost($post_id);
             if ($responseComment->isSuccess()) {
                 $comments = $responseComment->success();
                 //It is done to start with the oldest post, to show properly in Zendes.
-                $comments = array_reverse($comments, false);
                 $last_comment_date = null;
                 foreach ($comments as $comment) {
                     if (count($transformedMessages) > 199) {
@@ -87,7 +87,8 @@ class ZendeskChannelService
                         $comment_track = $commentTrackEither->success();
                         $last_comment_date = $comment_track->last_comment_date;
                         if ($comment_timestamp >= $last_comment_date) {
-                            array_push($transformedMessages, $this->getUpdatesComments($owner, $post_id, $comment));
+                            $transformedComments = $this->getUpdatesComments($owner, $post_id, $comment);
+                            $transformedComments == null ?: array_push($transformedMessages, $transformedComments);
                             $last_comment_date = $comment_timestamp;
                         }
                     }
@@ -115,36 +116,44 @@ class ZendeskChannelService
     /**
      * @param $owner_post
      * @param $post
-     * @return array
+     * @return array|null
      */
     private function getUpdatesPosts($owner_post, $post)
     {
-        /** @var PostFormatter $formatter */
-        $formatter = App::makeWith($this->chanel_type . '.' . $post['media_type'], [
-            'owner' => $owner_post,
-            'post' => $post
+        try {
+            /** @var PostFormatter $formatter */
+            $formatter = App::makeWith($this->chanel_type . '.' . $post['media_type'], [
+                'owner' => $owner_post,
+                'post' => $post
 
-        ]);
-        return $formatter->getTransformedMessage();
+            ]);
+            return $formatter->getTransformedMessage();
+        } catch (\Exception $exception) {
+            return null;
+        }
     }
 
     /**
      * @param $owner_post
      * @param $post_id
      * @param $comment
-     * @return array
+     * @return array|null
      */
     private function getUpdatesComments($owner_post, $post_id, $comment)
     {
-        /** @var CommentFormatter $formatter */
-        $formatter = App::makeWith(CommentFormatter::class, [
-            'thread_id' => [
-                'user_id' => $owner_post['id'],
-                'post_id' => $post_id,
-            ],
-            'comment' => $comment
-        ]);
-        return $formatter->getTransformedMessage();
+        try {
+            /** @var CommentFormatter $formatter */
+            $formatter = App::makeWith(CommentFormatter::class, [
+                'thread_id' => [
+                    'user_id' => $owner_post['id'],
+                    'post_id' => $post_id,
+                ],
+                'comment' => $comment
+            ]);
+            return $formatter->getTransformedMessage();
+        } catch (\Exception $exception) {
+            return null;
+        }
     }
 
     /**
@@ -160,6 +169,7 @@ class ZendeskChannelService
     /**
      * @param $post_id
      * @param $message
+     * @return string
      * @throws \Exception
      */
     public function sendInstagramMessage($post_id, $message)
@@ -168,7 +178,7 @@ class ZendeskChannelService
         if ($commentEither->isError()) {
             throw new \Exception($commentEither->error()->getMessage());
         } else {
-            $commentEither->success();
+            return $commentEither->success();
         }
     }
 }
