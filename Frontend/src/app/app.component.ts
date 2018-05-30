@@ -1,10 +1,10 @@
 import { Component } from '@angular/core';
 
 @Component({
-  selector: 'devx-root',
+  selector: 'app-root',
   templateUrl: './app.component.html',
-  styleUrls: ['./app.component.scss']
+  styleUrls: [ './app.component.scss' ]
 })
 export class AppComponent {
-  title = 'devx';
+  title = 'app';
 }
