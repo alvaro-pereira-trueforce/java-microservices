@@ -7,11 +7,11 @@ use Illuminate\Support\Facades\Log;
 
 class CommentFormatter extends Formatter {
     /**
-     * @var thread_id
+     * @var int
      */
     protected $thread_id;
     /**
-     * @var comment
+     * @var array
      */
     protected $comment;
     /**

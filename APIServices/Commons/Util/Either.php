@@ -4,13 +4,7 @@ namespace APIServices\Commons\Util;
 
 class Either
 {
-    /**
-     * @var error null
-     */
     protected $error = null;
-    /**
-     * @var success null
-     */
     protected $success = null;
 
     /**
@@ -67,7 +61,7 @@ class Either
     }
 
     /**
-     * @return success
+     * @return mixed
      */
     public function success()
     {

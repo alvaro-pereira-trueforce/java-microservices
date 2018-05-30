@@ -4,7 +4,7 @@ namespace APIServices\Instagram\Services;
 
 use APIServices\Commons\Tools\TypeError;
 use APIServices\Commons\Util\Either;
-use APIServices\Commons\UtilError;
+use APIServices\Commons\Util\Error;
 use APIServices\Facebook\Services\FacebookService;
 use APIServices\Zendesk_Instagram\Repositories\CommentTrackerRepository;
 use APIServices\Zendesk\Utility;
@@ -133,7 +133,7 @@ class InstagramService {
         try {
             $commentTracker = $this->commentTrackerRepository->findByPostID($post_id);
             if($commentTracker==null){
-                Log::info("Creating comment traker in repository");
+                Log::info("Creating comment traker in repository.");
                 $commentTracker = $this->commentTrackerRepository->create(
                     [
                         'post_id'=> $post_id,

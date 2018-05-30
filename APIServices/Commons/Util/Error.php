@@ -1,32 +1,30 @@
 <?php
 namespace APIServices\Commons\Util;
 
-use APIServices\Commons\Tools\TypeError;
-
 class Error
 {
     /**
-     * @var message error
+     * @var string
      */
     protected $message;
     /**
-     * @var TypeError
+     * @var int
      */
     protected $typeError;
 
     /**
      * Errors constructor.
      * @param $message
-     * @param TypeError $typeError
+     * @param $typeError
      */
-    public function __construct($message, TypeError $typeError)
+    public function __construct($message, $typeError)
     {
         $this->message = $message;
         $this->typeError = $typeError;
     }
 
     /**
-     * @return mixed
+     * @return string
      */
     public function getMessage()
     {
@@ -34,7 +32,7 @@ class Error
     }
 
     /**
-     * @return TypeError
+     * @return int
      */
     public function getTypeError()
     {
@@ -42,7 +40,7 @@ class Error
     }
 
     /**
-     * @param mixed $message
+     * @param string $message
      */
     public function setMessage($message)
     {
@@ -50,9 +48,9 @@ class Error
     }
 
     /**
-     * @param TypeError $typeError
+     * @param int $typeError
      */
-    public function setTypeError(TypeError $typeError)
+    public function setTypeError($typeError)
     {
         $this->typeError = $typeError;
     }
