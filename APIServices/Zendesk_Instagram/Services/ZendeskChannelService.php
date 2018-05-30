@@ -10,7 +10,8 @@ use Carbon\Carbon;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Log;
 
-class ZendeskChannelService {
+class ZendeskChannelService
+{
 
     /**
      * @var InstagramService
@@ -30,7 +31,8 @@ class ZendeskChannelService {
      * @param InstagramService $instagramService
      * @param array $state
      */
-    public function __construct(InstagramService $instagramService, $state = []) {
+    public function __construct(InstagramService $instagramService, $state = [])
+    {
         $this->instagram_service = $instagramService;
         $this->chanel_type = 'INSTAGRAM';
         $this->state = $state;
@@ -44,13 +46,13 @@ class ZendeskChannelService {
         $transformedMessages = [];
         $post_timestamp = $this->state;
         $ownerPostEither = $this->instagram_service->getOwner();
-        if ($ownerPostEither->isError()){
-            return $this->getResponsePull($transformedMessages,$post_timestamp);
+        if ($ownerPostEither->isError()) {
+            return $this->getResponsePull($transformedMessages, $post_timestamp);
         }
         $owner = $ownerPostEither->success();
         $postsEither = $this->instagram_service->getPosts(199);
-        if ($postsEither->isError()){
-            return $this->getResponsePull($transformedMessages,$post_timestamp);
+        if ($postsEither->isError()) {
+            return $this->getResponsePull($transformedMessages, $post_timestamp);
         }
         $posts = $postsEither->success();
         //It is done to start with the oldest post, to show properly in Zendes.
@@ -66,11 +68,11 @@ class ZendeskChannelService {
                 continue;
             }
             if ($post_timestamp > $this->state['last_post_date']) {
-                array_push($transformedMessages, $this->getUpdatesPosts($owner,$post));
+                array_push($transformedMessages, $this->getUpdatesPosts($owner, $post));
             }
             $responseComment = $this->instagram_service->getCommentsFromPost($post_id);
 
-            if ($responseComment->isSuccess()){
+            if ($responseComment->isSuccess()) {
                 $comments = $responseComment->success();
                 //It is done to start with the oldest post, to show properly in Zendes.
                 $comments = array_reverse($comments, false);
@@ -81,8 +83,8 @@ class ZendeskChannelService {
                     }
                     $comment_timestamp = date("c", strtotime($comment['timestamp']));
                     $comment_timestamp = new Carbon($comment_timestamp);
-                    $commentTrackEither = $this->instagram_service->commentTrack($post_id,$comment_timestamp);
-                    if ($commentTrackEither->isSuccess()){
+                    $commentTrackEither = $this->instagram_service->commentTrack($post_id, $comment_timestamp);
+                    if ($commentTrackEither->isSuccess()) {
                         $comment_track = $commentTrackEither->success();
                         $last_comment_date = $comment_track->last_comment_date;
                         if ($comment_timestamp >= $last_comment_date) {
@@ -96,7 +98,7 @@ class ZendeskChannelService {
             }
 
         }
-        return $this->getResponsePull($transformedMessages,$post_timestamp);
+        return $this->getResponsePull($transformedMessages, $post_timestamp);
     }
 
     /**
@@ -104,7 +106,8 @@ class ZendeskChannelService {
      * @param $post_timestamp
      * @return array
      */
-    private function getResponsePull($transformedMessages,$post_timestamp){
+    private function getResponsePull($transformedMessages, $post_timestamp)
+    {
         return [
             'external_resources' => $transformedMessages,
             'state' => json_encode(['last_post_date' => sprintf('%s', $post_timestamp)])
