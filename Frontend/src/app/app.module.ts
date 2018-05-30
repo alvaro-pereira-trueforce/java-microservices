@@ -3,31 +3,25 @@ import { NgModule } from '@angular/core';
 
 import { AppComponent } from './app.component';
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
-import { RouterModule, Routes } from '@angular/router';
-
-const appRoutes: Routes = [
-    {
-        path: '',
-        component: AppComponent
-    }
-];
+import { SideMenuModule } from './side-menu/side-menu.module';
+import { HomeModule } from './home/home.module';
+import { NavBarModule } from './nav-bar/nav-bar.module';
+import { RoutingModule } from './routing/routing.module';
 
 @NgModule({
-    declarations: [
-        AppComponent
-    ],
-    imports: [
-        RouterModule.forRoot(
-            appRoutes, {
-                enableTracing: false,
-                useHash: true
-            }
-        ),
-        BrowserModule,
-        NgbModule.forRoot()
-    ],
-    providers: [],
-    bootstrap: [ AppComponent ]
+  declarations: [
+    AppComponent
+  ],
+  imports: [
+    RoutingModule,
+    BrowserModule,
+    NgbModule.forRoot(),
+    SideMenuModule,
+    NavBarModule,
+    HomeModule
+  ],
+  providers: [],
+  bootstrap: [ AppComponent ]
 })
 
 export class AppModule {
