@@ -7,18 +7,22 @@ import { SideMenuModule } from './side-menu/side-menu.module';
 import { HomeModule } from './home/home.module';
 import { NavBarModule } from './nav-bar/nav-bar.module';
 import { RoutingModule } from './routing/routing.module';
+import { InstagramModule } from './instagram/instagram.module';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
 @NgModule({
   declarations: [
     AppComponent
   ],
   imports: [
-    RoutingModule,
-    BrowserModule,
-    NgbModule.forRoot(),
+    InstagramModule,
+    HomeModule,
     SideMenuModule,
     NavBarModule,
-    HomeModule
+    RoutingModule,
+    BrowserAnimationsModule,
+    NgbModule.forRoot(),
+    BrowserModule,
   ],
   providers: [],
   bootstrap: [ AppComponent ]

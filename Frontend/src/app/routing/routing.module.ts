@@ -5,13 +5,13 @@ import { appRoutes } from './routes';
 
 @NgModule({
   imports: [
-    CommonModule,
     RouterModule.forRoot(
         appRoutes, {
           enableTracing: true,
           useHash: true
         }
     ),
+    CommonModule
   ],
   exports: [
     RouterModule
