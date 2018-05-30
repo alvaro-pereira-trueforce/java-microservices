@@ -71,7 +71,6 @@ class ZendeskChannelService
                 array_push($transformedMessages, $this->getUpdatesPosts($owner, $post));
             }
             $responseComment = $this->instagram_service->getCommentsFromPost($post_id);
-
             if ($responseComment->isSuccess()) {
                 $comments = $responseComment->success();
                 //It is done to start with the oldest post, to show properly in Zendes.
@@ -96,7 +95,6 @@ class ZendeskChannelService
                 //To update the date of the last comment
                 $this->instagram_service->updatePost($post_id, $last_comment_date);
             }
-
         }
         return $this->getResponsePull($transformedMessages, $post_timestamp);
     }
