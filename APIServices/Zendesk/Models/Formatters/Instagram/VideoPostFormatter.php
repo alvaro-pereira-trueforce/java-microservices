@@ -9,7 +9,7 @@ class VideoPostFormatter extends PostFormatter {
     /**
      * Receive a post Video to be converted.
      *
-     * @param $post video
+     * @param $post
      * @param $utility
      */
     public function __construct($owner, $post, Utility $utility)

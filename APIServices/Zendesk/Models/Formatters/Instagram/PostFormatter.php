@@ -7,16 +7,16 @@ use Illuminate\Support\Facades\Log;
 
 class PostFormatter extends Formatter {
     /**
-     * @var owner
+     * @var array
      */
     protected $owner;
     /**
-     * @var post
+     * @var array
      */
     protected $post;
 
     /**
-     * @var utility
+     * @var Utility
      */
     protected $utility;
     /**

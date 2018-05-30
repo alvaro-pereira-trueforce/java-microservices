@@ -31,20 +31,12 @@ class ZendeskController extends Controller
         $this->manifest = $repository;
     }
 
-    /**
-     * @param Request $request
-     * @return JsonResponse
-     */
     public function getManifest(Request $request)
     {
         Log::info("Zendesk Request: " . $request);
         return response()->json($this->manifest->getByName('Instagram Channel'));
     }
 
-    /**
-     * @param ZendeskChannelService $service
-     * @return JsonResponse
-     */
     public function pull(ZendeskChannelService $service)
     {
         Log::info("Zendesk Request: Pull");
@@ -53,11 +45,6 @@ class ZendeskController extends Controller
         return response()->json($updates);
     }
 
-    /**
-     * @param Request $request
-     * @param ZendeskChannelService $service
-     * @return JsonResponse
-     */
     public function channelback(Request $request, ZendeskChannelService $service)
     {
         Log::info($request);
@@ -74,10 +61,6 @@ class ZendeskController extends Controller
         }
     }
 
-    /**
-     * @param Request $request
-     * @return View
-     */
     public function adminUI(Request $request)
     {
         $name = $request->name; //will be null on empty
@@ -99,11 +82,6 @@ class ZendeskController extends Controller
         }
     }
 
-    /**
-     * @param Request $request
-     * @param FacebookRepository $repository
-     * @return JsonResponse
-     */
     public function admin_create_facebook_registration(Request $request, FacebookRepository $repository)
     {
         try {
@@ -120,11 +98,6 @@ class ZendeskController extends Controller
         }
     }
 
-    /**
-     * @param Request $request
-     * @param FacebookRepository $repository
-     * @return JsonResponse
-     */
     public function admin_wait_facebook(Request $request, FacebookRepository $repository)
     {
         if ($request->uuid) {
@@ -137,12 +110,6 @@ class ZendeskController extends Controller
         return response()->json('', 408);
     }
 
-    /**
-     * @param Request $request
-     * @param Client $client
-     * @param FacebookRepository $repository
-     * @return View
-     */
     public function admin_facebook_auth(Request $request, Client $client, FacebookRepository $repository)
     {
         try {
@@ -173,11 +140,6 @@ class ZendeskController extends Controller
         return view('close_tab_helper');
     }
 
-    /**
-     * @param Request $request
-     * @param FacebookService $service
-     * @return View
-     */
     public function admin_ui_2(Request $request, FacebookService $service)
     {
         $return_url = $request->return_url;
@@ -214,11 +176,6 @@ class ZendeskController extends Controller
         }
     }
 
-    /**
-     * @param Request $request
-     * @param FacebookService $service
-     * @return JsonResponse
-     */
     public function admin_validate_page(Request $request, FacebookService $service)
     {
         $page_id = $request->page_id;
@@ -233,11 +190,6 @@ class ZendeskController extends Controller
         }
     }
 
-    /**
-     * @param Request $request
-     * @param InstagramService $service
-     * @return View
-     */
     public function admin_ui_submit(Request $request, InstagramService $service)
     {
         $return_url = $request->return_url;
@@ -272,36 +224,22 @@ class ZendeskController extends Controller
         ]);
     }
 
-    /**
-     * @param Request $request
-     */
     public function clickthrough(Request $request)
     {
         Log::info($request->all());
     }
 
-    /**
-     * @param Request $request
-     * @return JsonResponse
-     */
     public function healthcheck(Request $request)
     {
         return $this->successReturn();
     }
 
-    /**
-     * @param Request $request
-     * @return JsonResponse
-     */
     public function event_callback(Request $request)
     {
         Log::debug("Event On Zendesk: \n" . $request . "\n");
         return $this->successReturn();
     }
 
-    /**
-     * @return JsonResponse
-     */
     public function successReturn()
     {
         return response()->json('ok', 200);
