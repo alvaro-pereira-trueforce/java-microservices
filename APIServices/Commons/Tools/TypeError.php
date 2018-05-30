@@ -2,7 +2,7 @@
 namespace APIServices\Commons\Tools;
 
 
-class TypeError extends BasicEnum
+class TypeError
 {
     const UNAUTHORIZED = 300;
     const INVALID_REQUEST = 301;

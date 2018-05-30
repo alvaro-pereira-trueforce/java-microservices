@@ -19,7 +19,7 @@ class Error
      * @param $message
      * @param TypeError $typeError
      */
-    public function __construct($message, TypeError $typeError)
+    public function __construct($message, $typeError)
     {
         $this->message = $message;
         $this->typeError = $typeError;
@@ -52,7 +52,7 @@ class Error
     /**
      * @param TypeError $typeError
      */
-    public function setTypeError(TypeError $typeError)
+    public function setTypeError($typeError)
     {
         $this->typeError = $typeError;
     }
