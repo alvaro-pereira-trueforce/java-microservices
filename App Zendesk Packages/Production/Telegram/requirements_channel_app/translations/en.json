@@ -1,9 +1,8 @@
 {
   "app": {
-    "package": "telegram_channel_bot",
-    "name": {
-      "value": "Telegram Integration for channel Bot",
-      "title": "Telegram Channel Bot"
-    }
+    "name": "Telegram Channel",
+    "short_description": "Channel integration to use Telegram bots into Zendesk Support.",
+    "long_description": "# Telegram Channel\n\nTelegram is a cloud-based instant messaging and voice over IP service. Telegram client apps are available on different platforms, and users can send messages and exchange photos, videos, stickers, audio and files of any type.\nTelegram Channel Integration for Zendesk offers the opportunity to expand your customer service experience through instant messaging between Telegram and Zendesk Support.\nThis new Channel Integration allows you to connect your company's Telegram Bot to your Zendesk Support domain. Telegram Bots offer the ability to reach to your customers directly, and this Channel Integration helps you creating and handling all Telegram messages into your Zendesk workflow.\n\nWith this Telegram Channel Integration your agents will be able to:\n\n- Support Telegram messages thru the traditional tickets.\n- Support multimedia on tickets (Video, Voice Records, Photos, Locations, Contacts, Files).\n- Reply from Zendesk Support straight to Telegram chats.\n- Get notified when a message is modified in Telegram.\n- Get notified when a message is replied from Telegram.\n- Manage Telegram private chats, groups, and channels.\n\n>**Note:** Your Zendesk Support workflow will not be modified by this Channel Integration.",
+    "installation_instructions": "# How to Install Telegram Channel\n\n## Requirements:\n\nThis Telegram Channel Integration needs a **Telegram’s Bot already configured**.\n\nYou can configure a Telegram Bot by using [Telegram Bot Father](https://telegram.me/BotFather) in Telegram.\n\n>**Note:** If you want to receive all of your customer messages in a group chat, please set up your Bot disabling\nthe Group Privacy Policy in your Telegram Bot configuration in Bot Father.\n\n## Preparation:\n\n1. Install the Telegram Channel Integration from the Zendesk Marketplace\n2. Go to 'Channel integrations' in your Zendesk Support settings\n3. Select “Telegram Channel”\n4. Review the “General Information” tab and make changes if applicable\n5. Select the “Accounts” tab and press “Add an account”\n6. In the pop-up page, set the Integration Name for your company\n7. Set your Telegram Bot Private Token\n8. Press **“Submit”**\n9. That's it! Start chatting with your customers\n"
   }
 }
