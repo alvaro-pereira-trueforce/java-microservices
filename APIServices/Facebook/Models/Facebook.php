@@ -147,8 +147,8 @@ class Facebook extends FB
     public function getPosts($limit = 1000)
     {
         try {
-            $url_post = '/' . $this->instagram_id . '/media?fields=id,media_type,caption,media_url,thumbnail_url,permalink,username,timestamp,comments_count&limit=' . $limit;
-            return $this->getRequest($url_post);
+            $url = '/' . $this->instagram_id . '/media?fields=id,media_type,caption,media_url,thumbnail_url,permalink,username,timestamp,comments_count&limit=' . $limit;
+            return $this->getRequest($url);
         } catch (\Exception $exception) {
             throw  $exception;
         }
@@ -163,8 +163,8 @@ class Facebook extends FB
     public function getComments($post_id, $limit = 1000)
     {
         try {
-            $url_comments = '/' . $post_id . '/comments?fields=id,text,username,timestamp,replies{id,text,username,timestamp}';
-            return $this->getRequest($url_comments);
+            $url = '/' . $post_id . '/comments?fields=id,text,username,timestamp,replies{id,text,username,timestamp}';
+            return $this->getRequest($url);
         } catch (\Exception $exception) {
             throw  $exception;
         }
@@ -179,8 +179,24 @@ class Facebook extends FB
     public function postComment($post_id, $message)
     {
         try {
-            $url_comment = '/' . $post_id . '/comments?message=' . $message;
-            return $this->postRequest($url_comment);
+            $url = '/' . $post_id . '/comments?message=' . $message;
+            return $this->postRequest($url);
+        } catch (\Exception $exception) {
+            throw  $exception;
+        }
+    }
+
+    /**
+     * @param $comment_id
+     * @param int $limit
+     * @return mixed
+     * @throws \Exception
+     */
+    public function getReplies($comment_id, $limit=1000)
+    {
+        try {
+            $url = '/' . $comment_id . '?fields=replies.limit('.$limit.'){id,text,username,timestamp}';
+            return $this->postRequest($url);
         } catch (\Exception $exception) {
             throw  $exception;
         }
