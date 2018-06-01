@@ -24,7 +24,10 @@ class Comment implements ITransformer
         $this->instagramService = $instagramService;
     }
 
-    public function generateToTransformedMessage()
+    /**
+     * @return array
+     */
+    public function generateToTransformerMessage()
     {
         $transformedMessages = [];
         $dataForReplies = [];
@@ -57,6 +60,11 @@ class Comment implements ITransformer
         return ['transformedMessages' => $transformedMessages, 'dataForReplies' => $dataForReplies];
     }
 
+    /**
+     * @param $threadId
+     * @param $comment
+     * @return array|null
+     */
     private function getUpdatesComments($threadId, $comment)
     {
         try {
@@ -71,6 +79,14 @@ class Comment implements ITransformer
         }
     }
 
+    /**
+     * Data for the thread id to create the reply
+     *
+     * @param $threadId
+     * @param $commentId
+     * @param $comment
+     * @return array
+     */
     private function generateDataForReply($threadId,$commentId,$comment){
         return [
             'thread_id'=>$threadId,
