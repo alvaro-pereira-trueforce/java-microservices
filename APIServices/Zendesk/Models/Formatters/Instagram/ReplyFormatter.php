@@ -20,9 +20,11 @@ class ReplyFormatter extends CommentFormatter
     {
         try {
             $transformedMessages = parent::getTransformedMessage();
+
             return $this->utility->addHtmlMessageToBasicResponse($transformedMessages,
                 view('instagram.multimedia.reply_viewer', [
-                    'reply_text' => $this->commentReply
+                    'reply' =>$transformedMessages['message'],
+                    'comment_to_reply' => $this->commentReply
                 ])->render()
             );
         } catch (\Exception $exception) {
