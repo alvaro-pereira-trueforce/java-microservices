@@ -4,13 +4,11 @@ namespace APIServices\Zendesk_Instagram\Services;
 
 
 use APIServices\Instagram\Services\InstagramService;
-use APIServices\Zendesk\Models\Formatters\Instagram\CommentFormatter;
-use APIServices\Zendesk\Models\Formatters\Instagram\PostFormatter;
 use APIServices\Zendesk\Models\Utils\Instagram\Comment;
 use APIServices\Zendesk\Models\Utils\Instagram\ITransformer;
 use APIServices\Zendesk\Models\Utils\Instagram\Post;
 use APIServices\Zendesk\Models\Utils\Instagram\Reply;
-use Carbon\Carbon;
+use APIServices\Commons\Util\Either;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Log;
 
@@ -21,10 +19,6 @@ class ZendeskChannelService
      * @var InstagramService
      */
     protected $instagram_service;
-    /**
-     * @var string
-     */
-    protected $chanel_type;
     /**
      * @var array
      */
@@ -38,7 +32,6 @@ class ZendeskChannelService
     public function __construct(InstagramService $instagramService, $state = [])
     {
         $this->instagram_service = $instagramService;
-        $this->chanel_type = 'INSTAGRAM';
         $this->state = $state;
     }
 
@@ -49,22 +42,15 @@ class ZendeskChannelService
     {
         $transformedMessages = [];
         $post_timestamp = $this->state;
-        $ownerPostEither = $this->instagram_service->getOwner();
-        if ($ownerPostEither->isError()) {
+        $postsFromOwner = $this->getPostFromOwner();
+        if ($postsFromOwner->isError()) {
             return $this->getResponsePull($transformedMessages, $post_timestamp);
         }
-        $owner = $ownerPostEither->success();
-        $postsEither = $this->instagram_service->getPosts(199);
-        if ($postsEither->isError()) {
-            return $this->getResponsePull($transformedMessages, $post_timestamp);
-        }
-        $posts = $postsEither->success();
-        //It is done to start with the oldest post, to show properly in Zendesk.
-        $posts = array_reverse($posts, false);
+        $postsOwner = $postsFromOwner->success();
         /** @varITransformer $transformer */
         $formatterPosts = App::makeWith(Post::class, [
-            'owner' => $owner,
-            'posts' => $posts,
+            'owner' => $postsOwner['owner'],
+            'posts' => $postsOwner['posts'],
             'state' => $this->state
         ]);
         $transformedPosts = $formatterPosts->generateToTransformedMessage();
@@ -72,7 +58,7 @@ class ZendeskChannelService
         $post_timestamp = $transformedPosts['state'];
         $postIdToComments = $transformedPosts['postIdToComments'];
         //TODO Comments
-        $postsComments = $this->getCommentsFromPosts($owner, $postIdToComments);
+        $postsComments = $this->getCommentsFromPosts($postsOwner['owner'], $postIdToComments);
         $formatterComments = App::makeWith(Comment::class, [
             'postsComments' => $postsComments
         ]);
@@ -104,6 +90,28 @@ class ZendeskChannelService
             'state' => json_encode(['last_post_date' => sprintf('%s', $post_timestamp)])
         ];
     }
+
+    /**
+     * @return Either|array
+     */
+    private function getPostFromOwner()
+    {
+        $ownerPostEither = $this->instagram_service->getOwner();
+        if ($ownerPostEither->isError()) {
+            return $ownerPostEither;
+        }
+        $postsEither = $this->instagram_service->getPosts(199);
+        if ($postsEither->isError()) {
+            return $postsEither;
+        }
+        $posts = $postsEither->success();
+        //It is done to start with the oldest post, to show properly in Zendesk.
+        $posts = array_reverse($posts, false);
+        $postFromOwner = ['owner' => $ownerPostEither->success(),
+            'posts' => $posts];
+        return Either::successCreate($postFromOwner);
+    }
+
 
     /**
      * @param $owner
