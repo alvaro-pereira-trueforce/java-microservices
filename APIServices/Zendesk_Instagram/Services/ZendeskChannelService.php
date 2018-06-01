@@ -6,6 +6,10 @@ namespace APIServices\Zendesk_Instagram\Services;
 use APIServices\Instagram\Services\InstagramService;
 use APIServices\Zendesk\Models\Formatters\Instagram\CommentFormatter;
 use APIServices\Zendesk\Models\Formatters\Instagram\PostFormatter;
+use APIServices\Zendesk\Models\Utils\Instagram\Comment;
+use APIServices\Zendesk\Models\Utils\Instagram\ITransformer;
+use APIServices\Zendesk\Models\Utils\Instagram\Post;
+use APIServices\Zendesk\Models\Utils\Instagram\Reply;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Log;
@@ -55,48 +59,36 @@ class ZendeskChannelService
             return $this->getResponsePull($transformedMessages, $post_timestamp);
         }
         $posts = $postsEither->success();
-        //It is done to start with the oldest post, to show properly in Zendes.
+        //It is done to start with the oldest post, to show properly in Zendesk.
         $posts = array_reverse($posts, false);
-        foreach ($posts as $post) {
-            if (count($transformedMessages) > 195) {
-                break;
-            }
-            $post_id = $post['id'];
-            $post_timestamp = date("c", strtotime($post['timestamp']));
-            if ($this->expire($post_timestamp)) {
-                $this->instagram_service->removePost($post_id);
-                continue;
-            }
-            if ($post_timestamp > $this->state['last_post_date']) {
-                $transformedPosts = $this->getUpdatesPosts($owner, $post);
-                $transformedPosts == null ?: array_push($transformedMessages, $transformedPosts);
-            }
-            $responseComment = $this->instagram_service->getCommentsFromPost($post_id);
-            if ($responseComment->isSuccess()) {
-                $comments = $responseComment->success();
-                //It is done to start with the oldest post, to show properly in Zendes.
-                $last_comment_date = null;
-                foreach ($comments as $comment) {
-                    if (count($transformedMessages) > 199) {
-                        break;
-                    }
-                    $comment_timestamp = date("c", strtotime($comment['timestamp']));
-                    $comment_timestamp = new Carbon($comment_timestamp);
-                    $commentTrackEither = $this->instagram_service->commentTrack($post_id, $comment_timestamp);
-                    if ($commentTrackEither->isSuccess()) {
-                        $comment_track = $commentTrackEither->success();
-                        $last_comment_date = $comment_track->last_comment_date;
-                        if ($comment_timestamp >= $last_comment_date) {
-                            $transformedComments = $this->getUpdatesComments($owner, $post_id, $comment);
-                            $transformedComments == null ?: array_push($transformedMessages, $transformedComments);
-                            $last_comment_date = $comment_timestamp;
-                        }
-                    }
-                }
-                //To update the date of the last comment
-                $this->instagram_service->updatePost($post_id, $last_comment_date);
-            }
-        }
+        /** @varITransformer $transformer */
+        $formatterPosts = App::makeWith(Post::class, [
+            'owner' => $owner,
+            'posts' => $posts,
+            'state' => $this->state
+        ]);
+        $transformedPosts = $formatterPosts->generateToTransformedMessage();
+        $transformedMessagesPosts = $transformedPosts['transformedMessages'];
+        $post_timestamp = $transformedPosts['state'];
+        $postIdToComments = $transformedPosts['postIdToComments'];
+        //TODO Comments
+        $postsComments = $this->getCommentsFromPosts($owner, $postIdToComments);
+        $formatterComments = App::makeWith(Comment::class, [
+            'postsComments' => $postsComments
+        ]);
+        $transformedComments = $formatterComments->generateToTransformedMessage();
+        $transformedMessagesComments = $transformedComments['transformedMessages'];
+        $transformedMessages = array_merge($transformedMessagesPosts, $transformedMessagesComments);
+        //TODO Replies
+        $dataForReplies = $transformedComments['dataForReplies'];
+        //dd($dataForReplies);
+        $commentsReplies = $this->getRepliesFromComments($dataForReplies);
+        $formatterReplies = App::makeWith(Reply::class, [
+            'commentsReplies' => $commentsReplies
+        ]);
+        $transformedReplies = $formatterReplies->generateToTransformedMessage();
+        $transformedMessagesReplies = $transformedReplies['transformedMessages'];
+        $transformedMessages = array_merge($transformedMessages, $transformedMessagesReplies);
         return $this->getResponsePull($transformedMessages, $post_timestamp);
     }
 
@@ -114,56 +106,47 @@ class ZendeskChannelService
     }
 
     /**
-     * @param $owner_post
-     * @param $post
-     * @return array|null
+     * @param $owner
+     * @param $postIdToComments
+     * @return array
      */
-    private function getUpdatesPosts($owner_post, $post)
+    private function getCommentsFromPosts($owner, $postIdToComments)
     {
-        try {
-            /** @var PostFormatter $formatter */
-            $formatter = App::makeWith($this->chanel_type . '.' . $post['media_type'], [
-                'owner' => $owner_post,
-                'post' => $post
-
-            ]);
-            return $formatter->getTransformedMessage();
-        } catch (\Exception $exception) {
-            return null;
+        $toTransformerComments = [];
+        foreach ($postIdToComments as $postId) {
+            $responseComment = $this->instagram_service->getCommentsFromPost($postId);
+            if ($responseComment->isSuccess()) {
+                $comments = $responseComment->success();
+                $commentsData = [
+                    'thread_id' => [
+                        'user_id' => $owner['id'],
+                        'post_id' => $postId,
+                    ],
+                    'comments' => $comments
+                ];
+                array_push($toTransformerComments, $commentsData);
+            }
         }
+        return $toTransformerComments;
     }
 
-    /**
-     * @param $owner_post
-     * @param $post_id
-     * @param $comment
-     * @return array|null
-     */
-    private function getUpdatesComments($owner_post, $post_id, $comment)
+    private function getRepliesFromComments($dataForReplies)
     {
-        try {
-            /** @var CommentFormatter $formatter */
-            $formatter = App::makeWith(CommentFormatter::class, [
-                'thread_id' => [
-                    'user_id' => $owner_post['id'],
-                    'post_id' => $post_id,
-                ],
-                'comment' => $comment
-            ]);
-            return $formatter->getTransformedMessage();
-        } catch (\Exception $exception) {
-            return null;
+        $toTransformerReplies = [];
+        foreach ($dataForReplies as $dataForReply) {
+            $responseReplies = $this->instagram_service->geRepliesFromComment($dataForReply['id']);
+            if ($responseReplies->isSuccess()) {
+                $replies = $responseReplies->success();
+                //It is done to start with the oldest reply, to show properly in Zendesk.
+                $replies = array_reverse($replies, false);
+                $repliesData = [
+                    'data_for_replies' => $dataForReply,
+                    'replies' => $replies
+                ];
+                array_push($toTransformerReplies, $repliesData);
+            }
         }
-    }
-
-    /**
-     * @param $date
-     * @return bool
-     */
-    private function expire($date)
-    {
-        $date = new Carbon($date);
-        return $date->diffInMinutes(Carbon::now()) > (int)env('TIME_EXPIRE_FOR_TICKETS_IN_MINUTES_INSTAGRAM');
+        return $toTransformerReplies;
     }
 
     /**

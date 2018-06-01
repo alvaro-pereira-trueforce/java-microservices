@@ -13,7 +13,8 @@ use Illuminate\Database\DatabaseManager;
 use Illuminate\Events\Dispatcher;
 
 
-class InstagramService {
+class InstagramService
+{
     protected $database;
 
     protected $dispatcher;
@@ -38,24 +39,26 @@ class InstagramService {
         Utility $zendeskUtils,
         FacebookService $facebookService,
         CommentTrackerRepository $commentTrackerRepository
-    ) {
+    )
+    {
         $this->database = $database;
         $this->dispatcher = $dispatcher;
         $this->zendeskUtils = $zendeskUtils;
         $this->facebookService = $facebookService;
-        $this->commentTrackerRepository =$commentTrackerRepository;
+        $this->commentTrackerRepository = $commentTrackerRepository;
     }
 
     /**
      * @return Either
      */
-    public function getOwner() {
+    public function getOwner()
+    {
         try {
             $owner = $this->facebookService->getOwnerInstagram();
             return Either::successCreate($owner);
         } catch (\Exception $exception) {
             Log::error($exception->getMessage());
-            return Either::errorCreate(new Error('Failed to get Instagram Owner data.',TypeError::SERVER_FACEBOOK_ERROR));
+            return Either::errorCreate(new Error('Failed to get Instagram Owner data.', TypeError::SERVER_FACEBOOK_ERROR));
         }
     }
 
@@ -63,14 +66,15 @@ class InstagramService {
      * @param $limit
      * @return Either
      */
-    public function getPosts($limit) {
+    public function getPosts($limit)
+    {
         try {
-            $responsePost= $this->facebookService->getPosts($limit);
+            $responsePost = $this->facebookService->getPosts($limit);
             $posts = $responsePost['data'];
             return Either::successCreate($posts);
         } catch (\Exception $exception) {
             Log::error($exception->getMessage());
-            return Either::errorCreate(new Error('Error getting the Instagram post.',TypeError::SERVER_FACEBOOK_ERROR));
+            return Either::errorCreate(new Error('Error getting the Instagram post.', TypeError::SERVER_FACEBOOK_ERROR));
         }
     }
 
@@ -79,15 +83,34 @@ class InstagramService {
      * @param int $limit
      * @return Either
      */
-    public function getCommentsFromPost($post_id, $limit=1000) {
+    public function getCommentsFromPost($post_id, $limit = 1000)
+    {
         try {
 
-            $responseComments = $this->facebookService->getComments($post_id,$limit);
+            $responseComments = $this->facebookService->getComments($post_id, $limit);
             $comments = $responseComments['data'];
             return Either::successCreate($comments);
         } catch (\Exception $exception) {
             Log::error($exception->getMessage());
-            return Either::errorCreate(new Error('Error getting the comments of the post.',TypeError::SERVER_FACEBOOK_ERROR));
+            return Either::errorCreate(new Error('Error getting the comments of the post.', TypeError::SERVER_FACEBOOK_ERROR));
+        }
+    }
+
+    /**
+     * @param $comment_id
+     * @param int $limit
+     * @return Either
+     */
+    public function geRepliesFromComment($comment_id, $limit = 1000)
+    {
+        try {
+
+            $responseReplies = $this->facebookService->getReplies($comment_id, $limit);
+            $replies = $responseReplies['replies']['data'];
+            return Either::successCreate($replies);
+        } catch (\Exception $exception) {
+            Log::error($exception->getMessage());
+            return Either::errorCreate(new Error('Error getting the replies of the comment.', TypeError::SERVER_FACEBOOK_ERROR));
         }
     }
 
@@ -96,13 +119,14 @@ class InstagramService {
      * @param $message
      * @return Either
      */
-    public function sendInstagramMessage($post_id, $message) {
+    public function sendInstagramMessage($post_id, $message)
+    {
         try {
-            $comment = $this->facebookService->sendMessage($post_id,$message);
+            $comment = $this->facebookService->sendMessage($post_id, $message);
             return Either::successCreate($comment['id']);
         } catch (\Exception $exception) {
             Log::error($exception->getMessage());
-            return Either::errorCreate(new Error('Error commenting in the post.',TypeError::SERVER_FACEBOOK_ERROR));
+            return Either::errorCreate(new Error('Error commenting in the post.', TypeError::SERVER_FACEBOOK_ERROR));
         }
     }
 
@@ -114,7 +138,8 @@ class InstagramService {
      * @param $page_id
      * @return string
      */
-    public function registerNewIntegration($name, $token, $subdomain, $instagram_id, $page_id) {
+    public function registerNewIntegration($name, $token, $subdomain, $instagram_id, $page_id)
+    {
         return json_encode([
             'integration_name' => $name,
             'zendesk_app_id' => $subdomain,
@@ -129,14 +154,15 @@ class InstagramService {
      * @param $date
      * @return Either
      */
-    public function commentTrack($post_id,$date){
+    public function commentTrack($post_id, $date)
+    {
         try {
             $commentTracker = $this->commentTrackerRepository->findByPostID($post_id);
-            if($commentTracker==null){
+            if ($commentTracker == null) {
                 Log::info("Creating comment traker in repository.");
                 $commentTracker = $this->commentTrackerRepository->create(
                     [
-                        'post_id'=> $post_id,
+                        'post_id' => $post_id,
                         'last_comment_date' => $date
                     ]
                 );
@@ -145,7 +171,7 @@ class InstagramService {
             return Either::successCreate($commentTracker);
         } catch (\Exception $exception) {
             Log::error($exception->getMessage());
-            return Either::errorCreate(new Error('Failed to get comment history.',TypeError::SERVER_FACEBOOK_ERROR));
+            return Either::errorCreate(new Error('Failed to get comment history.', TypeError::SERVER_FACEBOOK_ERROR));
         }
     }
 
@@ -153,13 +179,14 @@ class InstagramService {
      * @param $post_id
      * @return Either
      */
-    public function removePost($post_id){
+    public function removePost($post_id)
+    {
         try {
             $commentTracker = $this->commentTrackerRepository->deleteByPostID($post_id);
             return Either::successCreate($commentTracker);
         } catch (\Exception $exception) {
             Log::error($exception->getMessage());
-            return Either::errorCreate(new Error('Failed to delete comment history.',TypeError::SERVER_FACEBOOK_ERROR));
+            return Either::errorCreate(new Error('Failed to delete comment history.', TypeError::SERVER_FACEBOOK_ERROR));
         }
     }
 
@@ -185,7 +212,7 @@ class InstagramService {
             }
         } catch (\Exception $exception) {
             Log::error($exception->getMessage());
-            return Either::errorCreate(new Error('Error updating comment history.',TypeError::SERVER_FACEBOOK_ERROR));
+            return Either::errorCreate(new Error('Error updating comment history.', TypeError::SERVER_FACEBOOK_ERROR));
         }
     }
 }

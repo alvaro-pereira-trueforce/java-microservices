@@ -197,4 +197,20 @@ class FacebookService
             throw $exception;
         }
     }
+
+    /**
+     * @param $comment_id
+     * @param $limit
+     * @return mixed
+     * @throws \Exception
+     */
+    public function getReplies($comment_id, $limit)
+    {
+        try {
+            return $this->api->getReplies($comment_id,$limit);
+        } catch (\Exception $exception) {
+            Log::error($exception->getMessage());
+            throw $exception;
+        }
+    }
 }
