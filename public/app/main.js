@@ -66,7 +66,7 @@ var slideInDownAnimation = Object(_angular_animations__WEBPACK_IMPORTED_MODULE_0
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-module.exports = "<!--The content below is only a placeholder and can be replaced.-->\n<nav-bar></nav-bar>\n<side-menu></side-menu>\n<router-outlet></router-outlet>\n"
+module.exports = "<nav-bar [navBarTemplate]=\"navBarTemplate\"></nav-bar>\n<div class=\"d-flex\">\n    <side-menu></side-menu>\n    <router-outlet (activate)=\"componentAdded($event)\"></router-outlet>\n</div>\n"
 
 /***/ }),
 
@@ -101,8 +101,10 @@ var __decorate = (undefined && undefined.__decorate) || function (decorators, ta
 
 var AppComponent = /** @class */ (function () {
     function AppComponent() {
-        this.title = 'app';
     }
+    AppComponent.prototype.componentAdded = function (component) {
+        this.navBarTemplate = component.navBarTemplate;
+    };
     AppComponent = __decorate([
         Object(_angular_core__WEBPACK_IMPORTED_MODULE_0__["Component"])({
             selector: 'app-root',
@@ -232,7 +234,7 @@ var HomeModule = /** @class */ (function () {
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-module.exports = "<p>\n    index works!\n</p>\n"
+module.exports = "<ng-template #navBarTemplate>\n    Home Title\n</ng-template>\n\n<p>\n    index works!\n</p>\n"
 
 /***/ }),
 
@@ -273,6 +275,10 @@ var IndexComponent = /** @class */ (function () {
     }
     IndexComponent.prototype.ngOnInit = function () {
     };
+    __decorate([
+        Object(_angular_core__WEBPACK_IMPORTED_MODULE_0__["ViewChild"])('navBarTemplate'),
+        __metadata("design:type", _angular_core__WEBPACK_IMPORTED_MODULE_0__["TemplateRef"])
+    ], IndexComponent.prototype, "navBarTemplate", void 0);
     IndexComponent = __decorate([
         Object(_angular_core__WEBPACK_IMPORTED_MODULE_0__["Component"])({
             selector: 'app-index',
@@ -606,7 +612,7 @@ var InstagramModule = /** @class */ (function () {
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-module.exports = "<p>\n    nav-bar works!\n</p>\n"
+module.exports = "<div class=\"d-flex nav-bar\">\n    <div>\n        <div class=\"logo\">\n            <a href=\"\">\n                <img class=\"profile-picture\" src=\"assets/Logos/assuresoft-main-menu-logo.png\">\n            </a>\n        </div>\n    </div>\n\n    <div class=\"title d-flex align-items-center flex-row-reverse\">\n        <ng-container *ngTemplateOutlet=\"navBarTemplate\"></ng-container>\n    </div>\n</div>"
 
 /***/ }),
 
@@ -617,7 +623,7 @@ module.exports = "<p>\n    nav-bar works!\n</p>\n"
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-module.exports = ""
+module.exports = ".nav-bar {\n  background-image: linear-gradient(#f0f0f0, white 60%);\n  box-shadow: 1px 0 3px 0 rgba(0, 0, 0, 0.2); }\n\n.logo {\n  height: 70px;\n  padding: 20px; }\n\n.title {\n  width: 100%;\n  padding: 0px;\n  margin: 0px 20px 0 20px; }\n"
 
 /***/ }),
 
@@ -642,11 +648,16 @@ var __metadata = (undefined && undefined.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 
+
 var NavBarComponent = /** @class */ (function () {
     function NavBarComponent() {
     }
     NavBarComponent.prototype.ngOnInit = function () {
     };
+    __decorate([
+        Object(_angular_core__WEBPACK_IMPORTED_MODULE_0__["Input"])(),
+        __metadata("design:type", _angular_core__WEBPACK_IMPORTED_MODULE_0__["TemplateRef"])
+    ], NavBarComponent.prototype, "navBarTemplate", void 0);
     NavBarComponent = __decorate([
         Object(_angular_core__WEBPACK_IMPORTED_MODULE_0__["Component"])({
             selector: 'nav-bar',
@@ -756,7 +767,7 @@ var RoutingModule = /** @class */ (function () {
         Object(_angular_core__WEBPACK_IMPORTED_MODULE_0__["NgModule"])({
             imports: [
                 _angular_router__WEBPACK_IMPORTED_MODULE_2__["RouterModule"].forRoot(_routes__WEBPACK_IMPORTED_MODULE_3__["appRoutes"], {
-                    enableTracing: true,
+                    enableTracing: false,
                     useHash: true
                 }),
                 _angular_common__WEBPACK_IMPORTED_MODULE_1__["CommonModule"]

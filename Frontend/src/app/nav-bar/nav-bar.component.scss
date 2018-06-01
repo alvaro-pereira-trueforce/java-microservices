@@ -1,0 +1,17 @@
+@import "../../global-styles/variables";
+
+.nav-bar {
+  background-image: linear-gradient($nav-bar-bg-top, $nav-bar-bg-button);
+  box-shadow: 1px 0 3px 0 rgba(0, 0, 0, .2);
+}
+
+.logo {
+  height: 70px;
+  padding: 20px;
+}
+
+.title {
+  width: 100%;
+  padding: 0px;
+  margin: 0px 20px 0 20px;
+}

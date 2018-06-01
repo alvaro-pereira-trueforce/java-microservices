@@ -1,3 +1,13 @@
-<p>
-    nav-bar works!
-</p>
+<div class="d-flex nav-bar">
+    <div>
+        <div class="logo">
+            <a href="">
+                <img class="profile-picture" src="assets/Logos/assuresoft-main-menu-logo.png">
+            </a>
+        </div>
+    </div>
+
+    <div class="title d-flex align-items-center flex-row-reverse">
+        <ng-container *ngTemplateOutlet="navBarTemplate"></ng-container>
+    </div>
+</div>
