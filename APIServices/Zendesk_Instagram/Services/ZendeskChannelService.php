@@ -48,31 +48,33 @@ class ZendeskChannelService
             return $this->getResponsePull($transformedMessages, $post_timestamp);
         }
         $postsOwner = $postsFromOwner->success();
-        /** @varITransformer $transformer */
+        /** @var Post $post */
         $formatterPosts = App::makeWith(Post::class, [
             'owner' => $postsOwner['owner'],
             'posts' => $postsOwner['posts'],
             'state' => $this->state
         ]);
-        $transformedPosts = $formatterPosts->generateToTransformedMessage();
+        $transformedPosts = $formatterPosts->generateToTransformerMessage();
         $transformedMessagesPosts = $transformedPosts['transformedMessages'];
         $post_timestamp = $transformedPosts['state'];
         //TODO Comments
         $postIdToComments = $transformedPosts['postIdToComments'];
         $postsComments = $this->getCommentsFromPosts($postsOwner['owner'], $postIdToComments);
+        /** @var Comment $comment */
         $formatterComments = App::makeWith(Comment::class, [
             'postsComments' => $postsComments
         ]);
-        $transformedComments = $formatterComments->generateToTransformedMessage();
+        $transformedComments = $formatterComments->generateToTransformerMessage();
         $transformedMessagesComments = $transformedComments['transformedMessages'];
         $transformedMessages = array_merge($transformedMessagesPosts, $transformedMessagesComments);
         //TODO Replies
         $dataForReplies = $transformedComments['dataForReplies'];
         $commentsReplies = $this->getRepliesFromComments($dataForReplies);
+        /** @var Reply $reply */
         $formatterReplies = App::makeWith(Reply::class, [
             'commentsReplies' => $commentsReplies
         ]);
-        $transformedReplies = $formatterReplies->generateToTransformedMessage();
+        $transformedReplies = $formatterReplies->generateToTransformerMessage();
         $transformedMessagesReplies = $transformedReplies['transformedMessages'];
         $transformedMessages = array_merge($transformedMessages, $transformedMessagesReplies);
         return $this->getResponsePull($transformedMessages, $post_timestamp);
