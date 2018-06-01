@@ -6,5 +6,5 @@ interface ITransformer {
     /**
      * @return array
      */
-   function generateToTransformedMessage();
+   function generateToTransformerMessage();
 }

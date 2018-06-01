@@ -41,6 +41,7 @@ class ZendeskChannelService
     public function getUpdates()
     {
         $transformedMessages = [];
+        //TODO Posts
         $post_timestamp = $this->state;
         $postsFromOwner = $this->getPostFromOwner();
         if ($postsFromOwner->isError()) {
@@ -56,8 +57,8 @@ class ZendeskChannelService
         $transformedPosts = $formatterPosts->generateToTransformedMessage();
         $transformedMessagesPosts = $transformedPosts['transformedMessages'];
         $post_timestamp = $transformedPosts['state'];
-        $postIdToComments = $transformedPosts['postIdToComments'];
         //TODO Comments
+        $postIdToComments = $transformedPosts['postIdToComments'];
         $postsComments = $this->getCommentsFromPosts($postsOwner['owner'], $postIdToComments);
         $formatterComments = App::makeWith(Comment::class, [
             'postsComments' => $postsComments
@@ -67,7 +68,6 @@ class ZendeskChannelService
         $transformedMessages = array_merge($transformedMessagesPosts, $transformedMessagesComments);
         //TODO Replies
         $dataForReplies = $transformedComments['dataForReplies'];
-        //dd($dataForReplies);
         $commentsReplies = $this->getRepliesFromComments($dataForReplies);
         $formatterReplies = App::makeWith(Reply::class, [
             'commentsReplies' => $commentsReplies
@@ -138,6 +138,10 @@ class ZendeskChannelService
         return $toTransformerComments;
     }
 
+    /**
+     * @param $dataForReplies
+     * @return array
+     */
     private function getRepliesFromComments($dataForReplies)
     {
         $toTransformerReplies = [];

@@ -15,6 +15,13 @@ class Post implements ITransformer
     protected $chanel_type;
     protected $state;
 
+    /**
+     * Post constructor.
+     * @param $owner
+     * @param $posts
+     * @param $state
+     * @param InstagramService $instagramService
+     */
     public function __construct($owner, $posts, $state, InstagramService $instagramService)
     {
         $this->owner = $owner;
@@ -27,7 +34,7 @@ class Post implements ITransformer
     /**
      * @return array
      */
-    public function generateToTransformedMessage()
+    public function generateToTransformerMessage()
     {
         $transformedMessages = [];
         $postsIdToComments = [];

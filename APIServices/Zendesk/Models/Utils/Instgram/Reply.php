@@ -12,13 +12,21 @@ class Reply implements ITransformer
     protected $commentsReplies;
     protected $instagramService;
 
+    /**
+     * Reply constructor.
+     * @param $commentsReplies
+     * @param InstagramService $instagramService
+     */
     public function __construct($commentsReplies, InstagramService $instagramService)
     {
         $this->commentsReplies = $commentsReplies;
         $this->instagramService = $instagramService;
     }
 
-    public function generateToTransformedMessage()
+    /**
+     * @return array
+     */
+    public function generateToTransformerMessage()
     {
         $transformedMessages = [];
         foreach ($this->commentsReplies as $replies) {
@@ -47,6 +55,11 @@ class Reply implements ITransformer
         return ['transformedMessages' => $transformedMessages];
     }
 
+    /**
+     * @param $dataForReply
+     * @param $reply
+     * @return array|null
+     */
     private function getUpdatesReplies($dataForReply, $reply)
     {
         try {
