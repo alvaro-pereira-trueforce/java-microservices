@@ -59,7 +59,7 @@ class ZendeskChannelService
             return $this->getResponsePull($transformedMessages, $post_timestamp);
         }
         $posts = $postsEither->success();
-        //It is done to start with the oldest post, to show properly in Zendes.
+        //It is done to start with the oldest post, to show properly in Zendesk.
         $posts = array_reverse($posts, false);
         /** @varITransformer $transformer */
         $formatterPosts = App::makeWith(Post::class, [
@@ -71,28 +71,24 @@ class ZendeskChannelService
         $transformedMessagesPosts = $transformedPosts['transformedMessages'];
         $post_timestamp = $transformedPosts['state'];
         $postIdToComments = $transformedPosts['postIdToComments'];
-
+        //TODO Comments
         $postsComments = $this->getCommentsFromPosts($owner, $postIdToComments);
         $formatterComments = App::makeWith(Comment::class, [
             'postsComments' => $postsComments
         ]);
         $transformedComments = $formatterComments->generateToTransformedMessage();
         $transformedMessagesComments = $transformedComments['transformedMessages'];
-        Log::info('MERGING...........................................');
         $transformedMessages = array_merge($transformedMessagesPosts, $transformedMessagesComments);
-
-        //transformedMessages
-
-//        $formatterReplies = App::makeWith(Reply::class, [
-//            'owner' => $owner,
-//            'post' => $posts
-//
-//        ]);
-//        $transformedReplies = $formatterReplies->getTransformedMessage();
-
-        // get union
-        // return
-
+        //TODO Replies
+        $dataForReplies = $transformedComments['dataForReplies'];
+        //dd($dataForReplies);
+        $commentsReplies = $this->getRepliesFromComments($dataForReplies);
+        $formatterReplies = App::makeWith(Reply::class, [
+            'commentsReplies' => $commentsReplies
+        ]);
+        $transformedReplies = $formatterReplies->generateToTransformedMessage();
+        $transformedMessagesReplies = $transformedReplies['transformedMessages'];
+        $transformedMessages = array_merge($transformedMessages, $transformedMessagesReplies);
         return $this->getResponsePull($transformedMessages, $post_timestamp);
     }
 
@@ -121,60 +117,36 @@ class ZendeskChannelService
             $responseComment = $this->instagram_service->getCommentsFromPost($postId);
             if ($responseComment->isSuccess()) {
                 $comments = $responseComment->success();
-                $commentsThread = [
+                $commentsData = [
                     'thread_id' => [
                         'user_id' => $owner['id'],
                         'post_id' => $postId,
                     ],
                     'comments' => $comments
                 ];
-                array_push($toTransformerComments, $commentsThread);
+                array_push($toTransformerComments, $commentsData);
             }
         }
         return $toTransformerComments;
     }
 
-    /**
-     * @param $owner_post
-     * @param $post
-     * @return array|null
-     */
-    private function getUpdatesPosts($owner_post, $post)
+    private function getRepliesFromComments($dataForReplies)
     {
-        try {
-            /** @var PostFormatter $formatter */
-            $formatter = App::makeWith($this->chanel_type . '.' . $post['media_type'], [
-                'owner' => $owner_post,
-                'post' => $post
-
-            ]);
-            return $formatter->getTransformedMessage();
-        } catch (\Exception $exception) {
-            return null;
+        $toTransformerReplies = [];
+        foreach ($dataForReplies as $dataForReply) {
+            $responseReplies = $this->instagram_service->geRepliesFromComment($dataForReply['id']);
+            if ($responseReplies->isSuccess()) {
+                $replies = $responseReplies->success();
+                //It is done to start with the oldest reply, to show properly in Zendesk.
+                $replies = array_reverse($replies, false);
+                $repliesData = [
+                    'data_for_replies' => $dataForReply,
+                    'replies' => $replies
+                ];
+                array_push($toTransformerReplies, $repliesData);
+            }
         }
-    }
-
-    /**
-     * @param $owner_post
-     * @param $post_id
-     * @param $comment
-     * @return array|null
-     */
-    private function getUpdatesComments($owner_post, $post_id, $comment)
-    {
-        try {
-            /** @var CommentFormatter $formatter */
-            $formatter = App::makeWith(CommentFormatter::class, [
-                'thread_id' => [
-                    'user_id' => $owner_post['id'],
-                    'post_id' => $post_id,
-                ],
-                'comment' => $comment
-            ]);
-            return $formatter->getTransformedMessage();
-        } catch (\Exception $exception) {
-            return null;
-        }
+        return $toTransformerReplies;
     }
 
     /**

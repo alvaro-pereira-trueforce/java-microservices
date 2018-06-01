@@ -196,7 +196,7 @@ class Facebook extends FB
     {
         try {
             $url = '/' . $comment_id . '?fields=replies.limit('.$limit.'){id,text,username,timestamp}';
-            return $this->postRequest($url);
+            return $this->getRequest($url);
         } catch (\Exception $exception) {
             throw  $exception;
         }

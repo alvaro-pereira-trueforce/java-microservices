@@ -27,18 +27,12 @@ class Comment implements ITransformer
     public function generateToTransformedMessage()
     {
         $transformedMessages = [];
-        $commentIdToReplies = [];
-        Log::info("POst COMENTS");
-        Log::debug($this->postsComments);
+        $dataForReplies = [];
         foreach ($this->postsComments as $postComments) {
             $threadId = $postComments['thread_id'];
             $comments = $postComments['comments'];
             $lastCommentDate = null;
-            Log::info("ANTEST DEL FOR");
-            Log::debug($comments);
             foreach ($comments as $comment) {
-                Log::info("ES un COMMENT");
-                Log::debug($comment);
                 $commentTimestamp = date("c", strtotime($comment['timestamp']));
                 $commentTimestamp = new Carbon($commentTimestamp);
                 $commentTrackEither = $this->instagramService->commentTrack($threadId['post_id'], $commentTimestamp);
@@ -49,19 +43,18 @@ class Comment implements ITransformer
                         $transformedComments = $this->getUpdatesComments($threadId, $comment);
                         if ($transformedComments != null) {
                             array_push($transformedMessages, $transformedComments);
-                            array_push($commentIdToReplies, $comment['id']);
+                            array_push($dataForReplies, $this->generateDataForReply($threadId,$comment['id'],$comment['text']));
                             $lastCommentDate = $commentTimestamp;
                         }
-
                     } else {
-                        array_push($commentIdToReplies, $comment['id']);
+                        array_push($dataForReplies, $this->generateDataForReply($threadId,$comment['id'],$comment['text']));
                     }
                 }
             }
             //To update the date of the last comment
             $this->instagramService->updatePost($threadId['post_id'], $lastCommentDate);
         }
-        return ['transformedMessages' => $transformedMessages, 'commentIdToReplies' => $commentIdToReplies];
+        return ['transformedMessages' => $transformedMessages, 'dataForReplies' => $dataForReplies];
     }
 
     private function getUpdatesComments($threadId, $comment)
@@ -76,5 +69,13 @@ class Comment implements ITransformer
         } catch (\Exception $exception) {
             return null;
         }
+    }
+
+    private function generateDataForReply($threadId,$commentId,$comment){
+        return [
+            'thread_id'=>$threadId,
+            'id'=> $commentId,
+            'comment'=>$comment
+        ];
     }
 }
