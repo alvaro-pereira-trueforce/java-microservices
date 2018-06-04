@@ -49,15 +49,19 @@ class Post implements ITransformer
                 $transformedPosts = $this->getUpdatesPosts($post);
                 if ($transformedPosts != null) {
                     array_push($transformedMessages, $transformedPosts);
-                    array_push($postsIdToComments, $post_id);
+                    if (array_key_exists("comments_count", $post)) {
+                        array_push($postsIdToComments, $post_id);
+                    }
                 }
             } else {
-                array_push($postsIdToComments, $post_id);
+                if (array_key_exists("comments_count", $post)) {
+                    array_push($postsIdToComments, $post_id);
+                }
             }
         }
         return [
             'transformedMessages' => $transformedMessages,
-            'state' =>  $post_timestamp,
+            'state' => $post_timestamp,
             'postIdToComments' => $postsIdToComments];
     }
 

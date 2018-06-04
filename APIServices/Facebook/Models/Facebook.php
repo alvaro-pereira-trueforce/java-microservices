@@ -163,7 +163,7 @@ class Facebook extends FB
     public function getComments($post_id, $limit = 1000)
     {
         try {
-            $url = '/' . $post_id . '/comments?fields=id,text,username,timestamp,replies{id,text,username,timestamp}';
+            $url = '/' . $post_id . '/comments?fields=id,text,username,timestamp,replies';
             return $this->getRequest($url);
         } catch (\Exception $exception) {
             throw  $exception;
