@@ -1,0 +1,11 @@
+@import "~bootstrap/scss/bootstrap";
+@import "../../global-styles/variables";
+
+.side-bar{
+  background: $sidebar-bg;
+  width: $sidebar-width-big;
+  height: 100%;
+  @include media-breakpoint-down(md){
+    width: $sidebar-width-small;
+  }
+}

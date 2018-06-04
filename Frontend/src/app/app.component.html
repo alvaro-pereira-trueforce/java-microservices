@@ -1,5 +1,11 @@
-<nav-bar [navBarTemplate]="navBarTemplate"></nav-bar>
-<div class="d-flex">
-    <side-menu></side-menu>
-    <router-outlet (activate)="componentAdded($event)"></router-outlet>
+<div class="page-container">
+    <nav-bar [navBarTemplate]="navBarTemplate"></nav-bar>
+    <div class="container-body">
+        <div>
+            <side-menu></side-menu>
+        </div>
+        <div style="width: 100%;">
+            <router-outlet (activate)="componentAdded($event)"></router-outlet>
+        </div>
+    </div>
 </div>
