@@ -18,7 +18,7 @@ class Comment implements ITransformer
      * @param $postsComments
      * @param InstagramService $instagramService
      */
-    public function __construct($postsComments ,InstagramService $instagramService)
+    public function __construct($postsComments, InstagramService $instagramService)
     {
         $this->postsComments = $postsComments;
         $this->instagramService = $instagramService;
@@ -46,11 +46,15 @@ class Comment implements ITransformer
                         $transformedComments = $this->getUpdatesComments($threadId, $comment);
                         if ($transformedComments != null) {
                             array_push($transformedMessages, $transformedComments);
-                            array_push($dataForReplies, $this->generateDataForReply($threadId,$comment['id'],$comment['text']));
                             $lastCommentDate = $commentTimestamp;
+                            if (array_key_exists("replies", $comment)) {
+                                array_push($dataForReplies, $this->generateDataForReply($threadId, $comment['id'], $comment['text']));
+                            }
                         }
                     } else {
-                        array_push($dataForReplies, $this->generateDataForReply($threadId,$comment['id'],$comment['text']));
+                        if (array_key_exists("replies", $comment)) {
+                            array_push($dataForReplies, $this->generateDataForReply($threadId, $comment['id'], $comment['text']));
+                        }
                     }
                 }
             }
@@ -87,11 +91,12 @@ class Comment implements ITransformer
      * @param $comment
      * @return array
      */
-    private function generateDataForReply($threadId,$commentId,$comment){
+    private function generateDataForReply($threadId, $commentId, $comment)
+    {
         return [
-            'thread_id'=>$threadId,
-            'id'=> $commentId,
-            'comment'=>$comment
+            'thread_id' => $threadId,
+            'id' => $commentId,
+            'comment' => $comment
         ];
     }
 }
