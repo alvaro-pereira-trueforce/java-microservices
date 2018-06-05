@@ -2,6 +2,12 @@
 @import "../../global-styles/variables";
 
 .side-bar {
+  bottom: 50px;
+  margin-bottom: -70px;
+  margin-top: 0;
+  padding-bottom: 70px;
+  position: fixed;
+  top: 70px;
   background: $sidebar-bg;
   width: $sidebar-width-big;
   height: 100%;
@@ -43,6 +49,9 @@ a{
   font-size: 1.2rem;
   color: white;
   background-color: #656565;
+  @include media-breakpoint-down(md) {
+    display: none;
+  }
 }
 .menu-option {
   display: flex;

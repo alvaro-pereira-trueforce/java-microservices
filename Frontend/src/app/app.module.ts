@@ -9,12 +9,14 @@ import { NavBarModule } from './nav-bar/nav-bar.module';
 import { RoutingModule } from './routing/routing.module';
 import { InstagramModule } from './instagram/instagram.module';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { TelegramModule } from './telegram/telegram.module';
 
 @NgModule({
   declarations: [
     AppComponent
   ],
   imports: [
+    TelegramModule,
     InstagramModule,
     HomeModule,
     SideMenuModule,

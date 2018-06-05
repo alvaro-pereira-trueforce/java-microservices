@@ -6,6 +6,11 @@
   box-shadow: 1px 0 3px 0 rgba(0, 0, 0, .2);
   height: $navBar-height;
   color: $navBar-text-color;
+  left: 0;
+  position: fixed;
+  right: 0;
+  top: 0;
+  z-index: 999;
 }
 
 .logo {
