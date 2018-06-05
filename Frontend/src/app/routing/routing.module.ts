@@ -7,7 +7,7 @@ import { appRoutes } from './routes';
   imports: [
     RouterModule.forRoot(
         appRoutes, {
-          enableTracing: true,
+          enableTracing: false,
           useHash: true
         }
     ),

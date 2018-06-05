@@ -1,5 +1,5 @@
 import { Component, HostBinding, OnInit } from '@angular/core';
-import { slideInDownAnimation } from '../../Animations/Router';
+import { slideInDownAnimation } from '../../animations/Router';
 
 @Component({
   selector: 'app-faqpage',

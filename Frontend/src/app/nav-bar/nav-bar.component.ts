@@ -1,4 +1,5 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
+import { TemplateRef } from '@angular/core';
 
 @Component({
   selector: 'nav-bar',
@@ -7,6 +8,8 @@ import { Component, OnInit } from '@angular/core';
 })
 export class NavBarComponent implements OnInit {
 
+  @Input()
+  navBarTemplate: TemplateRef<any>;
   constructor() {
   }
 

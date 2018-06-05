@@ -1,4 +1,11 @@
-<!--The content below is only a placeholder and can be replaced.-->
-<nav-bar></nav-bar>
-<side-menu></side-menu>
-<router-outlet></router-outlet>
+<div class="page-container">
+    <nav-bar [navBarTemplate]="navBarTemplate"></nav-bar>
+    <div class="container-body">
+        <div>
+            <side-menu></side-menu>
+        </div>
+        <div class="container-content">
+            <router-outlet (activate)="componentAdded($event)"></router-outlet>
+        </div>
+    </div>
+</div>
