@@ -1,35 +1,56 @@
 <ng-template #navBarTemplate>
-    How to install Telegram Channel Integration
+    How to install "Telegram Channel"
 </ng-template>
 
 <div class="container mt-4">
     <h1 class="font-weight-bold">Getting Started</h1>
-    <p>
-        To start talking with your costumers using Telegram Bots, install Telegram Channel app from <a
+    <p class="text-justify">
+        To start talking with your costumers using Telegram Bots, install our "Telegram Channel" app from <a
             href="https://www.zendesk.com/apps" target="_blank">Zendesk Marketplace</a>.
-        Then, create your bot using <a href="https://telegram.me/BotFather" target="_blank">@BotFather</a> - you will
+        Then, create your bot using <a href="https://telegram.me/BotFather" target="_blank">@BotFather</a>, after
+        creation you will
         get a token.
     </p>
-    <p>
-        Alternatively just use the token from your existing telegram bot just follow the steps in Zendesk Support.
+    <p class="text-justify">
+        Alternatively just use the token from your existing telegram bot just following the Zendesk Support steps.
     </p>
     <h3>BotFather, create a new Telegram bot:</h3>
-    <p>BotFather is the one bot to rule them all. It will help you create new bots and change settings for existing ones.</p>
-    <ol>
+    <p class="text-justify">BotFather is the one bot to rule them all. It will help you create new bots and change settings for existing
+        ones.</p>
+    <ol class="text-justify">
         <li><a href="https://telegram.me/BotFather">Click here</a> to open the BotFather chat.</li>
-        <li>Write and send <kbd>/newbot</kbd> command to create a new bot. The BotFather will ask you for a name and username, then generate an authorization token for your new bot.</li>
-        <li>The name of your bot is displayed in contact details and elsewhere.</li>
-        <li>The Username is a short name, to be used in mentions and telegram.me links. Usernames are 5-32 characters long and are case insensitive, but may only include Latin characters, numbers, and underscores. Your bot's username must end in ‘bot’, e.g. ‘tetris_bot’ or ‘TetrisBot’.</li>
-        <li>The token is a string along the lines of <kbd>110201543: AAHdqTcvCH1vGWJxf SeofSAs0K5PALDsaw</kbd> that is required to authorize the bot to use the integration with Zendesk Support.</li>
-        <li>Note: If your existing token is compromised or you lost it for some reason, use the /token command to generate a new one.</li>
+        <li>Open your Telegram app via Telegram Desktop or Web, a chat with the BotFather should be open.</li>
+        <li>Write and send <kbd>/newbot</kbd> command to create a new bot. The BotFather will ask you a name for your
+            bot.
+        </li>
+        <li>Insert a name for your bot (ex. Acme Support), the BotFather should ask you for a username for your bot.
+        </li>
+        <li>Insert a username for your bot, it must end with `bot` (ex. acme_support_bot or AcmeSupportBot).</li>
+        <li>A congratulations message should be displayed with the information of your new Bot including its token.</li>
+        <li>Copy your new Bot token.</li>
     </ol>
-    <h3>In Zendesk:</h3>
-    <ol>
+
+    <p class="mb-0">Notes:</p>
+    <div class="text-gray text-justify">
+        <ul>
+            <li>Your Bot’s name is displayed in Contact details and elsewhere.</li>
+            <li>Your Username bot is a short name to be used in mentions and telegram.me links. Usernames are 5-32 characters long and are case sensitive, but may only include Latin chatacters, numbers, and underscores. Your Bot’s username must end in `bot`, ex. ‘tetris_bot’ or ‘TetrisBot’.</li>
+            <li>The token is a string along the lines of <kbd style="word-wrap: break-word;">110201543:AAHdqTcvCH1vGWJxfSeofSAs0K5PALDsaw</kbd> that is required to authorize the bot to use the integration with Zendesk Support.</li>
+            <li>If your existing token is compromised or you lost it for some reason, use the /token command to generate
+                a new one.
+            </li>
+        </ul>
+    </div>
+
+    <h3>Zendesk Support Steps:</h3>
+    <ol class="text-justify">
         <li>Go to your Zendesk admin page and look out for <kbd>Channel Integrations</kbd> button at the side bar.</li>
-        <li>Click on Telegram Channel then click on Accounts tab, click on Add account button in order to configure the Telegram Bot Token.</li>
+        <li>Select our “Telegram Channel” app.</li>
+        <li>Select the “Accounts” tab.</li>
+        <li>Select the “Add” button in order to configure the Telegram Bot token you copied before.</li>
         <li>Set an Integration Name to organize your accounts.</li>
-        <li>Paste your Telegram Bot Token into Telegram token field.</li>
-        <li>Click on Submit.</li>
+        <li>Paste your Telegram Bot Token into Telegram Token field.</li>
+        <li>Select the “Submit” button.</li>
     </ol>
-    <p>The new account is ready to start receiving your customers messages.</p>
+    <p class="text-justify">The new account is ready to start receiving your Telegram customers´ messages.</p>
 </div>
