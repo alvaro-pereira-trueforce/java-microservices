@@ -4,9 +4,21 @@ namespace APIServices\Zendesk_Telegram\Models\MessageTypes;
 
 abstract class FilesMessageType extends MessageType {
 
+    /**
+     * Get a local URL to be handler with the download Endpoint
+     * @param $external_url
+     * @param $file_id
+     * @return string
+     * @throws \Exception
+     */
     public function getLocalURLFromExternalURL($external_url, $file_id) {
-        $name = substr($external_url, strrpos($external_url, '/') + 1);
-        return '/files/'.$name.'?uuid='.$this->telegramService->getCurrentUUID().'&id='.$file_id;
+        try{
+            $name = substr($external_url, strrpos($external_url, '/') + 1);
+            return '/files/'.$name.'?uuid='.$this->telegramService->getCurrentUUID().'&id='.$file_id;
+        }catch (\Exception $exception)
+        {
+            throw $exception;
+        }
     }
 
     protected function getValidCaptionMessage($file_type)
