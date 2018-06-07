@@ -91,8 +91,16 @@ class ZendeskController extends Controller
                     $accounts,
                     'errors' => $errors]);
             }
-            if ($service->isTokenRegistered($token) || $service->isNameRegistered($subdomain, $name)) {
+            if ($service->isTokenRegistered($token)) {
                 $errors = ['That telegram token is already registered.'];
+                return view('telegram.admin_ui', ['return_url' => $return_url, 'subdomain' =>
+                    $subdomain, 'name' => $name, 'submitURL' => $submitURL, 'current_accounts' =>
+                    $accounts,
+                    'errors' => $errors]);
+            }
+            if($service->isNameRegistered($subdomain, $name))
+            {
+                $errors = ['That integration name is already registered.'];
                 return view('telegram.admin_ui', ['return_url' => $return_url, 'subdomain' =>
                     $subdomain, 'name' => $name, 'submitURL' => $submitURL, 'current_accounts' =>
                     $accounts,
