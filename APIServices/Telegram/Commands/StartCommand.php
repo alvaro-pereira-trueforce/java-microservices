@@ -2,6 +2,11 @@
 
 namespace APIServices\Telegram\Commands;
 
+use APIServices\Telegram\Services\TelegramService;
+use APIServices\Utilities\StringUtilities;
+use Illuminate\Support\Facades\App;
+use Illuminate\Support\Facades\Log;
+use Psy\Util\Str;
 use Telegram\Bot\Actions;
 use Telegram\Bot\Commands\Command;
 
@@ -23,19 +28,71 @@ class StartCommand extends Command
     public function handle($arguments)
     {
         $botFirstName = $this->getTelegram()->getMe()->getFirstName();
+        /** @var TelegramService $service */
+        $service = App::make(TelegramService::class);
 
-        //Make action
-        $this->replyWithChatAction(['action' => Actions::TYPING]);
-        // This will send a message using `sendMessage` method behind the scenes to
-        // the user/chat id who triggered this command.
-        // `replyWith<Message|Photo|Audio|Video|Voice|Document|Sticker|Location|ChatAction>()` all the available methods are dynamically
-        // handled when you replace `send<Method>` with `replyWith` and use the same parameters - except chat_id does NOT need to be included in the array.
-        $this->replyWithMessage([
-            'text' => 'Hello! Welcome I\'m the '.$botFirstName.' Bot, Do you need help? '
-                .json_decode('"\ud83d\ude0c"').
-                ' Tell me and i\'ll send your question to the help desk support  '.json_decode('"\ud83d\udcdc"').json_decode('"\ud83d\udc4d\ud83c\udffb"'),
-            'reply_to_message_id' => $this->getUpdate()->getMessage()->getMessageId()
-        ]);
+        $commandData = $service->getStartedCommand($this->update);
+        if (!$commandData) {
+            //Make action
+            $this->replyWithChatAction(['action' => Actions::TYPING]);
+            // This will send a message using `sendMessage` method behind the scenes to
+            // the user/chat id who triggered this command.
+            // `replyWith<Message|Photo|Audio|Video|Voice|Document|Sticker|Location|ChatAction>()` all the available methods are dynamically
+            // handled when you replace `send<Method>` with `replyWith` and use the same parameters - except chat_id does NOT need to be included in the array.
+            $this->replyWithMessage([
+                'text' => 'Hello! Welcome I\'m the ' . $botFirstName . ' Bot, Do you need help? '
+                    . json_decode('"\ud83d\ude0c"') .
+                    ' Tell me and i\'ll send your question to the help desk support  ' . json_decode('"\ud83d\udcdc"') . json_decode('"\ud83d\udc4d\ud83c\udffb"')
+                    .', is it your first time?. I need some information before catch your request.',
+                'reply_to_message_id' => $this->getUpdate()->getMessage()->getMessageId()
+            ]);
+            $this->replyWithMessage([
+                'text' => 'Please provide us your email, phone number, and location.'
+            ]);
+            $this->replyWithMessage([
+                'text' => 'Enter your email:'
+            ]);
+            $service->setCommandProcess($this->update, $this->name, 'email');
+        } else {
+            try
+            {
+                $message = $this->update->getMessage()->getText();
+                switch ($commandData['state']) {
+                    case 'email':
+                        if(!$message || !StringUtilities::isValidEmail($message))
+                            throw new \Exception('Please enter a valid email address.');
+                        $content = serialize(['email' => $message]);
+                        $service->setCommandProcess($this->update, $this->name, 'phone_number', $content);
+                        $this->replyWithMessage([
+                            'text' => 'Great!, Enter your phone now:'
+                        ]);
+                        break;
+                    case 'phone_number':
+                        if(!$message || !StringUtilities::isValidPhoneNumber($message))
+                        {
+                            throw new \Exception('Please enter a valid phone number, your phone number must have 8 or more digits.');
+                        }
+
+                        $content = unserialize($commandData['content']);
+                        $content['phone_number'] = $message;
+                        $content = serialize($content);
+                        $service->setCommandProcess($this->update, $this->name, 'send_zendesk', $content);
+                        $this->replyWithMessage([
+                            'text' => 'Great!, Thank you. please send your question again to let our support help you.'
+                        ]);
+                        break;
+                }
+            }catch (\Exception $exception)
+            {
+                $this->replyWithMessage([
+                    'text' => $exception->getMessage(),
+                    'reply_to_message_id' => $this->getUpdate()->getMessage()->getMessageId()
+                ]);
+                $this->replyWithMessage([
+                    'text' => 'Try Again:'
+                ]);
+            }
+        }
 
         // This will prepare a list of available commands and send the user.
         // First, Get an array of all registered commands

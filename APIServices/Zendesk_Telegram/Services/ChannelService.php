@@ -7,14 +7,17 @@ use APIServices\Zendesk\Utility;
 use APIServices\Zendesk_Telegram\Models\MessageTypes\IMessageType;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Log;
+use Telegram\Bot\Objects\Update;
 
-class ChannelService {
+class ChannelService
+{
 
     protected $telegram_service;
     protected $zendeskUtils;
     protected $chanel_type;
 
-    public function __construct(TelegramService $telegramService, Utility $zendeskUtils) {
+    public function __construct(TelegramService $telegramService, Utility $zendeskUtils)
+    {
         $this->telegram_service = $telegramService;
         $this->zendeskUtils = $zendeskUtils;
         $this->chanel_type = 'telegram';
@@ -23,9 +26,11 @@ class ChannelService {
     /**
      * @return array
      */
-    public function getUpdates() {
+    public function getUpdates()
+    {
         $updates = $this->telegram_service->getTelegramUpdates();
         $transformedMessages = [];
+
         foreach ($updates as $update) {
             // must have a buffer in the future to catch only the first 200 messages and send
             // it the leftover later. Maybe never happen an overflow.
@@ -35,6 +40,19 @@ class ChannelService {
             }
 
             try {
+                $commandData = $this->telegram_service->getStartedCommand($update);
+                if($commandData['state'] == 'send_zendesk')
+                {
+
+                }
+                if (!$this->isCommand($update) && $commandData) {
+                    $this->telegram_service->triggerCommand($commandData['command'], $commandData['state'], $update);
+                    continue;
+                }
+                if($this->isCommand($update) || $commandData){
+                    continue;
+                }
+
                 $message_type = $this->telegram_service->detectMessageType($update);
                 /** @var $updateType IMessageType */
                 $updateType = App::makeWith($this->chanel_type . '.' . $message_type, [
@@ -56,11 +74,12 @@ class ChannelService {
      * Send a channel back request
      *
      * @param string $parent_id Parent Identifier
-     * @param string $message   Message Text
+     * @param string $message Message Text
      * @return string External Identifier
      * @throws \Exception
      */
-    public function channelBackRequest($parent_id, $message) {
+    public function channelBackRequest($parent_id, $message)
+    {
         try {
             $params = explode(':', $parent_id);
             $parent_uuid = $params[0];
@@ -78,6 +97,24 @@ class ChannelService {
             ]);
         } catch (\Exception $exception) {
             throw $exception;
+        }
+    }
+
+    /**
+     * @param Update $update
+     * @return bool
+     */
+    private function isCommand($update)
+    {
+        try {
+            $message = $update->getMessage()->getText();
+            preg_match('/^\/([^\s@]+)@?(\S+)?\s?(.*)$/', $message, $commands);
+            if (!empty($commands)) {
+                return true;
+            }
+            return false;
+        } catch (\Exception $exception) {
+            return false;
         }
     }
 }
