@@ -7,8 +7,8 @@ use APIServices\Telegram\Repositories\TelegramRepository;
 use APIServices\Zendesk\Utility;
 use Illuminate\Database\DatabaseManager;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
-use Illuminate\Database\QueryException;
 use Illuminate\Events\Dispatcher;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
 use Telegram\Bot\Api;
 use Telegram\Bot\Exceptions\TelegramSDKException;
@@ -95,16 +95,72 @@ class TelegramService
         return $model;
     }
 
-    public function setWebhook($key)
+    /**
+     * @param array $data
+     * @return array
+     * @throws \Exception
+     */
+    public function setAccountRegistration(array $data)
     {
         try {
-            $telegram = new Api($key);
-            $url = env('APP_URL') . '/api/' . $key . '/webhook';
+            $model = $this->repository->setAccountRegistration($data);
+            if ($model)
+                return $model->toArray();
+        } catch (\Exception $exception) {
+            throw $exception;
+        }
+    }
+
+    /**
+     * @param $token
+     * @return boolean
+     * @throws \Exception
+     */
+    public function isTokenRegistered($token)
+    {
+        try {
+            $model = $this->repository->getByToken($token)->first();
+            if ($model)
+                return true;
+            return false;
+        } catch (\Exception $exception) {
+            throw $exception;
+        }
+    }
+
+    /**
+     * @param $subdomain
+     * @param $name
+     * @return boolean
+     * @throws \Exception
+     */
+    public function isNameRegistered($subdomain, $name)
+    {
+        try {
+            $model = $this->repository->isNameRegistered($subdomain, $name);
+            if ($model)
+                return true;
+            return false;
+        } catch (\Exception $exception) {
+            throw $exception;
+        }
+    }
+
+    /**
+     * @param $token
+     * @return \Telegram\Bot\TelegramResponse
+     * @throws TelegramSDKException
+     */
+    public function setWebhook($token)
+    {
+        try {
+            $telegram = new Api($token);
+            $url = env('APP_URL') . '/api/' . $token . '/webhook';
             Log::info($url);
             $response = $telegram->setWebhook(['url' => $url]);
             return $response;
         } catch (TelegramSDKException $exception) {
-            return $exception;
+            throw $exception;
         }
     }
 
@@ -282,10 +338,17 @@ class TelegramService
         }
     }
 
+    /**
+     * @param $name
+     * @param $token
+     * @param $subdomain
+     * @return array
+     * @throws \Exception
+     */
     public function registerNewIntegration($name, $token, $subdomain)
     {
         try {
-            $model = $this->repository->create([
+            $model = $this->repository->setAccountRegistration([
                 'token' => $token,
                 'zendesk_app_id' => $subdomain,
                 'integration_name' => $name
@@ -295,11 +358,9 @@ class TelegramService
                 'integration_name' => $model->integration_name,
                 'zendesk_app_id' => $model->zendesk_app_id
             ];
-        } catch (QueryException $exception) {
-            return ["error" => ""];
         } catch (\Exception $exception) {
-            Log::info($exception);
-            return null;
+            Log::error($exception);
+            throw $exception;
         }
     }
 
@@ -313,11 +374,18 @@ class TelegramService
         ];
     }
 
+    /**
+     * @param $subdomain
+     * @return Collection
+     * @throws \Exception
+     */
     public function getByZendeskAppID($subdomain)
     {
-        $model = $this->repository->getModel();
-        $channels = $model->where('zendesk_app_id', '=', $subdomain)->get();
-        return $channels;
+        try {
+            return $this->repository->getRegisteredByZendeskAppID($subdomain);
+        } catch (\Exception $exception) {
+            throw $exception;
+        }
     }
 
     /**

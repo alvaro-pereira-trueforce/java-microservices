@@ -41,10 +41,6 @@ class ChannelService
 
             try {
                 $commandData = $this->telegram_service->getStartedCommand($update);
-                if($commandData['state'] == 'send_zendesk')
-                {
-
-                }
                 if (!$this->isCommand($update) && $commandData) {
                     $this->telegram_service->triggerCommand($commandData['command'], $commandData['state'], $update);
                     continue;

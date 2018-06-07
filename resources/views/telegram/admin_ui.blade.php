@@ -1,11 +1,16 @@
 <html id="adminpage">
 <head>
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
+          integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
     <style>
         .center {
             margin: auto;
             width: 100%;
+        }
+
+        .hide {
+            display: none;
         }
     </style>
 </head>
@@ -14,7 +19,8 @@
     <div class="card-body">
         <h3>Telegram configuration</h3>
         @if (!$name)
-            <p>We need you to provide us your Telegram token which was generated with the "Telegram Bot Father" in order to start working with the Telegram Channel service.</p>
+            <p>We need you to provide us your Telegram token which was generated with the "Telegram Bot Father" in order
+                to start working with the Telegram Channel service.</p>
         @else
             <p>Welcome back. Do you want to update the current telegram token?, Just provide us
                 the telegram token that was generated with Telegram Bot Father in order to start
@@ -52,20 +58,21 @@
             @if(count($current_accounts) == 0)
                 <label>No records saved.</label>
             @endif
+            <label id="no-records" class="hide">No records saved.</label>
             @foreach ($current_accounts as $account)
-                <div class="card" style="margin-top: 10px">
+                <div id="item-{{$loop->index}}" class="card" style="margin-top: 10px">
                     <div class="card-body">
                         <h5 class="card-title">{{$account->integration_name}}</h5>
                         <p class="card-text">{{$account->token}}</p>
                         <button class="btn btn-secondary" style="margin-right: 10px"
-                                onclick="addClick({{$account}},'{{$return_url}}',
-                                        '{{$submitURL}}')">
+                                onclick="addClick('{{$account->uuid}}','{{$account->integration_name}}','{{$return_url}}', '{{$submitURL}}')">
                             Add to account
                         </button>
                         <button class="btn btn-danger"
-                        onclick="removeClick('{{$account->uuid}}', '{{$return_url}}',
-                                '{{$subdomain}}','{{$name}}', '{{$submitURL}}')">Remove
-                        permanently</button>
+                                onclick="removeClick('{{$account->uuid}}','{{$subdomain}}','{{$submitURL}}','item-{{$loop->index}}')">
+                            Remove
+                            permanently
+                        </button>
                     </div>
                 </div>
             @endforeach
@@ -74,39 +81,44 @@
 </div>
 </body>
 <script>
-    function addClick(account, return_url, submitURL) {
-        var request_url = submitURL + '/' + account.uuid;
+    function addClick(uuid, integration_name, return_url, submitURL) {
+        var request_url = submitURL + '/' + uuid;
         $.post(request_url,
             {
-                account: account,
+                uuid: uuid,
+                integration_name: integration_name,
                 return_url: return_url
             },
             function (data, status) {
-                console.log(status);
-                if(status === 'success')
-                {
+                if (status === 'success') {
                     $("body").html(data);
                 }
             });
     }
 
-    function removeClick(uuid, return_url, subdomain, name, submitURL) {
+    function removeClick(uuid, subdomain, submitURL, item) {
         var request_url = submitURL + '/delete/' + uuid;
         var body = {
-            return_url: return_url,
             subdomain: subdomain,
-            name: name,
             submitURL: submitURL
         };
 
         $.post(request_url,
             body,
             function (data, status) {
-                if(status === 'success')
-                {
-                    $("body").html(data);
+                if (status === 'success') {
+                    if (data.length === 0) {
+                        showNoRecords();
+                    }
+                    var elem = document.getElementById(item);
+                    return elem.parentNode.removeChild(elem);
                 }
             });
+    }
+
+    function showNoRecords() {
+        var error = document.getElementById("no-records");
+        error.classList.remove('hide');
     }
 </script>
 </html>
