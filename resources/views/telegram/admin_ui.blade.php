@@ -8,10 +8,6 @@
             margin: auto;
             width: 100%;
         }
-
-        .hide {
-            display: none;
-        }
     </style>
 </head>
 <body>
@@ -35,7 +31,7 @@
             </div>
             <div class="form-group">
                 <label>Telegram Token:</label>
-                <input type="text" name="token" class="form-control">
+                <input type="text" name="token" class="form-control" value="{{$token}}">
             </div>
             <input type="hidden"
                    name="return_url" value="{{$return_url}}">
@@ -52,73 +48,7 @@
             @endif
             <input type="submit" class="btn btn-primary">
         </form>
-        <div>
-            <h4>Current configuration</h4>
-
-            @if(count($current_accounts) == 0)
-                <label>No records saved.</label>
-            @endif
-            <label id="no-records" class="hide">No records saved.</label>
-            @foreach ($current_accounts as $account)
-                <div id="item-{{$loop->index}}" class="card" style="margin-top: 10px">
-                    <div class="card-body">
-                        <h5 class="card-title">{{$account->integration_name}}</h5>
-                        <p class="card-text">{{$account->token}}</p>
-                        <button class="btn btn-secondary" style="margin-right: 10px"
-                                onclick="addClick('{{$account->uuid}}','{{$account->integration_name}}','{{$return_url}}', '{{$submitURL}}')">
-                            Add to account
-                        </button>
-                        <button class="btn btn-danger"
-                                onclick="removeClick('{{$account->uuid}}','{{$subdomain}}','{{$submitURL}}','item-{{$loop->index}}')">
-                            Remove
-                            permanently
-                        </button>
-                    </div>
-                </div>
-            @endforeach
-        </div>
     </div>
 </div>
 </body>
-<script>
-    function addClick(uuid, integration_name, return_url, submitURL) {
-        var request_url = submitURL + '/' + uuid;
-        $.post(request_url,
-            {
-                uuid: uuid,
-                integration_name: integration_name,
-                return_url: return_url
-            },
-            function (data, status) {
-                if (status === 'success') {
-                    $("body").html(data);
-                }
-            });
-    }
-
-    function removeClick(uuid, subdomain, submitURL, item) {
-        var request_url = submitURL + '/delete/' + uuid;
-        var body = {
-            subdomain: subdomain,
-            submitURL: submitURL
-        };
-
-        $.post(request_url,
-            body,
-            function (data, status) {
-                if (status === 'success') {
-                    if (data.length === 0) {
-                        showNoRecords();
-                    }
-                    var elem = document.getElementById(item);
-                    return elem.parentNode.removeChild(elem);
-                }
-            });
-    }
-
-    function showNoRecords() {
-        var error = document.getElementById("no-records");
-        error.classList.remove('hide');
-    }
-</script>
 </html>

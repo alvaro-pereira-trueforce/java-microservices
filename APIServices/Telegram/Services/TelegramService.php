@@ -191,6 +191,21 @@ class TelegramService
     }
 
     /**
+     * @param $token
+     * @return array
+     * @throws \Exception
+     */
+    public function getAccountByToken($token)
+    {
+        try{
+            return $this->repository->getByToken($token)->first()->toArray();
+        }catch (\Exception $exception)
+        {
+            throw $exception;
+        }
+    }
+
+    /**
      * Get updates return all the messages from telegram converting the data for zendesk channel
      * pulling service.
      *
