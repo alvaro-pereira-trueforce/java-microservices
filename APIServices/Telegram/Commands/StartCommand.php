@@ -4,11 +4,12 @@ namespace APIServices\Telegram\Commands;
 
 use APIServices\Telegram\Services\TelegramService;
 use APIServices\Utilities\StringUtilities;
+use APIServices\Zendesk_Telegram\Services\ChannelService;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Log;
-use Psy\Util\Str;
 use Telegram\Bot\Actions;
 use Telegram\Bot\Commands\Command;
+use Telegram\Bot\Objects\Update;
 
 class StartCommand extends Command
 {
@@ -43,7 +44,7 @@ class StartCommand extends Command
                 'text' => 'Hello! Welcome I\'m the ' . $botFirstName . ' Bot, Do you need help? '
                     . json_decode('"\ud83d\ude0c"') .
                     ' Tell me and i\'ll send your question to the help desk support  ' . json_decode('"\ud83d\udcdc"') . json_decode('"\ud83d\udc4d\ud83c\udffb"')
-                    .', is it your first time?. I need some information before catch your request.',
+                    . ', is it your first time?. I need some information before catch your request.',
                 'reply_to_message_id' => $this->getUpdate()->getMessage()->getMessageId()
             ]);
             $this->replyWithMessage([
@@ -54,12 +55,11 @@ class StartCommand extends Command
             ]);
             $service->setCommandProcess($this->update, $this->name, 'email');
         } else {
-            try
-            {
+            try {
                 $message = $this->update->getMessage()->getText();
                 switch ($commandData['state']) {
                     case 'email':
-                        if(!$message || !StringUtilities::isValidEmail($message))
+                        if (!$message || !StringUtilities::isValidEmail($message))
                             throw new \Exception('Please enter a valid email address.');
                         $content = serialize(['email' => $message]);
                         $service->setCommandProcess($this->update, $this->name, 'phone_number', $content);
@@ -68,22 +68,42 @@ class StartCommand extends Command
                         ]);
                         break;
                     case 'phone_number':
-                        if(!$message || !StringUtilities::isValidPhoneNumber($message))
-                        {
+                        if (!$message || !StringUtilities::isValidPhoneNumber($message)) {
                             throw new \Exception('Please enter a valid phone number, your phone number must have 8 or more digits.');
                         }
 
                         $content = unserialize($commandData['content']);
                         $content['phone_number'] = $message;
-                        $content = serialize($content);
-                        $service->setCommandProcess($this->update, $this->name, 'send_zendesk', $content);
+
                         $this->replyWithMessage([
                             'text' => 'Great!, Thank you. please send your question again to let our support help you.'
                         ]);
+
+                        $data = [
+                            'update_id' => $this->update->getUpdateId(),
+                            'message' => [
+                                'message_id' => 1068,
+                                'from' =>$this->update->getMessage()->getFrom(),
+                                'chat' => $this->update->getMessage()->getChat(),
+                                'date' => $this->update->getMessage()->getDate(),
+                                'new_user_info' => [
+                                    'message' => 'New User Information',
+                                    'content' => $content
+                                ],
+                            ]
+                        ];
+                        $update = new Update($data);
+                        Log::debug('Prueba');
+                        Log::debug($update);
+                        /** @var ChannelService $channel_service */
+                        $channel_service = App::make(ChannelService::class);
+                        $channel_service->sendUpdate($update, $this->telegram->getAccessToken());
+                        break;
+                        $service->cancelStartedCommand($this->update);
+
                         break;
                 }
-            }catch (\Exception $exception)
-            {
+            } catch (\Exception $exception) {
                 $this->replyWithMessage([
                     'text' => $exception->getMessage(),
                     'reply_to_message_id' => $this->getUpdate()->getMessage()->getMessageId()

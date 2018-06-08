@@ -239,7 +239,8 @@ class TelegramService
                     $types = [
                         'audio', 'document', 'photo', 'sticker', 'video',
                         'voice', 'contact', 'location', 'text', 'left_chat_member',
-                        'left_chat_participant', 'new_chat_participant', 'new_chat_member'
+                        'left_chat_participant', 'new_chat_participant', 'new_chat_member',
+                        'new_user_info'
                     ];
 
                     $result = $object->keys()
@@ -439,6 +440,26 @@ class TelegramService
 
             return null;
         } catch (\Exception $exception) {
+            throw $exception;
+        }
+    }
+
+    /**
+     * @param Update $update
+     * @throws \Exception
+     */
+    public function cancelStartedCommand($update)
+    {
+        try
+        {
+            $user_id = $update->getMessage()->getFrom()->getId();
+            $chat_id = $update->getMessage()->getChat()->getId();
+            $this->commandRepository->deleteWhereArray([
+                'user_id' => $user_id,
+                'chat_id' => $chat_id
+            ]);
+        }catch (\Exception $exception)
+        {
             throw $exception;
         }
     }

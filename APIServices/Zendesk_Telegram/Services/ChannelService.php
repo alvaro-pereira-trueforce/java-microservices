@@ -3,6 +3,7 @@
 namespace APIServices\Zendesk_Telegram\Services;
 
 use APIServices\Telegram\Services\TelegramService;
+use APIServices\Zendesk\Services\PushService;
 use APIServices\Zendesk\Utility;
 use APIServices\Zendesk_Telegram\Models\MessageTypes\IMessageType;
 use Illuminate\Support\Facades\App;
@@ -24,6 +25,63 @@ class ChannelService
     }
 
     /**
+     * Send Channel Service Update Messages To Zendesk Support Push Endpoint
+     * @param  Update $update
+     * @param  $telegram_token
+     * @throws \Exception
+     */
+    public function sendUpdate($update, $telegram_token)
+    {
+        try {
+            $updateType = $this->getMessageTypeInstance($update);
+            $message = $updateType->getTransformedMessage();
+            if ($message) {
+                $pushService = $this->getPushServiceInstance($telegram_token);
+                $pushService->pushNewMessage($message);
+            }
+        } catch (\Exception $exception) {
+            throw $exception;
+        }
+    }
+
+    /**
+     * @param $update
+     * @return IMessageType
+     * @throws \Exception
+     */
+    protected function getMessageTypeInstance($update)
+    {
+        try {
+            $message_type = $this->telegram_service->detectMessageType($update);
+            return App::makeWith($this->chanel_type . '.' . $message_type, [
+                'update' => $update,
+            ]);
+        } catch (\Exception $exception) {
+            throw $exception;
+        }
+    }
+
+    /**
+     * @param $token
+     * @return PushService
+     * @throws \Exception
+     */
+    protected function getPushServiceInstance($token)
+    {
+        try {
+            $account = $this->telegram_service->getAccountByToken($token);
+            return App::makeWith(PushService::class, [
+                'zendesk_app_id' => $account['zendesk_app_id'],
+                'instance_push_id' => $account['instance_push_id'],
+                'zendesk_access_token' => $account['zendesk_access_token']
+            ]);
+        } catch (\Exception $exception) {
+            throw $exception;
+        }
+    }
+
+    /**
+     * Get all Update Messages using Polling Method
      * @return array
      */
     public function getUpdates()
@@ -40,20 +98,16 @@ class ChannelService
             }
 
             try {
-                $commandData = $this->telegram_service->getStartedCommand($update);
+                //this must be retro-compatible but it wasn't test it because was deprecated with web hooks
+                $commandData = $this->getStartedCommand($update);
                 if (!$this->isCommand($update) && $commandData) {
-                    $this->telegram_service->triggerCommand($commandData['command'], $commandData['state'], $update);
+                    $this->triggerCommand($commandData['command'], $commandData['state'], $update);
                     continue;
                 }
-                if($this->isCommand($update) || $commandData){
+                if ($this->isCommand($update) || $commandData) {
                     continue;
                 }
-
-                $message_type = $this->telegram_service->detectMessageType($update);
-                /** @var $updateType IMessageType */
-                $updateType = App::makeWith($this->chanel_type . '.' . $message_type, [
-                    'update' => $update,
-                ]);
+                $updateType = $this->getMessageTypeInstance($update);
                 $message = $updateType->getTransformedMessage();
                 if ($message)
                     array_push($transformedMessages, $message);
@@ -65,6 +119,35 @@ class ChannelService
         return $transformedMessages;
     }
 
+    /**
+     * @param string $command
+     * @param string $state
+     * @param Update $update
+     * @return mixed
+     * @throws \Exception
+     */
+    public function triggerCommand($command, $state, $update)
+    {
+        try {
+            return $this->telegram_service->triggerCommand($command, $state, $update);
+        } catch (\Exception $exception) {
+            throw $exception;
+        }
+    }
+
+    /**
+     * @param Update $update
+     * @return array
+     * @throws \Exception
+     */
+    public function getStartedCommand($update)
+    {
+        try {
+            return $this->telegram_service->getStartedCommand($update);
+        } catch (\Exception $exception) {
+            throw $exception;
+        }
+    }
 
     /**
      * Send a channel back request
@@ -100,7 +183,7 @@ class ChannelService
      * @param Update $update
      * @return bool
      */
-    private function isCommand($update)
+    public function isCommand($update)
     {
         try {
             $message = $update->getMessage()->getText();
