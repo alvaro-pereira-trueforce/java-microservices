@@ -27,4 +27,15 @@ abstract class RepositoryUUID extends Repository {
         $model->save();
         return $model;
     }
+
+    public function deleteWhereArray(array $clauses)
+    {
+        /** @var ModelUUID $model */
+        $model = $this->getModel();
+        $rows = $model->where($clauses)->get();
+        foreach ($rows as $row)
+        {
+            $row->delete();
+        }
+    }
 }

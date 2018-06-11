@@ -6,7 +6,8 @@ namespace APIServices\Telegram\Models;
 use App\Database\Eloquent\Model;
 use App\Database\Traits\UUIDTrait;
 
-class TelegramChannel extends Model {
+class TelegramChannel extends Model
+{
     protected $table = "telegram_channels";
 
     use UUIDTrait;
@@ -16,6 +17,6 @@ class TelegramChannel extends Model {
      * @var array
      */
     protected $fillable = [
-        'token', 'zendesk_app_id', 'integration_name'
+        'token', 'zendesk_app_id', 'integration_name', 'zendesk_access_token', 'instance_push_id'
     ];
 }

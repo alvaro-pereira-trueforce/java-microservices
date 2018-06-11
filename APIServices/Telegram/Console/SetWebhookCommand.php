@@ -47,8 +47,13 @@ class SetWebhookCommand extends Command
      */
     public function handle()
     {
-        $result = $this->service->setWebhook($this->argument('token'));
-
-        $this->info($result);
+        try
+        {
+            $result = $this->service->setWebhook($this->argument('token'));
+            $this->info($result);
+        }catch (\Exception $exception)
+        {
+            $this->error($exception->getMessage());
+        }
     }
 }

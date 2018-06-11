@@ -5,7 +5,6 @@ namespace APIServices\Storage\Controllers;
 use APIServices\Telegram\Services\TelegramService;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use Illuminate\Http\Response;
 use Illuminate\Support\Facades\App;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
@@ -21,6 +20,7 @@ class StorageController extends Controller {
             $telegramService = App::makeWith(TelegramService::class,[
                 'uuid' => $uuid
             ]);
+
             $documentURL = $telegramService->getDocumentURL($file_id);
             if (strpos($filename, 'webp') !== false) {
                 $documentURL = imagecreatefromwebp($documentURL);
@@ -29,9 +29,10 @@ class StorageController extends Controller {
                 return null;
             }
 
+            $headers = get_headers($documentURL, 1);
             return response()->streamDownload(function () use ($documentURL){
                 echo file_get_contents($documentURL);
-            }, $filename);
+            }, $filename, $headers);
 
         }catch (\Exception $exception)
         {

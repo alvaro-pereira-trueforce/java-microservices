@@ -60,4 +60,15 @@ class Utility {
         $basic_response['file_urls'] = $files_urls;
         return $basic_response;
     }
+
+    /**
+     * @param array $basic_response
+     * @param array $fields
+     * @return array
+     */
+    public function addFields(array $basic_response, array $fields)
+    {
+        $basic_response['fields'] = $fields;
+        return $basic_response;
+    }
 }

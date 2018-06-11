@@ -2,21 +2,21 @@
 
 namespace APIServices\Telegram\Services;
 
+use APIServices\Telegram\Repositories\CommandHandlerRepository;
 use APIServices\Telegram\Repositories\TelegramRepository;
 use APIServices\Zendesk\Utility;
 use Illuminate\Database\DatabaseManager;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
-use Illuminate\Database\QueryException;
 use Illuminate\Events\Dispatcher;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
 use Telegram\Bot\Api;
 use Telegram\Bot\Exceptions\TelegramSDKException;
-use Telegram\Bot\Objects\Document;
 use Telegram\Bot\Objects\Message;
-use Telegram\Bot\Objects\PhotoSize;
 use Telegram\Bot\Objects\Update;
 
-class TelegramService {
+class TelegramService
+{
     protected $database;
 
     protected $dispatcher;
@@ -27,43 +27,51 @@ class TelegramService {
 
     protected $zendeskUtils;
 
+    protected $commandRepository;
+
     public function __construct(
         DatabaseManager $database,
         Dispatcher $dispatcher,
         TelegramRepository $repository,
         Api $telegramAPI,
         Utility $zendeskUtils,
+        CommandHandlerRepository $commandRepository,
         $uuid
-    ) {
+    )
+    {
         $this->database = $database;
         $this->dispatcher = $dispatcher;
         $this->repository = $repository;
         $this->telegramAPI = $telegramAPI;
         $this->zendeskUtils = $zendeskUtils;
+        $this->commandRepository = $commandRepository;
 
-        if($uuid && $uuid != '')
-        {
+        if ($uuid && $uuid != '') {
             $token = $this->getTokenFromUUID($uuid);
             $this->telegramAPI->setAccessToken($token);
         }
     }
 
-    public function getAll($options = []) {
+    public function getAll($options = [])
+    {
         return $this->repository->get($options);
     }
 
-    public function getById($uuid, array $options = []) {
+    public function getById($uuid, array $options = [])
+    {
         $model = $this->getRequestedModel($uuid);
 
         return $model;
     }
 
-    public function create($data) {
+    public function create($data)
+    {
         $user = $this->repository->create($data);
         return $user;
     }
 
-    public function update($uuid, array $data) {
+    public function update($uuid, array $data)
+    {
         $model = $this->getRequestedModel($uuid);
 
         $this->repository->update($model, $data);
@@ -71,12 +79,14 @@ class TelegramService {
         return $model;
     }
 
-    public function delete($uuid) {
+    public function delete($uuid)
+    {
         $model = $this->getById($uuid);
         return $model->delete();
     }
 
-    private function getRequestedModel($uuid) {
+    private function getRequestedModel($uuid)
+    {
         $model = $this->repository->getByUUID($uuid);
 
         if (is_null($model)) {
@@ -85,19 +95,77 @@ class TelegramService {
         return $model;
     }
 
-    public function setWebhook($key) {
+    /**
+     * @param array $data
+     * @return array
+     * @throws \Exception
+     */
+    public function setAccountRegistration(array $data)
+    {
         try {
-            $telegram = new Api($key);
-            $url = env('APP_URL') . '/api/' . $key . '/webhook';
+            $model = $this->repository->setAccountRegistration($data);
+            if ($model)
+                return $model->toArray();
+        } catch (\Exception $exception) {
+            throw $exception;
+        }
+    }
+
+    /**
+     * @param $token
+     * @return boolean
+     * @throws \Exception
+     */
+    public function isTokenRegistered($token)
+    {
+        try {
+            $model = $this->repository->getByToken($token)->first();
+            if ($model)
+                return true;
+            return false;
+        } catch (\Exception $exception) {
+            throw $exception;
+        }
+    }
+
+    /**
+     * @param $subdomain
+     * @param $name
+     * @return boolean
+     * @throws \Exception
+     */
+    public function isNameRegistered($subdomain, $name)
+    {
+        try {
+            $model = $this->repository->isNameRegistered($subdomain, $name);
+            if ($model)
+                return true;
+            return false;
+        } catch (\Exception $exception) {
+            throw $exception;
+        }
+    }
+
+    /**
+     * @param $token
+     * @return \Telegram\Bot\TelegramResponse
+     * @throws TelegramSDKException
+     */
+    public function setWebhook($token)
+    {
+        try {
+            $telegram = new Api($token);
+            $url = env('APP_URL') . '/api/' . $token . '/webhook';
             Log::info($url);
             $response = $telegram->setWebhook(['url' => $url]);
             return $response;
         } catch (TelegramSDKException $exception) {
-            return $exception;
+            throw $exception;
         }
     }
 
-    public function removeWebhook($key) {
+    public function removeWebhook($key)
+    {
         try {
             $telegram = new Api($key);
             $response = $telegram->removeWebhook();
@@ -112,7 +180,8 @@ class TelegramService {
      * @param $uuid
      * @return string token
      */
-    private function getTokenFromUUID($uuid) {
+    private function getTokenFromUUID($uuid)
+    {
         $telegramModel = $this->repository->getByUUID($uuid);
 
         if ($telegramModel == null) {
@@ -122,12 +191,28 @@ class TelegramService {
     }
 
     /**
+     * @param $token
+     * @return array
+     * @throws \Exception
+     */
+    public function getAccountByToken($token)
+    {
+        try{
+            return $this->repository->getByToken($token)->first()->toArray();
+        }catch (\Exception $exception)
+        {
+            throw $exception;
+        }
+    }
+
+    /**
      * Get updates return all the messages from telegram converting the data for zendesk channel
      * pulling service.
      *
      * @return Update[]
      */
-    public function getTelegramUpdates() {
+    public function getTelegramUpdates()
+    {
         try {
             $updates = $this->telegramAPI->commandsHandler(false);
             return $updates;
@@ -145,7 +230,8 @@ class TelegramService {
      * @throws \Exception
      * @return string
      */
-    public function detectMessageType($object) {
+    public function detectMessageType($object)
+    {
         try {
             if ($object instanceof Update) {
                 if ($object->has('message')) {
@@ -153,7 +239,8 @@ class TelegramService {
                     $types = [
                         'audio', 'document', 'photo', 'sticker', 'video',
                         'voice', 'contact', 'location', 'text', 'left_chat_member',
-                        'left_chat_participant', 'new_chat_participant', 'new_chat_member'
+                        'left_chat_participant', 'new_chat_participant', 'new_chat_member',
+                        'new_user_info'
                     ];
 
                     $result = $object->keys()
@@ -179,7 +266,8 @@ class TelegramService {
      * @param string $type
      * @return bool
      */
-    public function isMessageType($update, $type) {
+    public function isMessageType($update, $type)
+    {
         return $this->telegramAPI->isMessageType($type, $update);
     }
 
@@ -189,7 +277,8 @@ class TelegramService {
      * @param Update $update
      * @return mixed
      */
-    public function triggerCommand($command_name, $arguments, $update) {
+    public function triggerCommand($command_name, $arguments, $update)
+    {
         return $this->telegramAPI->getCommandBus()->execute($command_name, $arguments, $update);
     }
 
@@ -197,7 +286,8 @@ class TelegramService {
      * @param $file_id
      * @return \Telegram\Bot\Objects\File
      */
-    public function getFileWithID($file_id) {
+    public function getFileWithID($file_id)
+    {
         return $this->telegramAPI->getFile(['file_id' => $file_id]);
     }
 
@@ -206,7 +296,8 @@ class TelegramService {
      * @return string
      * @throws $exception
      */
-    public function getDocumentURL($document_id) {
+    public function getDocumentURL($document_id)
+    {
         try {
             $token = $this->telegramAPI->getAccessToken();
             $file = $this->getFileWithID($document_id);
@@ -223,7 +314,8 @@ class TelegramService {
      * @return array
      * @throws \Exception
      */
-    public function sendTelegramMessage($chat_id, $message) {
+    public function sendTelegramMessage($chat_id, $message)
+    {
         try {
             $response = $this->telegramAPI->sendMessage([
                 'chat_id' => $chat_id,
@@ -251,7 +343,8 @@ class TelegramService {
      * @param $token
      * @return null|\Telegram\Bot\Objects\User
      */
-    public function checkValidTelegramBot($token) {
+    public function checkValidTelegramBot($token)
+    {
         try {
             $this->telegramAPI->setAccessToken($token);
             return $this->telegramAPI->getMe();
@@ -261,9 +354,17 @@ class TelegramService {
         }
     }
 
-    public function registerNewIntegration($name, $token, $subdomain) {
+    /**
+     * @param $name
+     * @param $token
+     * @param $subdomain
+     * @return array
+     * @throws \Exception
+     */
+    public function registerNewIntegration($name, $token, $subdomain)
+    {
         try {
-            $model = $this->repository->create([
+            $model = $this->repository->setAccountRegistration([
                 'token' => $token,
                 'zendesk_app_id' => $subdomain,
                 'integration_name' => $name
@@ -273,15 +374,14 @@ class TelegramService {
                 'integration_name' => $model->integration_name,
                 'zendesk_app_id' => $model->zendesk_app_id
             ];
-        } catch (QueryException $exception) {
-            return ["error" => ""];
         } catch (\Exception $exception) {
-            Log::info($exception);
-            return null;
+            Log::error($exception);
+            throw $exception;
         }
     }
 
-    public function getMetadataFromSavedIntegration($uuid) {
+    public function getMetadataFromSavedIntegration($uuid)
+    {
         $current_channel = $this->getById($uuid);
         return [
             'token' => $current_channel->uuid,
@@ -290,20 +390,103 @@ class TelegramService {
         ];
     }
 
-    public function getByZendeskAppID($subdomain) {
-        $model = $this->repository->getModel();
-        $channels = $model->where('zendesk_app_id', '=', $subdomain)->get();
-        return $channels;
+    /**
+     * @param $subdomain
+     * @return Collection
+     * @throws \Exception
+     */
+    public function getByZendeskAppID($subdomain)
+    {
+        try {
+            return $this->repository->getRegisteredByZendeskAppID($subdomain);
+        } catch (\Exception $exception) {
+            throw $exception;
+        }
     }
 
     /**
      * @return string
      * @throws \Exception
      */
-    public function getCurrentUUID() {
+    public function getCurrentUUID()
+    {
         try {
             $model = $this->repository->getByToken($this->telegramAPI->getAccessToken())->first();
             return $model->uuid;
+        } catch (\Exception $exception) {
+            throw $exception;
+        }
+    }
+
+    /**
+     * Ask if the user started a command before and we are pending his response.
+     * @var Update $update
+     * @return array
+     * @throws \Exception
+     */
+    public function getStartedCommand($update)
+    {
+        try {
+            $user_id = $update->getMessage()->getFrom()->getId();
+            $chat_id = $update->getMessage()->getChat()->getId();
+            $commandModel = $this->commandRepository->getCommandWithUserAndChat($user_id, $chat_id);
+
+            if ($commandModel)
+                return [
+                    'command' => $commandModel->command,
+                    'state' => $commandModel->state,
+                    'content' => $commandModel->content
+                ];
+
+            return null;
+        } catch (\Exception $exception) {
+            throw $exception;
+        }
+    }
+
+    /**
+     * @param Update $update
+     * @throws \Exception
+     */
+    public function cancelStartedCommand($update)
+    {
+        try
+        {
+            $user_id = $update->getMessage()->getFrom()->getId();
+            $chat_id = $update->getMessage()->getChat()->getId();
+            $this->commandRepository->deleteWhereArray([
+                'user_id' => $user_id,
+                'chat_id' => $chat_id
+            ]);
+        }catch (\Exception $exception)
+        {
+            throw $exception;
+        }
+    }
+
+    /**
+     * @param Update $update
+     * @param $command
+     * @param $state
+     * @param $content
+     * @return array
+     * @throws \Exception
+     */
+    public function setCommandProcess($update, $command, $state, $content = '')
+    {
+        try {
+            $user_id = $update->getMessage()->getFrom()->getId();
+            $chat_id = $update->getMessage()->getChat()->getId();
+
+            $commandModel = $this->commandRepository->getCommandProcess($user_id, $chat_id, $command, $state, $content);
+            if ($commandModel)
+                return [
+                    'command' => $commandModel->command,
+                    'state' => $commandModel->state,
+                    'content' => $commandModel->content
+                ];
+
+            return null;
         } catch (\Exception $exception) {
             throw $exception;
         }

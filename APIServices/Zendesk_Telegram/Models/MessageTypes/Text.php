@@ -6,7 +6,6 @@ namespace APIServices\Zendesk_Telegram\Models\MessageTypes;
 class Text extends MessageType {
 
     function getTransformedMessage() {
-
         $message = $this->message->getText();
 
         preg_match('/^\/([^\s@]+)@?(\S+)?\s?(.*)$/', $message, $commands);
