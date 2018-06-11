@@ -4,27 +4,15 @@ namespace APIServices\Zendesk\Services;
 
 use Illuminate\Support\Facades\Log;
 
-class PushService
+class PushService extends API
 {
-    protected $zendesk_app_id;
-    protected $instance_push_id;
-    protected $access_token;
-    protected $client;
-
-    public function __construct($zendesk_app_id, $instance_push_id, $zendesk_access_token, ZendeskClient $client)
-    {
-        $this->zendesk_app_id = $zendesk_app_id;
-        $this->instance_push_id = $instance_push_id;
-        $this->access_token = $zendesk_access_token;
-        $this->client = $client;
-    }
 
     public function pushNewMessage($message)
     {
         try
         {
             $body = $this->getPushBody($message);
-            $response = $this->client->pushRequest($body, $this->zendesk_app_id, $this->access_token);
+            $response = $this->pushRequest($body);
             Log::debug($response);
             return $response;
         }catch (\Exception $exception)
@@ -33,7 +21,35 @@ class PushService
         }
     }
 
-    public function getPushBody($message)
+    /**
+     *
+     * @param $body
+     * @return array
+     * @throws \Exception
+     */
+    public function pushRequest($body)
+    {
+        try
+        {
+            $endpoint = $this->getPushEndpointWithDomain($this->subDomain);
+            return $this->client->sendRequest($endpoint, $body);
+        }catch (\Exception $exception)
+        {
+            throw $exception;
+        }
+    }
+
+    /**
+     * Get Endpoint
+     * @param $subDomain
+     * @return string
+     */
+    private function getPushEndpointWithDomain($subDomain)
+    {
+        return $this->client->getBasicEndpointWithSubDomain($subDomain).'any_channel/push';
+    }
+
+    protected function getPushBody($message)
     {
         return [
             'instance_push_id' => $this->instance_push_id,

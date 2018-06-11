@@ -8,50 +8,31 @@ use GuzzleHttp\Client;
 class ZendeskClient
 {
     protected $client;
+    public $access_token;
 
-    public function __construct(Client $client)
+    public function __construct($access_token, Client $client)
     {
         $this->client = $client;
-    }
-
-    /**
-     *
-     * @param $body
-     * @param $subDomain
-     * @param $access_token
-     * @return array
-     * @throws \Exception
-     */
-    public function pushRequest($body, $subDomain, $access_token)
-    {
-        try
-        {
-            $headers = [
-                'Authorization' => "Bearer " . $access_token,
-                'Content-Type' => 'application/json',
-                'Accept' => 'application/json'
-            ];
-
-            $endpoint = $this->getPushEndpointWithDomain($subDomain);
-            return $this->sendPushRequest($endpoint, $body, $headers);
-        }catch (\Exception $exception)
-        {
-            throw $exception;
-        }
+        $this->access_token = $access_token;
     }
 
     /**
      * Send the request using the HTTP Client
      * @param $endpoint
      * @param $body
-     * @param $headers
      * @return array
      * @throws \Exception
      */
-    private function sendPushRequest($endpoint, $body, $headers)
+    public function sendRequest($endpoint, $body)
     {
         try
         {
+            $headers = [
+                'Authorization' => "Bearer " . $this->access_token,
+                'Content-Type' => 'application/json',
+                'Accept' => 'application/json'
+            ];
+
             $response = $this->client->post($endpoint, [
                 'body' => json_encode($body),
                 'headers' => $headers
@@ -67,8 +48,13 @@ class ZendeskClient
         }
     }
 
-    private function getPushEndpointWithDomain($subDomain)
+    /**
+     * Get Basic Endpoint
+     * @param $subDomain
+     * @return string
+     */
+    public function getBasicEndpointWithSubDomain($subDomain)
     {
-        return 'https://' . $subDomain . '.zendesk.com/api/v2/any_channel/push';
+        return 'https://' . $subDomain . '.zendesk.com/api/v2/';
     }
 }

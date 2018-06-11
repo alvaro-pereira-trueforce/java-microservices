@@ -5,12 +5,14 @@ namespace APIServices\Zendesk_Telegram\Models\MessageTypes;
 
 use APIServices\Telegram\Services\TelegramService;
 use APIServices\Zendesk\Utility;
+use APIServices\Zendesk_Telegram\Models\TicketScaffold;
 use APIServices\Zendesk_Telegram\Services\TicketService;
 use Illuminate\Support\Facades\App;
 use Telegram\Bot\Objects\Message;
 use Telegram\Bot\Objects\Update;
 
-abstract class MessageType implements IMessageType {
+abstract class MessageType implements IMessageType
+{
 
     /**
      * @var Utility
@@ -38,17 +40,23 @@ abstract class MessageType implements IMessageType {
     protected $state;
     protected $telegramService;
     protected $ticketService;
+    /** @var TicketScaffold $ticketScaffold */
+    protected $ticketScaffold;
 
     /**
      * MessageType constructor.
-     *
-     * @param Utility         $zendeskUtils
-     * @param Update          $update
-     * @param array           $state
+     * @param Utility $zendeskUtils
+     * @param Update $update
+     * @param array $state
      * @param TelegramService $telegramService
-     * @param TicketService   $ticketService
+     * @param TicketService $ticketService
      */
-    public function __construct(TicketService $ticketService, Utility $zendeskUtils, $update, $state, TelegramService $telegramService) {
+    public function __construct(TicketService $ticketService, Utility $zendeskUtils, $update, $state, TelegramService $telegramService)
+    {
+        $this->ticketScaffold = App::makeWith(TicketScaffold::class, [
+            'zendeskUtils' => $zendeskUtils,
+            'ticketService' => $ticketService
+        ]);
         $this->zendeskUtils = $zendeskUtils;
         $this->update = $update;
         $this->message = $update->getMessage();
@@ -66,43 +74,27 @@ abstract class MessageType implements IMessageType {
         $this->parent_id = $this->getParentID($this->message);
     }
 
-    protected function getAuthorExternalID() {
-        return $this->zendeskUtils->getExternalID([$this->user_id, $this->user_username]);
+    protected function getAuthorExternalID()
+    {
+        return $this->ticketScaffold->getAuthorExternalID($this->user_id, $this->user_username);
     }
 
-    protected function getExternalID() {
-        return $this->zendeskUtils->getExternalID([$this->parent_id, $this->message_id]);
+    protected function getExternalID()
+    {
+        return $this->ticketScaffold->getExternalID($this->parent_id, $this->message_id);
     }
 
-    protected function getAuthorName() {
-        $author_name = $this->user_firstname;
-        $user_name = '(' . $this->user_username . ')';
-        if (!$this->user_lastname || trim($this->user_lastname) == '') {
-            return $author_name . ' ' . $user_name;
-        }
-
-        return $author_name . ' ' . $this->user_lastname . ' ' . $user_name;
+    protected function getAuthorName()
+    {
+        return $this->ticketScaffold->getAuthorName($this->user_firstname, $this->user_username, $this->user_lastname);
     }
 
     /**
      * @param Message $message
      * @return string
      */
-    protected function getParentID($message) {
-        $reply = $message->getReplyToMessage();
-
-        if ($reply) {
-            $parent_id = $this->zendeskUtils->getExternalID([
-                $reply->getChat()->get('id'),
-                $reply->getFrom()->get('id')
-            ]);
-        } else {
-            $parent_id = $this->zendeskUtils->getExternalID([
-                $message->getChat()->getId(),
-                $message->getFrom()->getId()
-            ]);
-        }
-        $parent_uuid = $this->ticketService->getValidParentID($parent_id);
-        return $this->zendeskUtils->getExternalID([$parent_uuid, $parent_id]);
+    protected function getParentID($message)
+    {
+        return $this->ticketScaffold->getParentID($message);
     }
 }

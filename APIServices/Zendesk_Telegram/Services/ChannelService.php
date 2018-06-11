@@ -3,7 +3,8 @@
 namespace APIServices\Zendesk_Telegram\Services;
 
 use APIServices\Telegram\Services\TelegramService;
-use APIServices\Zendesk\Services\PushService;
+use APIServices\Zendesk\Services\ZendeskAPI;
+use APIServices\Zendesk\Services\ZendeskClient;
 use APIServices\Zendesk\Utility;
 use APIServices\Zendesk_Telegram\Models\MessageTypes\IMessageType;
 use Illuminate\Support\Facades\App;
@@ -36,7 +37,7 @@ class ChannelService
             $updateType = $this->getMessageTypeInstance($update);
             $message = $updateType->getTransformedMessage();
             if ($message) {
-                $pushService = $this->getPushServiceInstance($telegram_token);
+                $pushService = $this->getZendeskAPIServiceInstance($telegram_token);
                 $pushService->pushNewMessage($message);
             }
         } catch (\Exception $exception) {
@@ -63,17 +64,21 @@ class ChannelService
 
     /**
      * @param $token
-     * @return PushService
+     * @return ZendeskAPI
      * @throws \Exception
      */
-    protected function getPushServiceInstance($token)
+    protected function getZendeskAPIServiceInstance($token)
     {
         try {
             $account = $this->telegram_service->getAccountByToken($token);
-            return App::makeWith(PushService::class, [
-                'zendesk_app_id' => $account['zendesk_app_id'],
-                'instance_push_id' => $account['instance_push_id'],
-                'zendesk_access_token' => $account['zendesk_access_token']
+            $api_client = App::makeWith(ZendeskClient::class, [
+                'access_token' => $account['zendesk_access_token']
+            ]);
+
+            return App::makeWith(ZendeskAPI::class, [
+                'subDomain' => $account['zendesk_app_id'],
+                'client' => $api_client,
+                'instance_push_id' => $account['instance_push_id']
             ]);
         } catch (\Exception $exception) {
             throw $exception;

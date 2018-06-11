@@ -4,9 +4,9 @@ namespace APIServices\Telegram\Commands;
 
 use APIServices\Telegram\Services\TelegramService;
 use APIServices\Utilities\StringUtilities;
+use APIServices\Zendesk\Utility;
 use APIServices\Zendesk_Telegram\Services\ChannelService;
 use Illuminate\Support\Facades\App;
-use Illuminate\Support\Facades\Log;
 use Telegram\Bot\Actions;
 use Telegram\Bot\Commands\Command;
 use Telegram\Bot\Objects\Update;
@@ -48,7 +48,7 @@ class StartCommand extends Command
                 'reply_to_message_id' => $this->getUpdate()->getMessage()->getMessageId()
             ]);
             $this->replyWithMessage([
-                'text' => 'Please provide us your email, phone number, and location.'
+                'text' => 'Please provide us your email, phone number.'
             ]);
             $this->replyWithMessage([
                 'text' => 'Enter your email:'
@@ -76,31 +76,22 @@ class StartCommand extends Command
                         $content['phone_number'] = $message;
 
                         $this->replyWithMessage([
-                            'text' => 'Great!, Thank you. please send your question again to let our support help you.'
+                            'text' => 'Great!, Thank you. please send your question to let our support help you.'
                         ]);
-
-                        $data = [
-                            'update_id' => $this->update->getUpdateId(),
-                            'message' => [
-                                'message_id' => 1068,
-                                'from' =>$this->update->getMessage()->getFrom(),
-                                'chat' => $this->update->getMessage()->getChat(),
-                                'date' => $this->update->getMessage()->getDate(),
-                                'new_user_info' => [
-                                    'message' => 'New User Information',
-                                    'content' => $content
-                                ],
-                            ]
-                        ];
-                        $update = new Update($data);
-                        Log::debug('Prueba');
-                        Log::debug($update);
                         /** @var ChannelService $channel_service */
                         $channel_service = App::make(ChannelService::class);
+                        $update = new Update([
+                            'update_id' => $this->update->getUpdateId(),
+                            'message' => [
+                                'message_id' => $this->update->getMessage()->getMessageId(),
+                                'from' => $this->update->getMessage()->getFrom(),
+                                'chat' => $this->update->getMessage()->getChat(),
+                                'date' => $this->update->getMessage()->getDate(),
+                                'text' => "Telegram channel: I'm starting to send messages, this is my info: email: ".$content['email']." Phone Number: ". $content['phone_number']
+                            ]
+                        ]);
                         $channel_service->sendUpdate($update, $this->telegram->getAccessToken());
-                        break;
                         $service->cancelStartedCommand($this->update);
-
                         break;
                 }
             } catch (\Exception $exception) {
@@ -141,5 +132,11 @@ class StartCommand extends Command
         // The method supports second parameter arguments which you can optionally pass, By default
         // it'll pass the same arguments that are received for this command originally.
         //$this->triggerCommand('subscribe');
+    }
+
+    protected function getAuthorExternalID($user_id, $user_username) {
+        /** @var Utility $zendeskUtils */
+        $zendeskUtils = App::make(Utility::class);
+        return $zendeskUtils->getExternalID([$user_id, $user_username]);
     }
 }
