@@ -236,7 +236,7 @@ class ZendeskController extends Controller
 
     public function event_callback(Request $request)
     {
-        Log::debug("Event On Zendesk: \n" . $request . "\n");
+        Log::debug("Event On Zendesk: \n" . $request->getContent() . "\n");
         return $this->successReturn();
     }
 

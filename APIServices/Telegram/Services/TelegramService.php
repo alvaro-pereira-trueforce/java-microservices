@@ -156,7 +156,7 @@ class TelegramService
         try {
             $telegram = new Api($token);
             $url = env('APP_URL') . '/api/' . $token . '/webhook';
-            Log::info($url);
+            Log::debug($url);
             $response = $telegram->setWebhook(['url' => $url]);
             return $response;
         } catch (TelegramSDKException $exception) {
