@@ -33,6 +33,11 @@
                 <label>Telegram Token:</label>
                 <input type="text" name="token" class="form-control" value="{{$token}}">
             </div>
+
+            <div class="form-group">
+                <label>use hello message?:</label>
+                <input type="checkbox" class="form-check-input" id="exampleCheck1">
+            </div>
             <input type="hidden"
                    name="return_url" value="{{$return_url}}">
             <input type="hidden"

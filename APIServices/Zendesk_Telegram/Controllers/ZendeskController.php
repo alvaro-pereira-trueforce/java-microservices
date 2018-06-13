@@ -39,7 +39,6 @@ class ZendeskController extends Controller
         //$locale = $request->locale;
         $instance_push_id = $request->instance_push_id;
         $zendesk_access_token = $request->zendesk_access_token;
-
         try {
             if (!$metadata) {
                 $submitURL = env('APP_URL') . '/telegram/admin_ui_add';
@@ -48,7 +47,8 @@ class ZendeskController extends Controller
                     'instance_push_id' => $instance_push_id,
                     'zendesk_app_id' => $subdomain
                 ]);
-                if (!$newRecord)
+
+                if (!$newRecord || empty($newRecord))
                     throw new \Exception('There was an error');
                 $token = '';
             } else {
@@ -111,7 +111,12 @@ class ZendeskController extends Controller
                 return $this->showErrorMessageAdminUI($errors, $return_url, $subdomain, $name, $submitURL, $token);
             }
             if ($telegramResponse[0]) {
-                $metadata = $service->registerNewIntegration($name, $token, $subdomain);
+                $metadata = $service->registerNewIntegration([
+                    'name' => $name,
+                    'token' => $token,
+                    'subDomain' => $subdomain,
+                    'settings' => null
+                 ]);
                 if (!$metadata) {
                     $errors = ['There was an error processing your data, please check your information or contact support.'];
                     return $this->showErrorMessageAdminUI($errors, $return_url, $subdomain, $name, $submitURL, $token);
