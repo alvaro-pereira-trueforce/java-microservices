@@ -55,7 +55,8 @@
             <div class="checkbox">
                 <label>
                     @if($has_hello_message)
-                        <input type="checkbox" name="has_hello_message" onclick="checkBox(this)" checked>Enable Hello Message?
+                        <input type="checkbox" name="has_hello_message" onclick="checkBox(this)" checked>Enable Hello
+                        Message?
                     @else
                         <input type="checkbox" name="has_hello_message" onclick="checkBox(this)">Enable Hello Message?
                     @endif
@@ -76,37 +77,27 @@
                         <input type="checkbox" name="required_user_info">Ask basic information?
                     @endif
                 </label>
-                <div class="text-muted">Telegram bot will ask the user's email address and phone number on start command.</div>
+                <div class="text-muted">Telegram bot will ask the user's email address and phone number on start
+                    command.
+                </div>
             </div>
             <hr/>
             <div class="form-group">
                 <h4>Optional Settings</h4>
-                <p>Choose the optional ticket field values</p>
+                <p>Choose the optional ticket field values, all the values are optionals.</p>
             </div>
 
             <div class="row">
                 <div class="col-sm-6">
                     <div class="form-group">
                         <label>Ticket Type:</label>
-                        <select class="form-control" name="ticket_type">
-                            <option></option>
-                            <option>problem</option>
-                            <option>incident</option>
-                            <option>question</option>
-                            <option>task</option>
-                        </select>
+                        {{Form::select('ticket_type', array('' => '','problem' => 'problem','incident' => 'incident','question' =>'question','task' => 'task'),$ticket_type,['class' => 'form-control'])}}
                     </div>
                 </div>
                 <div class="col-sm-6">
                     <div class="form-group">
                         <label>Ticket Priority:</label>
-                        <select class="form-control" name="ticket_priority">
-                            <option></option>
-                            <option>urgent</option>
-                            <option>high</option>
-                            <option>normal</option>
-                            <option>low</option>
-                        </select>
+                        {{Form::select('ticket_priority', array('' => '','urgent' => 'urgent','high' => 'high','normal' =>'normal','low' =>'low'),$ticket_priority,['class' => 'form-control'])}}
                     </div>
                 </div>
             </div>
@@ -114,7 +105,7 @@
 
             <div class="form-group">
                 <label>Tags:</label>
-                <input type="text" name="tags" class="form-control">
+                <input type="text" name="tags" class="form-control" value="{{$tags}}">
                 <div class="text-muted">Please separate tags with spaces.</div>
             </div>
 

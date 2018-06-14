@@ -45,7 +45,10 @@ class ZendeskController extends Controller
             'token' => '',
             'has_hello_message' => false,
             'required_user_info' => true,
-            'hello_message' => null
+            'hello_message' => null,
+            'ticket_type' => null,
+            'ticket_priority' => null,
+            'tags' => null
         ];
 
         try {
@@ -64,16 +67,7 @@ class ZendeskController extends Controller
                 $data['token'] = $token->token;
             }
 
-            return view('telegram.admin_ui', [
-                'return_url' => $data['return_url'],
-                'subdomain' => $data['subdomain'],
-                'name' => $data['name'],
-                'submitURL' => $data['submitURL'],
-                'token' => $data['token'],
-                'has_hello_message' => $data['has_hello_message'],
-                'required_user_info' => $data['required_user_info'],
-                'hello_message' => $data['hello_message']
-            ]);
+            return view('telegram.admin_ui', $data);
         } catch (\Exception $exception) {
             Log::error($exception);
             return $this->showErrorMessageAdminUI(['Please contact support.'], $data);
@@ -82,19 +76,9 @@ class ZendeskController extends Controller
 
     public function showErrorMessageAdminUI($errors, $data)
     {
-        return view('telegram.admin_ui', [
-            'return_url' => $data['return_url'],
-            'subdomain' => $data['subdomain'],
-            'name' => $data['name'],
-            'submitURL' => $data['submitURL'],
-            'token' => $data['token'],
-            'has_hello_message' => $data['has_hello_message'],
-            'required_user_info' => $data['required_user_info'],
-            'hello_message' => $data['hello_message'],
-            'errors' => $errors
-        ]);
+        $data['errors'] = $errors;
+        return view('telegram.admin_ui', $data);
     }
-
 
     public function admin_ui_add(Request $request, TelegramService $service)
     {
@@ -106,7 +90,7 @@ class ZendeskController extends Controller
                 if ($value == 'off')
                     $data[$key] = false;
             }
-            
+
             $token = $request->token;
             $return_url = $data['return_url'];
             $subdomain = $data['subdomain'];
@@ -124,7 +108,10 @@ class ZendeskController extends Controller
                 'token' => $token,
                 'has_hello_message' => $has_hello_message,
                 'required_user_info' => $required_user_info,
-                'hello_message' => $hello_message
+                'hello_message' => $hello_message,
+                'ticket_type' => $request->ticket_type,
+                'ticket_priority' => $request->ticket_priority,
+                'tags' => $request->tags
             ];
 
             if (!$token || !$name) {
@@ -155,12 +142,16 @@ class ZendeskController extends Controller
                 return $this->showErrorMessageAdminUI($errors, $data);
             }
 
+            $tags = json_encode(explode(' ',$request->tags), true);
+
             $settings = [
                 'has_hello_message' => $has_hello_message,
                 'required_user_info' => $required_user_info,
-                'hello_message' => $hello_message
+                'hello_message' => $hello_message,
+                'ticket_type' => $request->ticket_type,
+                'ticket_priority' => $request->ticket_priority,
+                'tags' => $tags
             ];
-
             $metadata = $service->registerNewIntegration([
                 'name' => $name,
                 'token' => $token,
