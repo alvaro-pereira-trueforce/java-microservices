@@ -133,6 +133,8 @@ abstract class MessageType implements IMessageType
                 'value' => $this->ticketSettings['tags']
             ]);
         }
+        if(empty($fields))
+            return $basic_response;
 
         return $this->zendeskUtils->addFields($basic_response, $fields);
     }

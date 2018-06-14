@@ -42,15 +42,26 @@
                     </div>
                 @endforeach
             @endif
+            @if($token_hide)
+                <div class="form-group">
+                    <label>Integration Name:</label>
+                    <input type="text" name="name" class="form-control" value="{{$name}}" readonly>
+                </div>
 
-            <div class="form-group">
-                <label>Integration Name:</label>
-                <input type="text" name="name" class="form-control" value="{{$name}}">
-            </div>
-            <div class="form-group">
-                <label>Telegram Token:</label>
-                <input type="text" name="token" class="form-control" value="{{$token}}">
-            </div>
+                <div class="form-group">
+                    <label>Telegram Token:</label>
+                    <input type="text" name="token" class="form-control" value="{{$token}}" readonly>
+                </div>
+            @else
+                <div class="form-group">
+                    <label>Integration Name:</label>
+                    <input type="text" name="name" class="form-control" value="{{$name}}">
+                </div>
+                <div class="form-group">
+                    <label>Telegram Token:</label>
+                    <input type="text" name="token" class="form-control" value="{{$token}}">
+                </div>
+            @endif
 
             <div class="checkbox">
                 <label>

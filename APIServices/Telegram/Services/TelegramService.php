@@ -187,6 +187,7 @@ class TelegramService
         try {
             $telegram = new Api($key);
             $response = $telegram->removeWebhook();
+            Log::info($response->getBody());
             return $response->getBody();
         } catch (TelegramSDKException $exception) {
             Log::error($exception->getMessage());
@@ -382,6 +383,31 @@ class TelegramService
             $model = $this->repository->setAccountRegistration([
                 'token' => $data['token'],
                 'zendesk_app_id' => $data['subDomain'],
+                'integration_name' => $data['name'],
+                'settings' => $data['settings']
+            ]);
+            return [
+                'token' => $model->uuid,
+                'integration_name' => $model->integration_name,
+                'zendesk_app_id' => $model->zendesk_app_id
+            ];
+        } catch (\Exception $exception) {
+            Log::error($exception);
+            throw $exception;
+        }
+    }
+
+    /**
+     * @param $data
+     * @return array
+     * @throws \Exception
+     */
+    public function updateIntegrationData($data)
+    {
+        try {
+            $model = $this->repository->updateAccountRegistration([
+                'token' => $data['token'],
+                'zendesk_app_id' => $data['subdomain'],
                 'integration_name' => $data['name'],
                 'settings' => $data['settings']
             ]);
