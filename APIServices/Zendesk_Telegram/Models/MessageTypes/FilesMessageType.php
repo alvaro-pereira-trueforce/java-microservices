@@ -27,20 +27,33 @@ abstract class FilesMessageType extends MessageType {
             $this->getAuthorName() . ' sent a '.$file_type;
     }
 
+    /**
+     * @param $file_type
+     * @param $external_url
+     * @param $file_id
+     * @return array
+     * @throws \Exception
+     */
     protected function getBasicDocumentResponse($file_type, $external_url, $file_id)
     {
-        $message = $this->getValidCaptionMessage($file_type);
-        $basic_response = $this->zendeskUtils->getBasicResponse(
-            $this->getExternalID(),
-            $message,
-            'thread_id',
-            $this->parent_id,
-            $this->message_date,
-            $this->getAuthorExternalID(),
-            $this->getAuthorName()
-        );
-        $link = $this->getLocalURLFromExternalURL($external_url, $file_id);
+        try
+        {
+            $message = $this->getValidCaptionMessage($file_type);
+            $basic_response = $this->getBasicResponse(
+                $this->getExternalID(),
+                $message,
+                'thread_id',
+                $this->parent_id,
+                $this->message_date,
+                $this->getAuthorExternalID(),
+                $this->getAuthorName()
+            );
+            $link = $this->getLocalURLFromExternalURL($external_url, $file_id);
 
-        return $this->zendeskUtils->addFilesURLToBasicResponse($basic_response, [$link]);
+            return $this->zendeskUtils->addFilesURLToBasicResponse($basic_response, [$link]);
+        }catch (\Exception $exception)
+        {
+            throw $exception;
+        }
     }
 }

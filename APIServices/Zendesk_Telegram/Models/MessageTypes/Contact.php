@@ -14,7 +14,7 @@ class Contact extends MessageType {
 
             $message = $this->getAuthorName() . ' sent a Contact';
 
-            $basic_response = $this->zendeskUtils->getBasicResponse(
+            $basic_response = $this->getBasicResponse(
                 $this->getExternalID(),
                 $message,
                 'thread_id',
