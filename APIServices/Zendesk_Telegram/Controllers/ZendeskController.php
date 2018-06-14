@@ -31,94 +31,154 @@ class ZendeskController extends Controller
 
     public function adminUI(Request $request, TelegramService $service)
     {
-        $name = $request->name; //will be null on empty
         $metadata = json_decode($request->metadata, true); //will be null on empty
         $state = json_decode($request->state, true); //will be null on empty
-        $return_url = $request->return_url;
-        $subdomain = $request->subdomain;
         //$locale = $request->locale;
         $instance_push_id = $request->instance_push_id;
         $zendesk_access_token = $request->zendesk_access_token;
+        $data = [
+            'return_url' => $request->return_url,
+            'subdomain' => $request->subdomain,
+            'name' => $request->name,
+            'submitURL' => env('APP_URL') . '/telegram/admin_ui_add',
+            'token' => '',
+            'has_hello_message' => false,
+            'required_user_info' => true,
+            'hello_message' => null,
+            'ticket_type' => null,
+            'ticket_priority' => null,
+            'tags' => null
+        ];
+
+        $data['token_hide'] = false;
 
         try {
             if (!$metadata) {
-                $submitURL = env('APP_URL') . '/telegram/admin_ui_add';
                 $newRecord = $service->setAccountRegistration([
                     'zendesk_access_token' => $zendesk_access_token,
                     'instance_push_id' => $instance_push_id,
-                    'zendesk_app_id' => $subdomain
+                    'zendesk_app_id' => $data['subdomain']
                 ]);
-                if (!$newRecord)
+
+                if (!$newRecord || empty($newRecord))
                     throw new \Exception('There was an error');
-                $token = '';
             } else {
-                $submitURL = env('APP_URL') . '/telegram/admin_ui_edit';
+                $data['submitURL'] = env('APP_URL') . '/telegram/admin_ui_edit';
                 $token = $service->getById($metadata['token']);
-                $token = $token->token;
+                $data['token'] = $token->token;
+                $settings = $service->getChannelSettings();
+                $data['has_hello_message'] = (boolean)$settings['has_hello_message'];
+                $data['required_user_info'] = (boolean)$settings['required_user_info'];
+                $data['hello_message'] = $settings['hello_message'];
+                $data['ticket_type'] = $settings['ticket_type'];
+                $data['ticket_priority'] = $settings['ticket_priority'];
+                if ($settings['tags'])
+                    $data['tags'] = implode(' ', $settings['tags']);
+                $data['token_hide'] = true;
             }
 
-            return view('telegram.admin_ui', [
+            return view('telegram.admin_ui', $data);
+        } catch (\Exception $exception) {
+            Log::error($exception);
+            return $this->showErrorMessageAdminUI(['Please contact support.'], $data);
+        }
+    }
+
+    public function showErrorMessageAdminUI($errors, $data)
+    {
+        $data['errors'] = $errors;
+        return view('telegram.admin_ui', $data);
+    }
+
+    public function admin_ui_add(Request $request, TelegramService $service)
+    {
+        try {
+            $data = $request->all();
+            foreach ($data as $key => $value) {
+                if ($value == 'on')
+                    $data[$key] = true;
+                if ($value == 'off')
+                    $data[$key] = false;
+            }
+
+            $token = $request->token;
+            $return_url = $data['return_url'];
+            $subdomain = $data['subdomain'];
+            $name = $data['name'];
+            $submitURL = $data['submitURL'];
+            $has_hello_message = array_key_exists('has_hello_message', $data) ? $data['has_hello_message'] : false;
+            $required_user_info = array_key_exists('required_user_info', $data) ? $data['required_user_info'] : false;
+            $hello_message = array_key_exists('hello_message', $data) ? $data['hello_message'] : null;
+
+            $data = [
                 'return_url' => $return_url,
                 'subdomain' => $subdomain,
                 'name' => $name,
                 'submitURL' => $submitURL,
-                'token' => $token
-            ]);
-        } catch (\Exception $exception) {
-            Log::error($exception);
-            return view('telegram.admin_ui', ['return_url' => $return_url, 'subdomain' =>
-                $subdomain, 'name' => $name, 'submitURL' => $submitURL, 'current_accounts' =>
-                [],
-                'errors' => ['Please contact support.']]);
-        }
-    }
-    public function showErrorMessageAdminUI($errors, $return_url, $subdomain, $name, $submitURL, $token)
-    {
-        return view('telegram.admin_ui', ['return_url' => $return_url, 'subdomain' =>
-            $subdomain, 'name' => $name, 'submitURL' => $submitURL, 'token' => $token,
-            'errors' => $errors]);
-    }
-    public function admin_ui_add(Request $request, TelegramService $service)
-    {
-        try {
-            $token = $request->token;
-            $return_url = $request->return_url;
-            $subdomain = $request->subdomain;
-            $name = $request->name;
-            $submitURL = $request->submitURL;
+                'token' => $token,
+                'has_hello_message' => $has_hello_message,
+                'required_user_info' => $required_user_info,
+                'hello_message' => $hello_message,
+                'ticket_type' => $request->ticket_type,
+                'ticket_priority' => $request->ticket_priority,
+                'tags' => $request->tags,
+                'token_hide' => false
+            ];
 
             if (!$token || !$name) {
-                $errors = ['Both fields are required.'];
-                return $this->showErrorMessageAdminUI($errors, $return_url, $subdomain, $name, $submitURL, $token);
+                $errors = ['Integration Name and Token is required.'];
+                return $this->showErrorMessageAdminUI($errors, $data);
+            }
+            if ($has_hello_message && (!$hello_message || empty($hello_message))) {
+                $errors = ['Custom Message is required.'];
+                return $this->showErrorMessageAdminUI($errors, $data);
             }
             $telegramBot = $service->checkValidTelegramBot($token);
             if (!$telegramBot) {
                 $errors = ['Invalid token, use Telegram Bot Father to create one.'];
-                return $this->showErrorMessageAdminUI($errors, $return_url, $subdomain, $name, $submitURL, $token);
+                return $this->showErrorMessageAdminUI($errors, $data);
             }
             if ($service->isTokenRegistered($token)) {
                 $errors = ['That telegram token is already registered.'];
-                return $this->showErrorMessageAdminUI($errors, $return_url, $subdomain, $name, $submitURL, $token);
+                return $this->showErrorMessageAdminUI($errors, $data);
             }
             if ($service->isNameRegistered($subdomain, $name)) {
                 $errors = ['That integration name is already registered.'];
-                return $this->showErrorMessageAdminUI($errors, $return_url, $subdomain, $name, $submitURL, $token);
+                return $this->showErrorMessageAdminUI($errors, $data);
             }
 
             $telegramResponse = $service->setWebhook($token);
             if (!$telegramResponse || !$telegramResponse[0]) {
                 $errors = ['There was an error with bots configuration, please contact support.'];
-                return $this->showErrorMessageAdminUI($errors, $return_url, $subdomain, $name, $submitURL, $token);
+                return $this->showErrorMessageAdminUI($errors, $data);
             }
-            if ($telegramResponse[0]) {
-                $metadata = $service->registerNewIntegration($name, $token, $subdomain);
-                if (!$metadata) {
-                    $errors = ['There was an error processing your data, please check your information or contact support.'];
-                    return $this->showErrorMessageAdminUI($errors, $return_url, $subdomain, $name, $submitURL, $token);
-                }
-                Log::debug(json_encode($metadata));
-                return view('telegram.post_metadata', ['return_url' => $return_url, 'name' => $name, 'metadata' => json_encode($metadata)]);
+
+            $tags = null;
+            if ($request->tags && !empty($request->tags)) {
+                $tags = json_encode(explode(' ', $request->tags), true);
             }
+
+            $settings = [
+                'has_hello_message' => $has_hello_message,
+                'required_user_info' => $required_user_info,
+                'hello_message' => $hello_message,
+                'ticket_type' => $request->ticket_type,
+                'ticket_priority' => $request->ticket_priority,
+                'tags' => $tags
+            ];
+            $metadata = $service->registerNewIntegration([
+                'name' => $name,
+                'token' => $token,
+                'subDomain' => $subdomain,
+                'settings' => $settings
+            ]);
+            if (!$metadata) {
+                $errors = ['There was an error processing your data, please check your information or contact support.'];
+                return $this->showErrorMessageAdminUI($errors, $data);
+            }
+            Log::debug(json_encode($metadata));
+            return view('telegram.post_metadata', ['return_url' => $return_url, 'name' => $name, 'metadata' => json_encode($metadata)]);
+
         } catch (\Exception $exception) {
             Log::error($exception);
             return 'Please contact support.';
@@ -127,22 +187,76 @@ class ZendeskController extends Controller
 
     public function admin_ui_edit(Request $request, TelegramService $service)
     {
+        $data = $request->all();
+        foreach ($data as $key => $value) {
+            if ($value == 'on')
+                $data[$key] = true;
+            if ($value == 'off')
+                $data[$key] = false;
+        }
+
+        $token = $request->token;
+        $return_url = $data['return_url'];
+        $subdomain = $data['subdomain'];
+        $name = $data['name'];
+        $submitURL = $data['submitURL'];
+        $has_hello_message = array_key_exists('has_hello_message', $data) ? $data['has_hello_message'] : false;
+        $required_user_info = array_key_exists('required_user_info', $data) ? $data['required_user_info'] : false;
+        $hello_message = array_key_exists('hello_message', $data) ? $data['hello_message'] : null;
+
+        $data = [
+            'return_url' => $return_url,
+            'subdomain' => $subdomain,
+            'name' => $name,
+            'submitURL' => $submitURL,
+            'token' => $token,
+            'has_hello_message' => $has_hello_message,
+            'required_user_info' => $required_user_info,
+            'hello_message' => $hello_message,
+            'ticket_type' => $request->ticket_type,
+            'ticket_priority' => $request->ticket_priority,
+            'tags' => $request->tags,
+            'token_hide' => true
+        ];
+
         try {
-            $token = $request->token;
-            $return_url = $request->return_url;
-            $subdomain = $request->subdomain;
-            $name = $request->name;
-            $submitURL = $request->submitURL;
-
-            $account = $service->getAccountByToken($token);
-            $metadata = $service->getMetadataFromSavedIntegration($account['uuid']);
-
-            if (!$metadata) {
-                $errors = ['There was an error processing your data, please check your information or contact support.'];
-                return view('telegram.admin_ui', ['return_url' => $return_url, 'subdomain' =>
-                    $subdomain, 'name' => $name, 'submitURL' => $submitURL,
-                    'errors' => $errors]);
+            if (!$token || !$name) {
+                $errors = ['Integration Name and Token is required.'];
+                return $this->showErrorMessageAdminUI($errors, $data);
             }
+            if ($has_hello_message && (!$hello_message || empty($hello_message))) {
+                $errors = ['Custom Message is required.'];
+                return $this->showErrorMessageAdminUI($errors, $data);
+            }
+            $telegramBot = $service->checkValidTelegramBot($token);
+            if (!$telegramBot) {
+                $errors = ['Invalid token, use Telegram Bot Father to create one.'];
+                return $this->showErrorMessageAdminUI($errors, $data);
+            }
+
+            $telegramResponse = $service->setWebhook($token);
+            if (!$telegramResponse || !$telegramResponse[0]) {
+                $errors = ['There was an error with bots configuration, please contact support.'];
+                return $this->showErrorMessageAdminUI($errors, $data);
+            }
+
+            $tags = null;
+            if ($request->tags && !empty($request->tags)) {
+                $tags = json_encode(explode(' ', $request->tags), true);
+            }
+            $data['tags'] = $tags;
+
+            $settings = [
+                'has_hello_message' => $data['has_hello_message'],
+                'required_user_info' => $data['required_user_info'],
+                'hello_message' => $data['hello_message'],
+                'ticket_type' => $data['ticket_type'],
+                'ticket_priority' => $data['ticket_priority'],
+                'tags' => $tags
+            ];
+            $data['settings'] = $settings;
+            $metadata = $service->updateIntegrationData($data);
+
             Log::debug(json_encode($metadata));
             return view('telegram.post_metadata', ['return_url' => $return_url, 'name' => $name, 'metadata' => json_encode($metadata)]);
         } catch (\Exception $exception) {

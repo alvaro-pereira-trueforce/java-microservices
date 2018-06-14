@@ -1,13 +1,15 @@
 <?php
 
-namespace APIServices\Telegram\Repositories;
+namespace APIServices\Zendesk_Telegram\Repositories;
 
-use APIServices\Telegram\Models\TelegramChannel;
+use APIServices\Zendesk_Telegram\Models\TelegramChannel;
+use APIServices\Zendesk_Telegram\Models\TelegramChannelSettings;
 use App\Database\Eloquent\Model;
 use App\Database\Eloquent\RepositoryUUID;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\App;
+use Illuminate\Support\Facades\DB;
 
 class TelegramRepository extends RepositoryUUID
 {
@@ -21,28 +23,52 @@ class TelegramRepository extends RepositoryUUID
 
     /***
      * @param array $data ['token', 'zendesk_app_id']
+     * @throws \Exception
      * @return TelegramChannel
      */
     public function create(array $data)
     {
-        $model = $this->getModel();
-
-        $model->fill($data);
-        $model->save();
-
-        return $model;
+        DB::beginTransaction();
+        try {
+            $model = $this->getModel();
+            $model->fill($data);
+            $model->save();
+            $settings = App::make(TelegramChannelSettings::class);
+            $model->settings()->save($settings);
+            DB::commit();
+            return $model;
+        } catch (\Exception $exception) {
+            DB::rollBack();
+            throw $exception;
+        }
     }
 
     /***
-     * @param Model $model
+     * @param TelegramChannel $model
      * @param array $data ['token', 'zendesk_app_id']
+     * @throws \Exception
      * @return Model
      */
-    public function update(Model $model, array $data)
+    public function update($model, array $data)
     {
-        $model->fill($data);
-        $model->save();
-        return $model;
+        DB::beginTransaction();
+        try {
+            $model->update($this->getValidDataToFill($data, $model));
+            if (array_key_exists('settings', $data)) {
+                /** @var Model $settings */
+                $settings = $model->settings()->first();
+                if (!$settings)
+                    $settings = App::make(TelegramChannelSettings::class);
+                $settingData = $this->getValidDataToFill($data['settings'], $settings);
+                $settings->fill($settingData);
+                $model->settings()->save($settings);
+            }
+            DB::commit();
+            return $model;
+        } catch (\Exception $exception) {
+            DB::rollBack();
+            throw $exception;
+        }
     }
 
     /**
@@ -63,7 +89,44 @@ class TelegramRepository extends RepositoryUUID
     public function setAccountRegistration(array $data)
     {
         try {
+            return $this->updateOrCreateWithNullToken($data);
+        } catch (\Exception $exception) {
+            throw $exception;
+        }
+    }
+
+    /**
+     * @param array $data
+     * @return Model
+     * @throws \Exception
+     */
+    public function updateAccountRegistration(array $data)
+    {
+        try {
             return $this->updateOrCreate($data);
+        } catch (\Exception $exception) {
+            throw $exception;
+        }
+    }
+
+    /**
+     * @param array $data
+     * @return Model
+     * @throws \Exception
+     */
+    public function updateOrCreateWithNullToken(array $data)
+    {
+        try {
+            $model = $this->getModel();
+            $model = $model
+                ->where('zendesk_app_id', '=', $data['zendesk_app_id'])
+                ->whereNull('token')->with('settings')
+                ->first();
+            if ($model) {
+                return $this->update($model, $data);
+            }
+            $newRecord = $this->create($data);
+            return $newRecord;
         } catch (\Exception $exception) {
             throw $exception;
         }
@@ -78,14 +141,10 @@ class TelegramRepository extends RepositoryUUID
     {
         try {
             $model = $this->getModel();
+            /** @var TelegramChannel $model */
             $model = $model
-                ->where('zendesk_app_id', '=', $data['zendesk_app_id'])
-                ->whereNull('token')
-                ->first();
-            if ($model) {
-                return $this->update($model, $data);
-            }
-            return $this->create($data);
+                ->where('token', '=', $data['token'])->with('settings')->first();
+            return $this->update($model, $data);
         } catch (\Exception $exception) {
             throw $exception;
         }

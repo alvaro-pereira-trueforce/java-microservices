@@ -14,7 +14,7 @@ class LeftChatMember extends MessageType {
         $message = $leftChatParticipant->getFirstName() . ' was deleted from the group: ' .
             $this->message->getChat()->getTitle();
 
-        return $this->zendeskUtils->getBasicResponse(
+        return $this->getBasicResponse(
             $this->getExternalID(),
             $message,
             'thread_id',

@@ -18,7 +18,7 @@ class Sticker extends FilesMessageType
             $stickerURL = $this->telegramService->getDocumentURL($stickerSizes['file_id']);
             $message = $this->getValidCaptionMessage('Sticker');
             $link = $this->getLocalURLFromExternalURL($stickerURL, $stickerSizes['file_id']);
-            $basic_response = $this->zendeskUtils->getBasicResponse(
+            $basic_response = $this->getBasicResponse(
                 $this->getExternalID(),
                 $message,
                 'thread_id',

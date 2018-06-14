@@ -8,6 +8,7 @@ use APIServices\Zendesk\Utility;
 use APIServices\Zendesk_Telegram\Models\TicketScaffold;
 use APIServices\Zendesk_Telegram\Services\TicketService;
 use Illuminate\Support\Facades\App;
+use Illuminate\Support\Facades\Log;
 use Telegram\Bot\Objects\Message;
 use Telegram\Bot\Objects\Update;
 
@@ -43,6 +44,8 @@ abstract class MessageType implements IMessageType
     /** @var TicketScaffold $ticketScaffold */
     protected $ticketScaffold;
 
+    protected $ticketSettings;
+
     /**
      * MessageType constructor.
      * @param Utility $zendeskUtils
@@ -50,13 +53,22 @@ abstract class MessageType implements IMessageType
      * @param array $state
      * @param TelegramService $telegramService
      * @param TicketService $ticketService
+     * @throws \Exception
      */
     public function __construct(TicketService $ticketService, Utility $zendeskUtils, $update, $state, TelegramService $telegramService)
     {
-        $this->ticketScaffold = App::makeWith(TicketScaffold::class, [
-            'zendeskUtils' => $zendeskUtils,
-            'ticketService' => $ticketService
-        ]);
+        try {
+            $this->ticketScaffold = App::makeWith(TicketScaffold::class, [
+                'zendeskUtils' => $zendeskUtils,
+                'ticketService' => $ticketService
+            ]);
+            $ticketSettings = $telegramService->getChannelSettings();
+            $this->ticketSettings = array_filter($ticketSettings);
+        } catch (\Exception $exception) {
+            Log::error($exception->getMessage());
+            throw $exception;
+        }
+
         $this->zendeskUtils = $zendeskUtils;
         $this->update = $update;
         $this->message = $update->getMessage();
@@ -96,5 +108,49 @@ abstract class MessageType implements IMessageType
     protected function getParentID($message)
     {
         return $this->ticketScaffold->getParentID($message);
+    }
+
+    protected function addCustomFields(array $basic_response)
+    {
+        $fields = [];
+        if (array_key_exists('ticket_priority', $this->ticketSettings)) {
+            array_push($fields, [
+                'id' => 'priority',
+                'value' => $this->ticketSettings['ticket_priority']
+            ]);
+        }
+
+        if (array_key_exists('ticket_type', $this->ticketSettings)) {
+            array_push($fields, [
+                'id' => 'type',
+                'value' => $this->ticketSettings['ticket_type']
+            ]);
+        }
+
+        if (array_key_exists('tags', $this->ticketSettings)) {
+            array_push($fields, [
+                'id' => 'tags',
+                'value' => $this->ticketSettings['tags']
+            ]);
+        }
+        if(empty($fields))
+            return $basic_response;
+
+        return $this->zendeskUtils->addFields($basic_response, $fields);
+    }
+
+    protected function getBasicResponse($external_id, $message, $message_replay_type, $parent_id,
+                                        $message_date, $author_external_id, $author_name)
+    {
+        $response = $this->zendeskUtils->getBasicResponse(
+            $external_id,
+            $message,
+            $message_replay_type,
+            $parent_id,
+            $message_date,
+            $author_external_id,
+            $author_name
+        );
+        return $this->addCustomFields($response);
     }
 }

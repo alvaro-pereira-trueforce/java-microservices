@@ -28,7 +28,7 @@ class Photo extends FilesMessageType {
             $message = $this->getValidCaptionMessage('Photo');
             $link = $this->getLocalURLFromExternalURL($photoURL, $current_photo['file_id']);
 
-            $basic_response = $this->zendeskUtils->getBasicResponse(
+            $basic_response = $this->getBasicResponse(
                 $this->getExternalID(),
                 $message,
                 'thread_id',

@@ -21,7 +21,12 @@ class DestroyIntegrationEvent extends EventType
         try
         {
             $uuid = json_decode($this->data['info']['metadata'],true)['token'];
-            $this->service->delete($uuid);
+            $account = $this->service->getById($uuid);
+            $account->delete();
+            if($account)
+            {
+                $this->service->removeWebhook($account->token);
+            }
         }catch (\Exception $exception)
         {
             Log::error($exception->getMessage());

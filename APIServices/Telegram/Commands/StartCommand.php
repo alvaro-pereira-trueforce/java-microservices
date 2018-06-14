@@ -40,20 +40,24 @@ class StartCommand extends Command
             // the user/chat id who triggered this command.
             // `replyWith<Message|Photo|Audio|Video|Voice|Document|Sticker|Location|ChatAction>()` all the available methods are dynamically
             // handled when you replace `send<Method>` with `replyWith` and use the same parameters - except chat_id does NOT need to be included in the array.
-            $this->replyWithMessage([
-                'text' => 'Hello! Welcome I\'m the ' . $botFirstName . ' Bot, Do you need help? '
-                    . json_decode('"\ud83d\ude0c"') .
-                    ' Tell me and i\'ll send your question to the help desk support  ' . json_decode('"\ud83d\udcdc"') . json_decode('"\ud83d\udc4d\ud83c\udffb"')
-                    . ', is it your first time?. I need some information before catch your request.',
-                'reply_to_message_id' => $this->getUpdate()->getMessage()->getMessageId()
-            ]);
-            $this->replyWithMessage([
-                'text' => 'Please provide us your email, phone number.'
-            ]);
-            $this->replyWithMessage([
-                'text' => 'Enter your email:'
-            ]);
-            $service->setCommandProcess($this->update, $this->name, 'email');
+            $channelSettings = $service->getChannelSettings();
+//            dd($channelSettings);
+
+            if (array_key_exists('has_hello_message', $channelSettings) && (boolean)$channelSettings['has_hello_message'] == true && array_key_exists('hello_message', $channelSettings)) {
+                $this->replyWithMessage([
+                    'text' => $channelSettings['hello_message'],
+                    'reply_to_message_id' => $this->getUpdate()->getMessage()->getMessageId()
+                ]);
+            }
+            if (array_key_exists('required_user_info', $channelSettings) && (boolean)$channelSettings['required_user_info'] == true) {
+                $this->replyWithMessage([
+                    'text' => 'In order to help you please provide us your email, phone number. You can cancel this step at any time sending the command /cancel'
+                ]);
+                $this->replyWithMessage([
+                    'text' => 'Enter your email:'
+                ]);
+                $service->setCommandProcess($this->update, $this->name, 'email');
+            }
         } else {
             try {
                 $message = $this->update->getMessage()->getText();
@@ -87,7 +91,7 @@ class StartCommand extends Command
                                 'from' => $this->update->getMessage()->getFrom(),
                                 'chat' => $this->update->getMessage()->getChat(),
                                 'date' => $this->update->getMessage()->getDate(),
-                                'text' => "Telegram channel: I'm starting to send messages, this is my info: email: ".$content['email']." Phone Number: ". $content['phone_number']
+                                'text' => "Telegram channel: I'm starting to send messages, this is my info: email: " . $content['email'] . " Phone Number: " . $content['phone_number']
                             ]
                         ]);
                         $channel_service->sendUpdate($update, $this->telegram->getAccessToken());
@@ -134,7 +138,8 @@ class StartCommand extends Command
         //$this->triggerCommand('subscribe');
     }
 
-    protected function getAuthorExternalID($user_id, $user_username) {
+    protected function getAuthorExternalID($user_id, $user_username)
+    {
         /** @var Utility $zendeskUtils */
         $zendeskUtils = App::make(Utility::class);
         return $zendeskUtils->getExternalID([$user_id, $user_username]);
