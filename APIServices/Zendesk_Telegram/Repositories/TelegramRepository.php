@@ -55,11 +55,12 @@ class TelegramRepository extends RepositoryUUID
     {
         DB::beginTransaction();
         try {
-            $data = $this->getValidDataToFill($data, $model);
-            $model->update($data);
+            $model->update($this->getValidDataToFill($data, $model));
             if(array_key_exists('settings', $data)){
-                /** @var TelegramChannelSettings $settings */
-                $settings = App::make(TelegramChannelSettings::class);
+                /** @var Model $settings */
+                $settings = $model->settings()->first();
+                if(!$settings)
+                    $settings = App::make(TelegramChannelSettings::class);
                 $settingData = $this->getValidDataToFill($data['settings'], $settings);
                 $settings->fill($settingData);
                 $model->settings()->save($settings);

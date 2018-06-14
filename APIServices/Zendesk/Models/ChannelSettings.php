@@ -16,7 +16,7 @@ abstract class ChannelSettings extends ModelUUID
      */
     protected $fillable = [
         'hello_message',
-        'custom_hello_message',
+        'has_hello_message',
         'required_user_info'
     ];
 
