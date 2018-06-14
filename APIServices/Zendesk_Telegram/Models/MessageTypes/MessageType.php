@@ -8,6 +8,7 @@ use APIServices\Zendesk\Utility;
 use APIServices\Zendesk_Telegram\Models\TicketScaffold;
 use APIServices\Zendesk_Telegram\Services\TicketService;
 use Illuminate\Support\Facades\App;
+use Illuminate\Support\Facades\Log;
 use Telegram\Bot\Objects\Message;
 use Telegram\Bot\Objects\Update;
 
@@ -50,13 +51,21 @@ abstract class MessageType implements IMessageType
      * @param array $state
      * @param TelegramService $telegramService
      * @param TicketService $ticketService
+     * @throws \Exception
      */
     public function __construct(TicketService $ticketService, Utility $zendeskUtils, $update, $state, TelegramService $telegramService)
     {
-        $this->ticketScaffold = App::makeWith(TicketScaffold::class, [
-            'zendeskUtils' => $zendeskUtils,
-            'ticketService' => $ticketService
-        ]);
+        try {
+            $this->ticketScaffold = App::makeWith(TicketScaffold::class, [
+                'zendeskUtils' => $zendeskUtils,
+                'ticketService' => $ticketService
+            ]);
+
+        } catch (\Exception $exception) {
+            Log::error($exception->getMessage());
+            throw $exception;
+        }
+
         $this->zendeskUtils = $zendeskUtils;
         $this->update = $update;
         $this->message = $update->getMessage();
