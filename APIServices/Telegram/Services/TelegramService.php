@@ -505,4 +505,21 @@ class TelegramService
             throw $exception;
         }
     }
+
+    /**
+     * @return array
+     * @throws \Exception
+     */
+    public function getChannelSettings()
+    {
+        try {
+            $token = $this->telegramAPI->getAccessToken();
+            $telegramChannel = $this->repository->getByToken($token)->with('settings')->first();
+            $settings = $telegramChannel->settings->toArray();
+            $settings['tags'] = json_decode($settings['tags'], true);
+            return $settings;
+        } catch (\Exception $exception) {
+            throw $exception;
+        }
+    }
 }

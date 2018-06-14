@@ -3,7 +3,6 @@
 namespace APIServices\Zendesk;
 
 class Utility {
-
     /**
      * @param array $data
      * @return mixed|string

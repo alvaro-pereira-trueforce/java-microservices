@@ -44,6 +44,8 @@ abstract class MessageType implements IMessageType
     /** @var TicketScaffold $ticketScaffold */
     protected $ticketScaffold;
 
+    protected $ticketSettings;
+
     /**
      * MessageType constructor.
      * @param Utility $zendeskUtils
@@ -60,7 +62,8 @@ abstract class MessageType implements IMessageType
                 'zendeskUtils' => $zendeskUtils,
                 'ticketService' => $ticketService
             ]);
-
+            $ticketSettings = $telegramService->getChannelSettings();
+            $this->ticketSettings = array_filter($ticketSettings);
         } catch (\Exception $exception) {
             Log::error($exception->getMessage());
             throw $exception;
@@ -105,5 +108,47 @@ abstract class MessageType implements IMessageType
     protected function getParentID($message)
     {
         return $this->ticketScaffold->getParentID($message);
+    }
+
+    protected function addCustomFields(array $basic_response)
+    {
+        $fields = [];
+        if (array_key_exists('ticket_priority', $this->ticketSettings)) {
+            array_push($fields, [
+                'id' => 'priority',
+                'value' => $this->ticketSettings['ticket_priority']
+            ]);
+        }
+
+        if (array_key_exists('ticket_type', $this->ticketSettings)) {
+            array_push($fields, [
+                'id' => 'type',
+                'value' => $this->ticketSettings['ticket_type']
+            ]);
+        }
+
+        if (array_key_exists('tags', $this->ticketSettings)) {
+            array_push($fields, [
+                'id' => 'tags',
+                'value' => $this->ticketSettings['tags']
+            ]);
+        }
+
+        return $this->zendeskUtils->addFields($basic_response, $fields);
+    }
+
+    protected function getBasicResponse($external_id, $message, $message_replay_type, $parent_id,
+                                        $message_date, $author_external_id, $author_name)
+    {
+        $response = $this->zendeskUtils->getBasicResponse(
+            $external_id,
+            $message,
+            $message_replay_type,
+            $parent_id,
+            $message_date,
+            $author_external_id,
+            $author_name
+        );
+        return $this->addCustomFields($response);
     }
 }

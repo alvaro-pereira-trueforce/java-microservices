@@ -142,7 +142,11 @@ class ZendeskController extends Controller
                 return $this->showErrorMessageAdminUI($errors, $data);
             }
 
-            $tags = json_encode(explode(' ',$request->tags), true);
+            $tags = null;
+            if($request->tags && !empty($request->tags))
+            {
+                $tags = json_encode(explode(' ',$request->tags), true);
+            }
 
             $settings = [
                 'has_hello_message' => $has_hello_message,
