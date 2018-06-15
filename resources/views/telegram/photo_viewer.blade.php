@@ -3,6 +3,6 @@
 <body>
     <h3>{{$title}}</h3>
     <p>{{$message}}</p>
-    <img src="{{$photoURL}}">
+    <img src="{{$photoURL}}" width="300px">
 </body>
 </html>

@@ -95,20 +95,21 @@
             <hr/>
             <div class="form-group">
                 <h4>Optional Settings</h4>
-                <p>Choose the optional ticket field values, all the values are optionals.</p>
+                <p>Choose the optional ticket field values, all the values are optionals.
+                    Please consider that all your new telegram tickets will be created with the optional settings you choose.</p>
             </div>
 
             <div class="row">
                 <div class="col-sm-6">
                     <div class="form-group">
                         <label>Ticket Type:</label>
-                        {{Form::select('ticket_type', array('' => '','problem' => 'problem','incident' => 'incident','question' =>'question','task' => 'task'),$ticket_type,['class' => 'form-control'])}}
+                        {{Form::select('ticket_type', array('' => '-','problem' => 'Problem','incident' => 'Incident','question' =>'Question','task' => 'Task'),$ticket_type,['class' => 'form-control'])}}
                     </div>
                 </div>
                 <div class="col-sm-6">
                     <div class="form-group">
                         <label>Ticket Priority:</label>
-                        {{Form::select('ticket_priority', array('' => '','urgent' => 'urgent','high' => 'high','normal' =>'normal','low' =>'low'),$ticket_priority,['class' => 'form-control'])}}
+                        {{Form::select('ticket_priority', array('' => '-','urgent' => 'Urgent','high' => 'High','normal' =>'Normal','low' =>'Low'),$ticket_priority,['class' => 'form-control'])}}
                     </div>
                 </div>
             </div>
