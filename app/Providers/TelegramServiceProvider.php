@@ -46,7 +46,7 @@ class TelegramServiceProvider extends ServiceProvider {
         $this->app->bind('telegram.contact', Contact::class);
         $this->app->bind('telegram.location', Location::class);
         $this->app->bind('telegram.edited', Edited::class);
-        $this->app->bind('telegram.sticker', Sticker::class);
+        //$this->app->bind('telegram.sticker', Sticker::class);
         $this->app->bind('telegram.', UnknownType::class);
 
         $this->app->when(TelegramService::class)
