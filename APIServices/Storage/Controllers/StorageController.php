@@ -24,7 +24,6 @@ class StorageController extends Controller {
             $documentURL = $telegramService->getDocumentURL($file_id);
             if (strpos($filename, 'webp') !== false) {
                 $documentURL = imagecreatefromwebp($documentURL);
-                
                 header('Content-Type: image/png');
                 imagepng($documentURL);
                 return null;
