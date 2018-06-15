@@ -1,8 +1,8 @@
 {
   "channel_integrations": {
-    "Telegram_Channel_Bot": {
+    "Telegram Channel": {
       "manifest_url":
-      "https://help-desk-server-prod.herokuapp.com/telegram/manifest"
+      "https://zendesk.assuresoft.com/telegram/manifest"
     }
   }
 }

@@ -1,11 +1,12 @@
 {
-  "name": "Telegram Channel Bot",
+  "name": "Telegram Channel",
   "author": {
-    "name": "@aketz_a",
-    "email": "support@zendesk.com"
+    "name": "AssureSoft",
+    "email": "zendesk@assuresoft.com",
+    "url": "https://www.assuresoft.com"
   },
   "defaultLocale": "en",
-  "private": true,
-  "version": "0.0.1",
+  "private": false,
+  "version": "1.0.1",
   "requirementsOnly": true
 }
