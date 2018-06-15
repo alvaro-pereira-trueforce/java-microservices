@@ -1,6 +1,9 @@
 <?php
+
 namespace APIServices\Telegram\Controllers;
 
+use APIServices\Telegram\Services\TelegramService;
+use APIServices\Zendesk_Telegram\Services\ChannelService;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Log;
 use Telegram\Bot\Api;
@@ -11,19 +14,47 @@ class WebhookController extends Controller
      * @var Api
      */
     protected $telegram;
-
+    protected $channelService;
     /**
      * BotController constructor.
      *
      * @param Api $telegram
+     * @param ChannelService $channelService
      */
-    public function __construct(Api $telegram)
+    public function __construct(Api $telegram, ChannelService $channelService)
     {
         $this->telegram = $telegram;
+        $this->channelService = $channelService;
     }
 
-
     public function webhookHandler($token)
+    {
+        $this->telegram->setAccessToken($token);
+        $this->telegram->setAsyncRequest(false);
+
+        // This fetchs webhook update + processes the update through the commands system.
+        $update = $this->telegram->commandsHandler(true);
+        Log::debug($update);
+
+        try
+        {
+            $commandData = $this->channelService->getStartedCommand($update);
+            if (!$this->channelService->isCommand($update) && $commandData) {
+                $this->channelService->triggerCommand($commandData['command'], $commandData['state'], $update);
+            }
+            if (!$this->channelService->isCommand($update) && !$commandData) {
+                $this->channelService->sendUpdate($update, $token);
+            }
+        }catch (\Exception $exception)
+        {
+            Log::error($exception->getMessage());
+        }
+
+        return response()->json('ok', 200);
+    }
+
+    /* This is an basic example
+     * public function webhookHandler($token)
     {
         // If you're not using commands system, then you can enable this.
         // $update = $this->telegram->getWebhookUpdate();
@@ -32,7 +63,7 @@ class WebhookController extends Controller
         $this->telegram->setAccessToken($token);
         // This fetchs webhook update + processes the update through the commands system.
         $update = $this->telegram->commandsHandler(true);
-
+        Log::info($update);
 
         // Commands handler method returns an Update object.
         // So you can further process $update object
@@ -47,13 +78,13 @@ class WebhookController extends Controller
         // - Tell me an inspirational quote
         // - inspire me
         // - Hey bot, tell me an inspiring quote please?
-        /*if(str_contains($message->text, ['inspire', 'inspirational', 'inspiring'])) {
-            $this->telegram->sendMessage()
-                ->chatId($message->chat->id)
-                ->text(Inspiring::quote())
-                ->getResult();
-        }*/
+        //if(str_contains($message->text, ['inspire', 'inspirational', 'inspiring'])) {
+        //  $this->telegram->sendMessage()
+        //      ->chatId($message->chat->id)
+        //      ->text(Inspiring::quote())
+        //      ->getResult();
+        //}
         Log::info($message);
         return response()->json('ok',200);
-    }
+    }*/
 }

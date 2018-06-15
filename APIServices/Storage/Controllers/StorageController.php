@@ -20,11 +20,19 @@ class StorageController extends Controller {
             $telegramService = App::makeWith(TelegramService::class,[
                 'uuid' => $uuid
             ]);
-            $documentURL = $telegramService->getDocumentURL($file_id);
 
+            $documentURL = $telegramService->getDocumentURL($file_id);
+            if (strpos($filename, 'webp') !== false) {
+                $documentURL = imagecreatefromwebp($documentURL);
+                header('Content-Type: image/png');
+                imagepng($documentURL);
+                return null;
+            }
+
+            $headers = get_headers($documentURL, 1);
             return response()->streamDownload(function () use ($documentURL){
                 echo file_get_contents($documentURL);
-            }, $filename);
+            }, $filename, $headers);
 
         }catch (\Exception $exception)
         {

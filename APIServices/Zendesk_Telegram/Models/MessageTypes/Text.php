@@ -6,7 +6,6 @@ namespace APIServices\Zendesk_Telegram\Models\MessageTypes;
 class Text extends MessageType {
 
     function getTransformedMessage() {
-
         $message = $this->message->getText();
 
         preg_match('/^\/([^\s@]+)@?(\S+)?\s?(.*)$/', $message, $commands);
@@ -14,7 +13,7 @@ class Text extends MessageType {
             return null;
         }
 
-        $response = $this->zendeskUtils->getBasicResponse(
+        $response = $this->getBasicResponse(
             $this->getExternalID(),
             $message,
             'thread_id',

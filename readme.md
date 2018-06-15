@@ -24,3 +24,8 @@ https://git.heroku.com/help-desk-server-staging.git
 -- Production --
 https://git.heroku.com/help-desk-server-prod.git
 ```
+
+#####In order to build the frontend to be committed execute the following command inside the Frontend folder.
+```
+ng build --prod --build-optimizer
+```

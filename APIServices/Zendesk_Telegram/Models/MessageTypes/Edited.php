@@ -27,7 +27,7 @@ class Edited extends EventMessageType {
             return null;
         }
 
-        $response = $this->zendeskUtils->getBasicResponse(
+        $response = $this->getBasicResponse(
             $this->getExternalID(),
             $message,
             'thread_id',
