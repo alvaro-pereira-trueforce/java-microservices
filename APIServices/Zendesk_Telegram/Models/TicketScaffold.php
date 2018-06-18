@@ -5,6 +5,8 @@ namespace APIServices\Zendesk_Telegram\Models;
 
 use APIServices\Zendesk\Utility;
 use APIServices\Zendesk_Telegram\Services\TicketService;
+use Illuminate\Support\Facades\App;
+use Telegram\Bot\Api;
 use Telegram\Bot\Objects\Message;
 
 class TicketScaffold
@@ -42,20 +44,30 @@ class TicketScaffold
      * @param Message $message
      * @return string
      */
-    public function getParentID($message) {
-        $reply = $message->getReplyToMessage();
+    public function getParentID($message)
+    {
+        //This commented code create new tickets on reply
+        //$reply = $message->getReplyToMessage();
 
-        if ($reply) {
-            $parent_id = $this->zendeskUtils->getExternalID([
-                $reply->getChat()->get('id'),
-                $reply->getFrom()->get('id')
-            ]);
-        } else {
-            $parent_id = $this->zendeskUtils->getExternalID([
-                $message->getChat()->getId(),
-                $message->getFrom()->getId()
-            ]);
+//        if ($reply) {
+//            $parent_id = $this->zendeskUtils->getExternalID([
+//                $reply->getChat()->get('id'),
+//                $reply->getFrom()->get('id')
+//            ]);
+//        } else {
+        try {
+            /** @var Api $api */
+            $api = App::make(Api::class);
+            $bot_id = $api->getMe()->getId();
+        } catch (\Exception $exception) {
+            $bot_id = $message->getChat()->getId();
         }
+        $parent_id = $this->zendeskUtils->getExternalID([
+            $bot_id,
+            $message->getChat()->getId(),
+            $message->getFrom()->getId()
+        ]);
+        //}
         $parent_uuid = $this->ticketService->getValidParentID($parent_id);
         return $this->zendeskUtils->getExternalID([$parent_uuid, $parent_id]);
     }
