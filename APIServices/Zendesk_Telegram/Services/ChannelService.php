@@ -168,14 +168,16 @@ class ChannelService
         try {
             $params = explode(':', $parent_id);
             $parent_uuid = $params[0];
-            $chat_id = $params[1];
-            $user_id = $params[2];
-            $message_id = $params[3];
+            $bot_id = $params[1];
+            $chat_id = $params[2];
+            $user_id = $params[3];
+            $message_id = $params[4];
 
             $result = $this->telegram_service->sendTelegramMessage($chat_id, $message);
 
             return $this->zendeskUtils->getExternalID([
                 $parent_uuid,
+                $bot_id,
                 $chat_id,
                 $user_id,
                 $result['message_id']
@@ -192,10 +194,12 @@ class ChannelService
     public function isCommand($update)
     {
         try {
-            $message = $update->getMessage()->getText();
-            preg_match('/^\/([^\s@]+)@?(\S+)?\s?(.*)$/', $message, $commands);
-            if (!empty($commands)) {
-                return true;
+            if ($update->getMessage()) {
+                $message = $update->getMessage()->getText();
+                preg_match('/^\/([^\s@]+)@?(\S+)?\s?(.*)$/', $message, $commands);
+                if (!empty($commands)) {
+                    return true;
+                }
             }
             return false;
         } catch (\Exception $exception) {

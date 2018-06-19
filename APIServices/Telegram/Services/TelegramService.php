@@ -469,6 +469,8 @@ class TelegramService
     public function getStartedCommand($update)
     {
         try {
+            if(!$update->getMessage())
+                return null;
             $user_id = $update->getMessage()->getFrom()->getId();
             $chat_id = $update->getMessage()->getChat()->getId();
             $commandModel = $this->commandRepository->getCommandWithUserAndChat($user_id, $chat_id);
