@@ -49,7 +49,11 @@ class StartCommand extends Command
                     'reply_to_message_id' => $this->getUpdate()->getMessage()->getMessageId()
                 ]);
             }
-            if (array_key_exists('required_user_info', $channelSettings) && (boolean)$channelSettings['required_user_info'] == true) {
+            if (array_key_exists('required_user_info', $channelSettings) &&
+                (boolean)$channelSettings['required_user_info'] == true &&
+                !empty($this->update->getMessage()->getChat()->getType()) &&
+                $this->update->getMessage()->getChat()->getType() == 'private'
+            ) {
                 $this->replyWithMessage([
                     'text' => 'In order to help you please provide us your email, phone number. You can cancel this step at any time sending the command /cancel'
                 ]);
