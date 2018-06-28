@@ -2,7 +2,6 @@
 
 namespace APIServices\Zendesk_Instagram\Repositories;
 
-
 use APIServices\Zendesk\Models\CommentTrack;
 use App\Database\Eloquent\RepositoryUUID;
 use Illuminate\Support\Facades\App;
@@ -17,20 +16,26 @@ class CommentTrackerRepository extends RepositoryUUID {
     }
 
     /**
-     * Get the last comment date by post_id
-     *
      * @param $post_id
-     * @return CommentTrack
+     * @return mixed
+     * @throws \Exception
      */
     public function findByPostID($post_id) {
-        $model = $this->getModel();
-        return $model->where('post_id', '=', $post_id)->first();
+        try {
+            $model = $this->getModel();
+            return $model->where('post_id', '=', $post_id)->first();
+        } catch (\Exception $exception) {
+            throw $exception;
+        }
+
     }
 
     /**
      * Delete the registered last comment date by post_id
+     *
      * @param $post_id
-     * @return bool
+     * @return mixed
+     * @throws \Exception
      */
     public function deleteByPostID($post_id) {
         try {
@@ -38,9 +43,8 @@ class CommentTrackerRepository extends RepositoryUUID {
             if ($model) {
                 return $model->delete();
             }
-            return false;
         } catch (\Exception $exception) {
-            return false;
+            throw  $exception;
         }
     }
 
@@ -48,23 +52,33 @@ class CommentTrackerRepository extends RepositoryUUID {
      * @param Model $model
      * @param array $data
      * @return Model
+     * @throws \Exception
      */
     public function update(Model $model, array $data)
     {
-        $model->fill($data);
-        $model->save();
-        return $model;
+        try {
+            $model->fill($data);
+            $model->save();
+            return $model;
+        } catch (\Exception $exception) {
+            throw  $exception;
+        }
     }
 
     /**
      * @param array $data
      * @return CommentTrack
+     * @throws \Exception
      */
     public function create(array $data)
     {
-        $model = $this->getModel();
-        $model->fill($data);
-        $model->save();
-        return $model;
+        try {
+            $model = $this->getModel();
+            $model->fill($data);
+            $model->save();
+            return $model;
+        } catch (\Exception $exception) {
+            throw  $exception;
+        }
     }
 }

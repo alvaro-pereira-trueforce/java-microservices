@@ -2,7 +2,7 @@
 <html dir="ltr" lang="en-US">
 <body>
     <h3>{{$title}}</h3>
-    <img src="{{$photoURL}}">
     <p>{{$message}}</p>
+    <img src="{{$photoURL}}" width="300px">
 </body>
 </html>

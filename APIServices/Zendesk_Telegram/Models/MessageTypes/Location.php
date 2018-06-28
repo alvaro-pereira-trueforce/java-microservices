@@ -12,7 +12,7 @@ class Location extends FilesMessageType {
 
         $message = $this->getAuthorName() . ' sent a Location';
 
-        $basic_response = $this->zendeskUtils->getBasicResponse(
+        $basic_response = $this->getBasicResponse(
             $this->getExternalID(),
             $message,
             'thread_id',

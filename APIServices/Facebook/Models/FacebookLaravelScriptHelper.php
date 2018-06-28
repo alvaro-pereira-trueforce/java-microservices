@@ -8,7 +8,9 @@ use Facebook\Helpers\FacebookSignedRequestFromInputHelper;
 use Illuminate\Support\Facades\Log;
 
 class FacebookLaravelScriptHelper extends FacebookSignedRequestFromInputHelper {
-
+    /**
+     * @var string
+     */
     protected $cookie_string;
 
     /**
@@ -25,6 +27,9 @@ class FacebookLaravelScriptHelper extends FacebookSignedRequestFromInputHelper {
         parent::__construct($app, $client, $graphVersion);
     }
 
+    /**
+     * @return mixed
+     */
     public function getRawSignedRequest() {
         $cookieName = 'fbsr_' . $this->app->getId();
         list($k, $v) = explode('=', $this->cookie_string);

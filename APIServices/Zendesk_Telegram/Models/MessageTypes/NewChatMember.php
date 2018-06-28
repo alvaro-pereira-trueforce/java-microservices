@@ -16,7 +16,7 @@ class NewChatMember extends MessageType {
 
         $this->telegramService->triggerCommand('start', '', $this->update);
 
-        return $this->zendeskUtils->getBasicResponse(
+        return $this->getBasicResponse(
             $this->getExternalID(),
             $message,
             'thread_id',

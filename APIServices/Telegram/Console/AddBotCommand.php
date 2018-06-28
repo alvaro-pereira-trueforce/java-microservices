@@ -2,7 +2,7 @@
 
 namespace APIServices\Telegram\Console;
 
-use APIServices\Telegram\Repositories\TelegramRepository;
+use APIServices\Zendesk_Telegram\Repositories\TelegramRepository;
 use Illuminate\Console\Command;
 
 class AddBotCommand extends Command {
