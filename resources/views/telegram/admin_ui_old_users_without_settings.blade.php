@@ -23,7 +23,7 @@
             <p>We need you to provide us your Telegram token which was generated with the "Telegram Bot Father" in order
                 to start working with the Telegram Channel service.</p>
         @else
-            <p>Welcome back. This is an old integration without setting. Please delete this integration if you want to upgrade it.</p>
+            <p>Welcome back. This is an old integration without settings. Please delete this integration if you want to upgrade it.</p>
         @endif
         <p>For more information about how to obtain the Telegram token use the following link <a
                     href="https://telegram.me/botfather" target="_blank"> Telegram Bot Father</a> or visit our <a
