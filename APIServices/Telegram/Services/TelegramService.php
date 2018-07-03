@@ -543,9 +543,16 @@ class TelegramService
         try {
             $token = $this->telegramAPI->getAccessToken();
             $telegramChannel = $this->repository->getByToken($token)->with('settings')->first();
-            $settings = $telegramChannel->settings->toArray();
-            $settings['tags'] = json_decode($settings['tags'], true);
-            return $settings;
+            if($telegramChannel && $telegramChannel->settings)
+            {
+                $settings = $telegramChannel->settings->toArray();
+                $settings['tags'] = json_decode($settings['tags'], true);
+                return $settings;
+            }
+            else
+            {
+                return [];
+            }
         } catch (\Exception $exception) {
             throw $exception;
         }
