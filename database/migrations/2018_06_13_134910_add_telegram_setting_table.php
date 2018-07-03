@@ -19,7 +19,7 @@ class AddTelegramSettingTable extends Migration
             $table->uuid('channel_uuid')->unique();
             $table->string('hello_message')->nullable();
             $table->boolean('has_hello_message')->default(false);
-            $table->boolean('required_user_info')->default(true);
+            $table->boolean('required_user_info')->default(false);
             $table->timestamps();
         });
     }
