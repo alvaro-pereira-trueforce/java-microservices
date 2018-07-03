@@ -60,10 +60,15 @@ class ZendeskController extends Controller
                         'instance_push_id' => $instance_push_id,
                         'zendesk_app_id' => $data['subdomain']
                     ]);
-
-                    if (!$newRecord || empty($newRecord))
-                        throw new \Exception('There was an error');
+                }else{
+                    $newRecord = $service->setAccountRegistration([
+                        'zendesk_access_token' => '',
+                        'instance_push_id' => '',
+                        'zendesk_app_id' => $data['subdomain']
+                    ]);
                 }
+                if (!$newRecord || empty($newRecord))
+                    throw new \Exception('There was an error');
             } else {
                 $data['submitURL'] = env('APP_URL') . '/telegram/admin_ui_edit';
                 $token = $service->getById($metadata['token']);
