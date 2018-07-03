@@ -96,6 +96,10 @@ class ZendeskController extends Controller
     public function showErrorMessageAdminUI($errors, $data)
     {
         $data['errors'] = $errors;
+        if(array_key_exists('pull_mode', $data))
+        {
+            return view('telegram.admin_ui_old_users', $data);
+        }
         return view('telegram.admin_ui', $data);
     }
 
@@ -134,6 +138,9 @@ class ZendeskController extends Controller
                 'token_hide' => false
             ];
 
+            if (!$request->telegram_mode) {
+                $data['pull_mode'] = true;
+            }
             if (!$token || !$name) {
                 $errors = ['Integration Name and Token is required.'];
                 return $this->showErrorMessageAdminUI($errors, $data);
@@ -156,8 +163,7 @@ class ZendeskController extends Controller
                 return $this->showErrorMessageAdminUI($errors, $data);
             }
 
-            if(!$request->telegram_mode)
-            {
+            if (!$request->telegram_mode) {
                 Log::debug("Enabling Telegram Webhook.");
                 $telegramResponse = $service->setWebhook($token);
                 if (!$telegramResponse || !$telegramResponse[0]) {
