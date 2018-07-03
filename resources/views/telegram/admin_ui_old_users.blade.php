@@ -97,7 +97,8 @@
                    name="subdomain" value="{{$subdomain}}">
             <input type="hidden"
                    name="submitURL" value="{{$submitURL}}">
-
+            <input type="hidden"
+                   name="telegram_mode" value="mode">
             <div class="form-group">
                 <input type="submit" class="btn btn-primary">
             </div>

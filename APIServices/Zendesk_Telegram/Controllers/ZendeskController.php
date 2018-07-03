@@ -156,10 +156,14 @@ class ZendeskController extends Controller
                 return $this->showErrorMessageAdminUI($errors, $data);
             }
 
-            $telegramResponse = $service->setWebhook($token);
-            if (!$telegramResponse || !$telegramResponse[0]) {
-                $errors = ['There was an error with bots configuration, please contact support.'];
-                return $this->showErrorMessageAdminUI($errors, $data);
+            if(!$request->telegram_mode)
+            {
+                Log::debug("Enabling Telegram Webhook.");
+                $telegramResponse = $service->setWebhook($token);
+                if (!$telegramResponse || !$telegramResponse[0]) {
+                    $errors = ['There was an error with bots configuration, please contact support.'];
+                    return $this->showErrorMessageAdminUI($errors, $data);
+                }
             }
 
             $tags = null;
