@@ -397,6 +397,32 @@ class TelegramService
     }
 
     /**
+     * Retrieve the current Integration data from the database to return the metadata in old users
+     * @param $token
+     * @return array
+     * @throws \Exception
+     */
+    public function getMetadataFromSavedIntegrationByToken($token)
+    {
+        try
+        {
+            $model = $this->repository->getByToken($token)->first();
+            if(!$model)
+                throw new \Exception("This bot is not registered.");
+
+            return [
+                'token' => $model->uuid,
+                'integration_name' => $model->integration_name,
+                'zendesk_app_id' => $model->zendesk_app_id
+            ];
+        }catch (\Exception $exception)
+        {
+            Log::error($exception);
+            throw $exception;
+        }
+    }
+    /**
+     * Update new integration data with settings and return the url
      * @param $data
      * @return array
      * @throws \Exception

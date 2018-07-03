@@ -213,7 +213,7 @@ class ZendeskController extends Controller
     public function admin_ui_edit(Request $request, TelegramService $service)
     {
         $data = $request->all();
-        dd($data);
+
         foreach ($data as $key => $value) {
             if ($value == 'on')
                 $data[$key] = true;
@@ -229,6 +229,18 @@ class ZendeskController extends Controller
         $has_hello_message = array_key_exists('has_hello_message', $data) ? $data['has_hello_message'] : false;
         $required_user_info = array_key_exists('required_user_info', $data) ? $data['required_user_info'] : false;
         $hello_message = array_key_exists('hello_message', $data) ? $data['hello_message'] : null;
+
+        //This code is only to old integrations without settings.
+        if($request->has('telegram_mode_without_settings'))
+        {
+            try{
+                $metadata = $service->getMetadataFromSavedIntegrationByToken($request->token);
+                return view('telegram.post_metadata', ['return_url' => $return_url, 'name' => $name, 'metadata' => json_encode($metadata)]);
+            }catch (\Exception $exception)
+            {
+                return 'Please contact support.';
+            }
+        }
 
         $data = [
             'return_url' => $return_url,
