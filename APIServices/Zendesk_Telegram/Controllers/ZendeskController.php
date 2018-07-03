@@ -139,7 +139,7 @@ class ZendeskController extends Controller
                 'token_hide' => false
             ];
 
-            if (!$request->telegram_mode) {
+            if ($request->telegram_mode) {
                 $data['pull_mode'] = true;
             }
             dd($data);
