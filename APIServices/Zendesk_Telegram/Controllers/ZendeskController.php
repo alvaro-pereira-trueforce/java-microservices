@@ -51,7 +51,7 @@ class ZendeskController extends Controller
         ];
 
         $data['token_hide'] = false;
-
+        dd($request->all());
         try {
             if (!$metadata) {
                 $newRecord = $service->setAccountRegistration([
