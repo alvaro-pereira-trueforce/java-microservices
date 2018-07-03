@@ -54,14 +54,16 @@ class ZendeskController extends Controller
         dd($request->all());
         try {
             if (!$metadata) {
-                $newRecord = $service->setAccountRegistration([
-                    'zendesk_access_token' => $zendesk_access_token,
-                    'instance_push_id' => $instance_push_id,
-                    'zendesk_app_id' => $data['subdomain']
-                ]);
+                if ($zendesk_access_token && $instance_push_id) {   //This would only happen when the integration has push enabled functionality
+                    $newRecord = $service->setAccountRegistration([
+                        'zendesk_access_token' => $zendesk_access_token,
+                        'instance_push_id' => $instance_push_id,
+                        'zendesk_app_id' => $data['subdomain']
+                    ]);
 
-                if (!$newRecord || empty($newRecord))
-                    throw new \Exception('There was an error');
+                    if (!$newRecord || empty($newRecord))
+                        throw new \Exception('There was an error');
+                }
             } else {
                 $data['submitURL'] = env('APP_URL') . '/telegram/admin_ui_edit';
                 $token = $service->getById($metadata['token']);
