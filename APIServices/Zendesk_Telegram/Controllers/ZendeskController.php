@@ -51,10 +51,10 @@ class ZendeskController extends Controller
         ];
 
         $data['token_hide'] = false;
-        dd($request->all());
         try {
             if (!$metadata) {
-                if ($zendesk_access_token && $instance_push_id) {   //This would only happen when the integration has push enabled functionality
+                if ($zendesk_access_token && $instance_push_id) {
+                    //This would only happen when the integration has push enabled functionality in the domain saved manifest
                     $newRecord = $service->setAccountRegistration([
                         'zendesk_access_token' => $zendesk_access_token,
                         'instance_push_id' => $instance_push_id,
