@@ -367,7 +367,6 @@ class TelegramService
             $this->telegramAPI->setAccessToken($token);
             return $this->telegramAPI->getMe();
         } catch (\Exception $exception) {
-            Log::error($exception->getMessage());
             return null;
         }
     }
