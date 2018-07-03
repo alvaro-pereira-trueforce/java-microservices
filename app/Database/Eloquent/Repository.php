@@ -2,6 +2,7 @@
 
 namespace App\Database\Eloquent;
 
+use Illuminate\Database\Eloquent\Collection;
 use Optimus\Genie\Repository as BaseRepository;
 
 abstract class Repository extends BaseRepository {
@@ -10,7 +11,7 @@ abstract class Repository extends BaseRepository {
      *
      * @param  mixed $id
      * @param  array $options
-     * @return Model
+     * @return Collection
      */
     public function getById($id, array $options = []) {
         $query = $this->createBaseBuilder($options);
@@ -31,5 +32,16 @@ abstract class Repository extends BaseRepository {
             return $model->delete();
         }
         return 0;
+    }
+
+    /**
+     * Clean the data array to fill just the fillable data
+     * @param array $data
+     * @param Model $model
+     * @return array
+     */
+    public function getValidDataToFill($data, $model)
+    {
+        return array_intersect_key($data, array_flip($model->getFillable()));
     }
 }

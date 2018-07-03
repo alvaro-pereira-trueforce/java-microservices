@@ -11,6 +11,7 @@ use APIServices\Zendesk_Telegram\Models\MessageTypes\LeftChatMember;
 use APIServices\Zendesk_Telegram\Models\MessageTypes\Location;
 use APIServices\Zendesk_Telegram\Models\MessageTypes\NewChatMember;
 use APIServices\Zendesk_Telegram\Models\MessageTypes\Photo;
+use APIServices\Zendesk_Telegram\Models\MessageTypes\Sticker;
 use APIServices\Zendesk_Telegram\Models\MessageTypes\Text;
 use APIServices\Zendesk_Telegram\Models\MessageTypes\UnknownType;
 use APIServices\Zendesk_Telegram\Models\MessageTypes\Video;
@@ -45,6 +46,7 @@ class TelegramServiceProvider extends ServiceProvider {
         $this->app->bind('telegram.contact', Contact::class);
         $this->app->bind('telegram.location', Location::class);
         $this->app->bind('telegram.edited', Edited::class);
+        //$this->app->bind('telegram.sticker', Sticker::class);
         $this->app->bind('telegram.', UnknownType::class);
 
         $this->app->when(TelegramService::class)
@@ -60,7 +62,8 @@ class TelegramServiceProvider extends ServiceProvider {
         $message_types = [
             Text::class, Photo::class, Document::class, UnknownType::class,
             LeftChatMember::class, NewChatMember::class, Video::class,
-            Voice::class, Audio::class, Contact::class, Location::class, Edited::class
+            Voice::class, Audio::class, Contact::class, Location::class, Edited::class,
+            Sticker::class
         ];
 
         foreach ($message_types as $type) {

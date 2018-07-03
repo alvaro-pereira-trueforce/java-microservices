@@ -1,10 +1,15 @@
-import { Component } from '@angular/core';
+import { Component, TemplateRef } from '@angular/core';
 
 @Component({
-  selector: 'devx-root',
+  selector: 'app-root',
   templateUrl: './app.component.html',
-  styleUrls: ['./app.component.scss']
+  styleUrls: [ './app.component.scss' ]
 })
 export class AppComponent {
-  title = 'devx';
+
+  navBarTemplate: TemplateRef<any>;
+  componentAdded(component)
+  {
+    this.navBarTemplate = component.navBarTemplate;
+  }
 }
