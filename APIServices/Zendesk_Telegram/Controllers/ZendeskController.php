@@ -51,22 +51,20 @@ class ZendeskController extends Controller
         ];
 
         $data['token_hide'] = false;
+
+        if (!$zendesk_access_token || !$instance_push_id) {
+            $zendesk_access_token = '';
+            $instance_push_id = '';
+        }
+
         try {
             if (!$metadata) {
-                if ($zendesk_access_token && $instance_push_id) {
-                    //This would only happen when the integration has push enabled functionality in the domain saved manifest
-                    $newRecord = $service->setAccountRegistration([
-                        'zendesk_access_token' => $zendesk_access_token,
-                        'instance_push_id' => $instance_push_id,
-                        'zendesk_app_id' => $data['subdomain']
-                    ]);
-                }else{
-                    $newRecord = $service->setAccountRegistration([
-                        'zendesk_access_token' => '',
-                        'instance_push_id' => '',
-                        'zendesk_app_id' => $data['subdomain']
-                    ]);
-                }
+                //This would only happen when the integration has push enabled functionality in the domain saved manifest
+                $newRecord = $service->setAccountRegistration([
+                    'zendesk_access_token' => $zendesk_access_token,
+                    'instance_push_id' => $instance_push_id,
+                    'zendesk_app_id' => $data['subdomain']
+                ]);
                 if (!$newRecord || empty($newRecord))
                     throw new \Exception('There was an error');
             } else {
