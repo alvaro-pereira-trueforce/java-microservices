@@ -69,6 +69,7 @@ class ZendeskController extends Controller
                 if (!$newRecord || empty($newRecord))
                     throw new \Exception('There was an error');
             } else {
+                $data['token_hide'] = true;
                 $data['submitURL'] = env('APP_URL') . '/telegram/admin_ui_edit';
                 $token = $service->getById($metadata['token']);
                 $data['token'] = $token->token;
@@ -80,7 +81,6 @@ class ZendeskController extends Controller
                 $data['ticket_priority'] = $settings['ticket_priority'];
                 if ($settings['tags'])
                     $data['tags'] = implode(' ', $settings['tags']);
-                $data['token_hide'] = true;
             }
 
             if (array_key_exists('pull_mode', $data)) {
@@ -239,6 +239,10 @@ class ZendeskController extends Controller
             'tags' => $request->tags,
             'token_hide' => true
         ];
+
+        if ($request->telegram_mode) {
+            $data['pull_mode'] = true;
+        }
 
         try {
             if (!$token || !$name) {
