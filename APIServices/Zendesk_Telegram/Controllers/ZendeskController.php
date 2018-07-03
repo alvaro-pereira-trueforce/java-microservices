@@ -60,7 +60,7 @@ class ZendeskController extends Controller
 
         try {
             if (!$metadata) {
-                //This would only happen when the integration has push enabled functionality in the domain saved manifest
+                //This is the code when the user add an account.
                 $newRecord = $service->setAccountRegistration([
                     'zendesk_access_token' => $zendesk_access_token,
                     'instance_push_id' => $instance_push_id,
@@ -69,24 +69,33 @@ class ZendeskController extends Controller
                 if (!$newRecord || empty($newRecord))
                     throw new \Exception('There was an error');
             } else {
-                $data['token_hide'] = true;
-                $data['submitURL'] = env('APP_URL') . '/telegram/admin_ui_edit';
-                $token = $service->getById($metadata['token']);
-                $data['token'] = $token->token;
-                $settings = $service->getChannelSettings();
-                if(empty($settings))
+                //This is the code when the user click to edit an integration.
+                try
                 {
-                    return view('telegram.admin_ui_old_users_without_settings', $data);
+                    $data['token_hide'] = true;
+                    $data['submitURL'] = env('APP_URL') . '/telegram/admin_ui_edit';
+                    $token = $service->getById($metadata['token']);
+                    $data['token'] = $token->token;
+                    $settings = $service->getChannelSettings();
+                    if(empty($settings))
+                    {
+                        return view('telegram.admin_ui_old_users_without_settings', $data);
+                    }
+                    $data['has_hello_message'] = (boolean)$settings['has_hello_message'];
+                    $data['required_user_info'] = (boolean)$settings['required_user_info'];
+                    $data['hello_message'] = $settings['hello_message'];
+                    $data['ticket_type'] = $settings['ticket_type'];
+                    $data['ticket_priority'] = $settings['ticket_priority'];
+                    if ($settings['tags'])
+                        $data['tags'] = implode(' ', $settings['tags']);
+                }catch (\Exception $exception)
+                {
+                    Log::error("Exception ZendeskController From Line 75 to 90:");
+                    Log::error($exception);
+                    return "Please contact support.";
                 }
-                $data['has_hello_message'] = (boolean)$settings['has_hello_message'];
-                $data['required_user_info'] = (boolean)$settings['required_user_info'];
-                $data['hello_message'] = $settings['hello_message'];
-                $data['ticket_type'] = $settings['ticket_type'];
-                $data['ticket_priority'] = $settings['ticket_priority'];
-                if ($settings['tags'])
-                    $data['tags'] = implode(' ', $settings['tags']);
             }
-
+            //Only when is an older integration.
             if (array_key_exists('pull_mode', $data)) {
                 return view('telegram.admin_ui_old_users', $data);
             }
@@ -229,18 +238,6 @@ class ZendeskController extends Controller
         $has_hello_message = array_key_exists('has_hello_message', $data) ? $data['has_hello_message'] : false;
         $required_user_info = array_key_exists('required_user_info', $data) ? $data['required_user_info'] : false;
         $hello_message = array_key_exists('hello_message', $data) ? $data['hello_message'] : null;
-
-        //This code is only to old integrations without settings.
-        if($request->has('telegram_mode_without_settings'))
-        {
-            try{
-                $metadata = $service->getMetadataFromSavedIntegrationByToken($request->token);
-                return view('telegram.post_metadata', ['return_url' => $return_url, 'name' => $name, 'metadata' => json_encode($metadata)]);
-            }catch (\Exception $exception)
-            {
-                return 'Please contact support.';
-            }
-        }
 
         $data = [
             'return_url' => $return_url,

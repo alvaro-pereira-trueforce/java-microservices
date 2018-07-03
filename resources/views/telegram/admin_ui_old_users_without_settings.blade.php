@@ -30,17 +30,7 @@
                     href="{{env('APP_URL')}}/app/#/telegram" target="_blank">Getting Started</a> Page.<br><br>
         </p>
 
-        <form method="post" action="{{$submitURL}}">
-            @if($errors)
-                @foreach ($errors as $error)
-                    <div class="form-group">
-                        <div class="alert alert-danger" role="alert">
-                            {{$error}}
-                        </div>
-                    </div>
-                @endforeach
-            @endif
-
+        <form>
             <div class="form-group">
                 <label>Integration Name:</label>
                 <input type="text" name="name" class="form-control" value="{{$name}}" readonly>
@@ -59,9 +49,6 @@
                    name="submitURL" value="{{$submitURL}}">
             <input type="hidden"
                    name="telegram_mode_without_settings" value="mode">
-            <div class="form-group">
-                <input type="submit" class="btn btn-primary">
-            </div>
         </form>
     </div>
 </div>
