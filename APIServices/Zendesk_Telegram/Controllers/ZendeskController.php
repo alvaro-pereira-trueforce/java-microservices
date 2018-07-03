@@ -82,6 +82,10 @@ class ZendeskController extends Controller
                 $data['token_hide'] = true;
             }
 
+            if (empty($zendesk_access_token)) {
+                return view('telegram.admin_ui_old_users', $data);
+            }
+
             return view('telegram.admin_ui', $data);
         } catch (\Exception $exception) {
             Log::error($exception);
