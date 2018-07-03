@@ -55,6 +55,7 @@ class ZendeskController extends Controller
         if (!$zendesk_access_token || !$instance_push_id) {
             $zendesk_access_token = '';
             $instance_push_id = '';
+            $data['pull_mode'] = true;
         }
 
         try {
@@ -82,7 +83,7 @@ class ZendeskController extends Controller
                 $data['token_hide'] = true;
             }
 
-            if (empty($zendesk_access_token)) {
+            if (array_key_exists('pull_mode', $data)) {
                 return view('telegram.admin_ui_old_users', $data);
             }
 
