@@ -142,7 +142,7 @@ class ZendeskController extends Controller
             if ($request->telegram_mode) {
                 $data['pull_mode'] = true;
             }
-            dd($data);
+
             if (!$token || !$name) {
                 $errors = ['Integration Name and Token is required.'];
                 return $this->showErrorMessageAdminUI($errors, $data);
