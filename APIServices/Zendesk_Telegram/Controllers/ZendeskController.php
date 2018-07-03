@@ -74,6 +74,10 @@ class ZendeskController extends Controller
                 $token = $service->getById($metadata['token']);
                 $data['token'] = $token->token;
                 $settings = $service->getChannelSettings();
+                if(empty($settings))
+                {
+                    return view('telegram.admin_ui_old_users_without_settings', $data);
+                }
                 $data['has_hello_message'] = (boolean)$settings['has_hello_message'];
                 $data['required_user_info'] = (boolean)$settings['required_user_info'];
                 $data['hello_message'] = $settings['hello_message'];
@@ -209,6 +213,7 @@ class ZendeskController extends Controller
     public function admin_ui_edit(Request $request, TelegramService $service)
     {
         $data = $request->all();
+        dd($data);
         foreach ($data as $key => $value) {
             if ($value == 'on')
                 $data[$key] = true;
