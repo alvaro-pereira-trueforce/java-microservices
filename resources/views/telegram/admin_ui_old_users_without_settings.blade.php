@@ -23,9 +23,7 @@
             <p>We need you to provide us your Telegram token which was generated with the "Telegram Bot Father" in order
                 to start working with the Telegram Channel service.</p>
         @else
-            <p>Welcome back. Do you want to update the current telegram token?, Just provide us
-                the telegram token that was generated with Telegram Bot Father in order to start
-                working with Telegram Channel Service.</p>
+            <p>Welcome back. This is an old integration without setting. Please delete this integration if you want to upgrade it.</p>
         @endif
         <p>For more information about how to obtain the Telegram token use the following link <a
                     href="https://telegram.me/botfather" target="_blank"> Telegram Bot Father</a> or visit our <a
@@ -67,19 +65,5 @@
         </form>
     </div>
 </div>
-<script>
-    var hasHelloMessage = '{{$has_hello_message}}';
-    if (hasHelloMessage) {
-        showElement('message');
-    }
-
-    function checkBox(object) {
-        if (object.checked) {
-            showElement('message');
-            return;
-        }
-        hideElement('message');
-    }
-</script>
 </body>
 </html>
