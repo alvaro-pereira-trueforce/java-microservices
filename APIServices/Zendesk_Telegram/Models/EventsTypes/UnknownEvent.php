@@ -9,6 +9,6 @@ class UnknownEvent extends EventType
 {
     function handleEvent()
     {
-        Log::info($this->data);
+        Log::notice($this->data);
     }
 }
