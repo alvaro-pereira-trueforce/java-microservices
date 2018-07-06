@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use APIServices\Zendesk_Instagram\Services\ZendeskChannelService;
 use APIServices\Zendesk_Telegram\Models\EventsTypes\DestroyIntegrationEvent;
+use APIServices\Zendesk_Telegram\Models\EventsTypes\UninstallIntegrationEvent;
 use Illuminate\Http\Request;
 use Illuminate\Support\ServiceProvider;
 
@@ -26,5 +27,6 @@ class ZendeskServiceProvider extends ServiceProvider
             ->give($state);
 
         $this->app->bind('destroy_integration_instance', DestroyIntegrationEvent::class);
+        $this->app->bind('destroy_integration', UninstallIntegrationEvent::class);
     }
 }

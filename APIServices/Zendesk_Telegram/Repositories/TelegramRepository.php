@@ -151,6 +151,7 @@ class TelegramRepository extends RepositoryUUID
     }
 
     /**
+     * Get all the registered Accounts for a SubDomain
      * @param $subdomain
      * @return Collection
      * @throws \Exception

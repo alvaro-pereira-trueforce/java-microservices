@@ -458,6 +458,7 @@ class TelegramService
     }
 
     /**
+     * Get All registered Accounts by SubDomain
      * @param $subdomain
      * @return Collection
      * @throws \Exception
