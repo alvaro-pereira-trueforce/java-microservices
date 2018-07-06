@@ -92,7 +92,7 @@ class ZendeskController extends Controller
                 {
                     Log::error("Exception ZendeskController From Line 75 to 90:");
                     Log::error($exception);
-                    return "Please contact support.";
+                    return "Please try again, if the problem persists please contact our Support team zendesk@assuresoft.com.";
                 }
             }
             //Only when is an older integration.
@@ -103,7 +103,7 @@ class ZendeskController extends Controller
             return view('telegram.admin_ui', $data);
         } catch (\Exception $exception) {
             Log::error($exception);
-            return $this->showErrorMessageAdminUI(['Please contact support.'], $data);
+            return $this->showErrorMessageAdminUI(['Please try again, if the problem persists please contact our Support team zendesk@assuresoft.com'], $data);
         }
     }
 
@@ -215,7 +215,7 @@ class ZendeskController extends Controller
 
         } catch (\Exception $exception) {
             Log::error($exception);
-            return 'Please contact support.';
+            return 'Please try again, if the problem persists please contact our Support team zendesk@assuresoft.com';
         }
     }
 
@@ -300,7 +300,7 @@ class ZendeskController extends Controller
             return view('telegram.post_metadata', ['return_url' => $return_url, 'name' => $name, 'metadata' => json_encode($metadata)]);
         } catch (\Exception $exception) {
             Log::error($exception);
-            return 'Please contact support.';
+            return 'Please try again, if the problem persists please contact our Support team zendesk@assuresoft.com';
         }
     }
 
