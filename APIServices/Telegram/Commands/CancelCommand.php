@@ -29,8 +29,8 @@ class CancelCommand extends Command
                 'text' => 'canceled...'
             ]);
             $this->replyWithMessage([
-                'text' => 'Hi, '. $user_id = $this->update->getMessage()->getFrom()->getFirstName().
-                        ' How can i help you today?'
+                'text' => 'Ok '. $user_id = $this->update->getMessage()->getFrom()->getFirstName().
+                        ', cancelled.'
             ]);
             /** @var TelegramService $service */
             $service = App::make(TelegramService::class);
