@@ -2,16 +2,17 @@
 
 namespace APIServices\Zendesk\Models\Formatters\Instagram;
 
+
 use APIServices\Zendesk\Utility;
 use Illuminate\Support\Facades\Log;
 
 class CommentFormatter extends Formatter {
     /**
-     * @var int
+     * @var thread_id
      */
     protected $thread_id;
     /**
-     * @var array
+     * @var comment
      */
     protected $comment;
     /**

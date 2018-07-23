@@ -2,21 +2,21 @@
 
 namespace APIServices\Zendesk\Models\Formatters\Instagram;
 
+
 use APIServices\Zendesk\Utility;
 use Illuminate\Support\Facades\Log;
+use PhpParser\Node\Scalar\String_;
 
 class PostFormatter extends Formatter {
-    /**
-     * @var array
-     */
+
     protected $owner;
     /**
-     * @var array
+     * @var post
      */
     protected $post;
 
     /**
-     * @var Utility
+     * @var utility
      */
     protected $utility;
     /**

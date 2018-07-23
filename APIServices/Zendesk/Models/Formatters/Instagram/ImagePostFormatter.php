@@ -10,10 +10,8 @@ class ImagePostFormatter extends PostFormatter {
     /**
      * Receive a post image to be converted.
      *
-     * ImagePostFormatter constructor.
-     * @param $owner
-     * @param $post
-     * @param Utility $utility
+     * @param $post video
+     * @param $utility
      */
     public function __construct($owner, $post, Utility $utility)
     {
@@ -39,11 +37,6 @@ class ImagePostFormatter extends PostFormatter {
         }
     }
 
-    /**
-     * It is the instagram footer, which will be shown as the name of the Zendesk ticket
-     *
-     * @return string
-     */
     function getFooterPage(){
         $footer_page = parent::getFooterPage();
         if ($footer_page!=null){

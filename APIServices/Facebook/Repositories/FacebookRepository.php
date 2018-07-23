@@ -15,11 +15,6 @@ class FacebookRepository extends RepositoryUUID {
         return new UserRegistrationStatus();
     }
 
-    /**
-     * @param array $condition
-     * @param array $data
-     * @return UserRegistrationStatus
-     */
     public function updateOrCreate(array $condition, array $data) {
         $model = $this->getModel();
         $model = $model->updateOrCreate($condition,$data);
