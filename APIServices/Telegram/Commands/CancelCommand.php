@@ -26,9 +26,6 @@ class CancelCommand extends Command
         try
         {
             $this->replyWithMessage([
-                'text' => 'canceled...'
-            ]);
-            $this->replyWithMessage([
                 'text' => 'Ok '. $user_id = $this->update->getMessage()->getFrom()->getFirstName().
                         ', cancelled.'
             ]);

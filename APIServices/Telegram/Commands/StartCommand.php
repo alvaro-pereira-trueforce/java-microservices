@@ -84,7 +84,7 @@ class StartCommand extends Command
                         $content['phone_number'] = $message;
 
                         $this->replyWithMessage([
-                            'text' => 'Great!, Thank you. please send your question to let our support help you.'
+                            'text' => 'Great! thank you, please send your request.'
                         ]);
                         /** @var ChannelService $channel_service */
                         $channel_service = App::make(ChannelService::class);
@@ -95,7 +95,7 @@ class StartCommand extends Command
                                 'from' => $this->update->getMessage()->getFrom(),
                                 'chat' => $this->update->getMessage()->getChat(),
                                 'date' => $this->update->getMessage()->getDate(),
-                                'text' => "Telegram channel: I'm starting to send messages, this is my info: email: " . $content['email'] . " Phone Number: " . $content['phone_number']
+                                'text' => "Telegram Bot: New user info: Email: " . $content['email'] . " Phone Number: " . $content['phone_number']
                             ]
                         ]);
                         $channel_service->sendUpdate($update, $this->telegram->getAccessToken());
