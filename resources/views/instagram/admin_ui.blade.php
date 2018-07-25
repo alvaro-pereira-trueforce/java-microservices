@@ -108,7 +108,7 @@
             var url = "https://www.facebook.com/v3" +
                 ".0/dialog/oauth?client_id={{$app_id}}&redirect_uri={{{$submitURL
             .'admin_facebook_auth'}}}&state={\"uuid\":\""+response+"\"}"+
-            '&scope=manage_pages,pages_show_list,instagram_basic,instagram_manage_insights,instagram_manage_comments';
+            '&scope=manage_pages,pages_show_list,instagram_basic,instagram_manage_comments,business_management';
             window.open(url);
             timeout(response)
         })
