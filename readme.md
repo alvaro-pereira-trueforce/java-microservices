@@ -18,11 +18,11 @@ git push production master
 
 #####In order to get this commands working add the following origins to the git configuration.
 ```
+-- Developer --
+https://git.heroku.com/zendesk-channel-server-dev.git
 -- Staging --
-https://git.heroku.com/help-desk-server-staging.git
+https://git.heroku.com/zendesk-channel-server-staging.git
 
--- Production --
-https://git.heroku.com/help-desk-server-prod.git
 ```
 
 #####In order to build the frontend to be committed execute the following command inside the Frontend folder.
