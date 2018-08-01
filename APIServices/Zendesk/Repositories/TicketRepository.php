@@ -1,6 +1,6 @@
 <?php
 
-namespace APIServices\Zendesk_Telegram\Repositories;
+namespace APIServices\Zendesk\Repositories;
 
 
 use APIServices\Zendesk\Models\TicketIdentifier;
