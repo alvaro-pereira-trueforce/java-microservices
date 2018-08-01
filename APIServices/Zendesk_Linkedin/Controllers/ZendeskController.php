@@ -22,7 +22,8 @@ class ZendeskController extends CommonZendeskController
 
     public function admin_UI(Request $request)
     {
-
+        Log::debug($request->all());
+        return "ok";
     }
 
     public function pull(Request $request)
