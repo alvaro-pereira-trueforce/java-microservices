@@ -81,7 +81,24 @@ return [
                 'tries' => 1,
             ],
         ],
-
+        'developer' => [
+            'supervisor-1' => [
+                'connection' => 'redis',
+                'queue' => $queues,
+                'balance' => 'auto',
+                'processes' => 10,
+                'tries' => 1,
+            ],
+        ],
+        'staging' => [
+            'supervisor-1' => [
+                'connection' => 'redis',
+                'queue' => $queues,
+                'balance' => 'auto',
+                'processes' => 10,
+                'tries' => 1,
+            ],
+        ],
         'local' => [
             'supervisor-1' => [
                 'connection' => 'redis',
