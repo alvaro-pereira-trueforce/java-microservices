@@ -29,3 +29,7 @@ https://git.heroku.com/help-desk-server-prod.git
 ```
 ng build --prod --build-optimizer
 ```
+
+### initial secret to horizon
+
+assuresoft-bolivia
