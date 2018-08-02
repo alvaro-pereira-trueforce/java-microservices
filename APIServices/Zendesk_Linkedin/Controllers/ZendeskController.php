@@ -6,6 +6,7 @@ use APIServices\Zendesk\Controllers\CommonZendeskController;
 use App\Repositories\ManifestRepository;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use JavaScript;
 
 class ZendeskController extends CommonZendeskController
 {
@@ -22,8 +23,10 @@ class ZendeskController extends CommonZendeskController
 
     public function admin_UI(Request $request)
     {
-        Log::debug($request->all());
-        return "ok";
+        JavaScript::put([
+            'zendesk_request' => $request->all()
+        ]);
+        return view('linkedin.admin_ui');
     }
 
     public function pull(Request $request)

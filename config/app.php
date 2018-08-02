@@ -169,6 +169,7 @@ return [
         App\Providers\RouteServiceProvider::class,
         Telegram\Bot\Laravel\TelegramServiceProvider::class,
         Spatie\DirectoryCleanup\DirectoryCleanupServiceProvider::class,
+        Laracasts\Utilities\JavaScript\JavaScriptServiceProvider::class,
     ],
 
     /*
@@ -220,6 +221,7 @@ return [
         'Telegram'  => Telegram\Bot\Laravel\Facades\Telegram::class,
         'Form' => Collective\Html\FormFacade::class,
         'Html' => Collective\Html\HtmlFacade::class,
+        'JavaScript' => Laracasts\Utilities\JavaScript\JavaScriptFacade::class,
     ],
 
 ];
