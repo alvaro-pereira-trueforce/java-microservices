@@ -14,4 +14,11 @@ abstract class CommonZendeskController extends Controller implements IZendeskCon
     {
         $this->manifest = $repository;
     }
+
+    protected function cleanArray($array)
+    {
+        return array_filter($array, function ($value) {
+            return !empty($value);
+        });
+    }
 }
