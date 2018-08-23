@@ -79,6 +79,21 @@ class Facebook extends FB {
     }
 
     /**
+     * @param string $endpoint
+     * @return mixed
+     * @throws FacebookSDKException
+     */
+    protected function deleteRequest($endpoint)
+    {
+        try {
+            $response = json_decode($this->delete($endpoint)->getBody(), true);
+            return $response;
+        } catch (FacebookSDKException $exception) {
+            throw $exception;
+        }
+    }
+
+    /**
      * Get User Pages
      *
      * @return array
@@ -107,6 +122,22 @@ class Facebook extends FB {
             return $response['instagram_business_account']['id'];
         } catch (\Exception $exception) {
             throw  $exception;
+        }
+    }
+
+    /**
+     * @param $page_id
+     * @return string
+     * @throws \Exception
+     */
+    public function getPageAccessToken($page_id)
+    {
+        try{
+            $response = $this->getRequest('/' . $page_id . '?fields=access_token,name');
+            return $response['access_token'];
+        }catch (\Exception $exception)
+        {
+            throw $exception;
         }
     }
 
@@ -164,6 +195,38 @@ class Facebook extends FB {
             return $this->postRequest($url_comment);
         } catch (\Exception $exception) {
             throw  $exception;
+        }
+    }
+
+    /**
+     * @param $page_id
+     * @throws \Exception
+     */
+    public function setSubscribePageWebHooks($page_id)
+    {
+        try {
+            $url = '/' . $page_id . '/subscribed_apps';
+            $response = $this->postRequest($url);
+            if(!array_key_exists('success',$response))
+                throw new \Exception($response);
+        } catch (\Exception $exception) {
+            throw  $exception;
+        }
+    }
+
+    /**
+     * @param $page_id
+     * @throws \Exception
+     */
+    public function deletePageSubscriptionWebhook($page_id)
+    {
+        try
+        {
+            $url = '/' . $page_id . '/subscribed_apps';
+            $this->deleteRequest($url);
+        }catch (\Exception $exception)
+        {
+            throw $exception;
         }
     }
 }

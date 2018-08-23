@@ -122,8 +122,35 @@ class FacebookService {
     }
 
     /**
-     * @param $token
-     * @param $instagram_id
+     * @var string $page_id
+     * Get Page Access Token
+     * @return string
+     * @throws \Exception
+     */
+    public function getPageAccessToken($page_id)
+    {
+        try {
+            return $this->api->getPageAccessToken($page_id);
+        } catch (\Exception $exception) {
+            throw new \Exception('The page does not have an instagram account, Please use the instagram application to create a facebook page.');
+        }
+    }
+
+    /**
+     * @return array
+     * @throws \Exception
+     */
+    public function getOwnerInstagram()
+    {
+        try {
+            return $this->api->getOwnerInstagram();
+        } catch (\Exception $exception) {
+            Log::error($exception->getMessage());
+            throw $exception;
+        }
+    }
+
+    /**
      * @param $limit
      * @return mixed
      * @throws \Exception
@@ -172,6 +199,38 @@ class FacebookService {
         }catch (\Exception $exception)
         {
             throw new \Exception('The comment Error');
+        }
+    }
+
+    /**
+     * @param $page_id
+     * @throws \Exception
+     */
+    public function setSubscribePageWebHooks($page_id){
+        try
+        {
+            $this->api->setSubscribePageWebHooks($page_id);
+        }catch (\Exception $exception)
+        {
+            Log::error($exception->getMessage());
+            throw new \Exception('The page does not have an instagram account, Please use the instagram application to create a facebook page.');
+        }
+    }
+
+    /**
+     * @param $page_id
+     * @param $page_access_token
+     * @throws \Exception
+     */
+    public function deletePageSubscriptionWebhook($page_id, $page_access_token)
+    {
+        try
+        {
+            $this->api->setDefaultAccessToken($page_access_token);
+            $this->api->deletePageSubscriptionWebhook($page_id);
+        }catch (\Exception $exception)
+        {
+            throw $exception;
         }
     }
 }

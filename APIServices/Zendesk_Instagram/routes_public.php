@@ -1,16 +1,14 @@
 <?php
 
 $router->prefix('instagram')->group(function () use ($router) {
-    $router->get('manifest','ZendeskController@getManifest');
-    $router->post('admin_ui','ZendeskController@adminUI');
-    $router->post('admin_create_facebook_registration', 'ZendeskController@admin_create_facebook_registration');
-    $router->post('admin_wait_facebook', 'ZendeskController@admin_wait_facebook');
-    $router->get('admin_facebook_auth','ZendeskController@admin_facebook_auth');
-    $router->post('admin_ui_2','ZendeskController@admin_ui_2');
-    $router->post('admin_validate_page','ZendeskController@admin_validate_page');
-    $router->post('admin_ui_submit','ZendeskController@admin_ui_submit');
-    $router->post('pull','ZendeskController@pull');
-    $router->post('channelback','ZendeskController@channelback');
-    $router->get('healthcheck','ZendeskController@healthcheck');
+    $router->get('manifest', 'ZendeskController@getManifest');
+    $router->get('admin_ui', 'ZendeskController@admin_UI_login');
+    $router->post('admin_ui', 'ZendeskController@admin_UI');
+    $router->post('admin_UI_waiting', 'ZendeskController@admin_UI_waiting');
+    $router->get('admin_ui_save/{account_id}', 'ZendeskController@admin_ui_save');
+    $router->post('pull', 'ZendeskController@pull');
+    $router->post('channel_back', 'ZendeskController@channel_back');
+    $router->get('click_through', 'ZendeskController@click_through');
+    $router->get('health_check', 'ZendeskController@health_check');
     $router->post('event_callback', 'ZendeskController@event_callback');
 });

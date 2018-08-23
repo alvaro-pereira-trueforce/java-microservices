@@ -12,17 +12,7 @@ use Ramsey\Uuid\Uuid;
 
 class ZendeskController extends CommonZendeskController
 {
-    public function __construct(ManifestRepository $repository)
-    {
-        parent::__construct($repository);
-    }
-
-    public function getManifest(Request $request)
-    {
-        Log::notice("Zendesk Request: " . $request->method() . ' ' . $request->getPathInfo());
-        return response()->json($this->manifest->getByName('Linkedin Channel'));
-    }
-
+    protected $channel_name = "Linkedin Channel";
     public function admin_UI(Request $request)
     {
         $metadata = json_decode($request->metadata, true); //will be null on empty
