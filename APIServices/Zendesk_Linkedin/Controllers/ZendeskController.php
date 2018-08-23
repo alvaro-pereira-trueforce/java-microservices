@@ -118,6 +118,7 @@ class ZendeskController extends CommonZendeskController
             $newAccount = json_decode(Redis::get($request->account_id), true);
             if (array_key_exists('linkedin_code', $newAccount)) {
                 $newAccount['name'] = $request->name;
+                return response()->json(['linkedin_invalid_code' => true], 403);
                 Redis::set($request->account_id, json_encode($newAccount, true));
                 return response()->json([
                     'redirect_url' => env('APP_URL') . '/linkedin/admin_ui_save/' . $request->account_id
