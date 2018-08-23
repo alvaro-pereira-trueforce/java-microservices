@@ -19,8 +19,7 @@ class FacebookLaravelScriptHelper extends FacebookSignedRequestFromInputHelper {
      * @param null|string    $graphVersion
      * @param string         $cookie_string
      */
-    public function __construct(FacebookApp $app, FacebookClient $client, ?string $graphVersion =
-    null, $cookie_string) {
+    public function __construct(FacebookApp $app, FacebookClient $client, ?string $graphVersion = null, $cookie_string) {
         $this->cookie_string = $cookie_string;
         parent::__construct($app, $client, $graphVersion);
     }
