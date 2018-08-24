@@ -1,0 +1,65 @@
+<div class="panel panel-default center" style="max-width: 800px">
+    <div class="panel-heading">
+        <h3 class="panel-title">Facebook configuration</h3>
+    </div>
+    <div class="panel-body">
+        <p ng-if="!vm.metadata">Welcome, please authenticate first with your Facebook Account in order to start working
+            with Instagram Channel service.</p>
+
+        <p ng-if="!!vm.metadata">Welcome back. In order to update your order authentication please use the
+            following button to log in with your Facebook Account.</p>
+
+        <div id="spinner" class="loader center" ng-if="vm.processing"></div>
+
+        <div ng-if="!vm.processing && !vm.pages">
+            <form id="form_setup" name="vm.form">
+                <div class="form-group">
+                    <label for="name">Integration Name:</label>
+                    <input type="text" id="name" name="name" class="form-control" ng-model="vm.name"
+                           ng-disabled="vm.processing" ng-required="true">
+                </div>
+                <div class="form-group">
+                    <div ng-if="vm.timeout" class="alert alert-danger">
+                        Facebook authentication timeout was reached. Please, Try again.
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div ng-if="vm.facebook_canceled" class="alert alert-danger">
+                        The Facebook user does not approve the authentication, in order to connect with Instagram you
+                        must to accept the required permissions.
+                    </div>
+                </div>
+            </form>
+            <a class="btn btn-block btn-social btn-facebook center" style="max-width: 220px" ng-disabled="vm.form.name.$error.required"
+               target="_blank" ng-click="vm.waitLogin($event)"
+               ng-href="https://www.facebook.com/v3.0/dialog/oauth?client_id={{vm.client_ID}}&redirect_uri={{vm.return_URL}}&state={{vm.account_id}}&scope=manage_pages,pages_show_list,instagram_basic,instagram_manage_comments,business_management">
+                <span class="fa fa-facebook"></span>Connect with Facebook
+            </a>
+        </div>
+
+        <div ng-if="!vm.processing && !!vm.pages">
+            <form id="form_setup" name="vm.form">
+                <div class="form-group">
+                    <label for="name">Integration Name:</label>
+                    <input type="text" id="name" name="name" class="form-control" ng-model="vm.name"
+                           ng-disabled="true" ng-required="true">
+                </div>
+                <div class="form-group">
+                    <label for="page_id">Select the facebook page with a valid instagram account:</label>
+                    <select class="form-control" name="page_id" id="page_id"
+                            ng-options="page.name for page in vm.pages track by page.id"
+                            ng-model="vm.selected_page">
+                    </select>
+                </div>
+                <div class="form-group">
+                    <div ng-if="!!vm.error" class="alert alert-danger">
+                        {{vm.error}}
+                    </div>
+                </div>
+                <div class="form-group">
+                    <button id="send_request" class="btn btn-primary" ng-click="vm.saveIntegration()">Submit</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

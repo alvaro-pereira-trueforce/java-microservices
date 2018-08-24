@@ -3,7 +3,6 @@
 namespace APIServices\Zendesk_Linkedin\Controllers;
 
 use APIServices\Zendesk\Controllers\CommonZendeskController;
-use App\Repositories\ManifestRepository;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Redis;

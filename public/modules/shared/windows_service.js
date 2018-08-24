@@ -30,3 +30,11 @@ angular.module('mainApp').factory('poller', function ($http) {
 
     }
 });
+
+angular.module('mainApp').service('basicService', function ($http) {
+    var service = {};
+    service.postRequest = function (url, data) {
+        return $http.post(url, data);
+    };
+    return service;
+});
