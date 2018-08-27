@@ -1,5 +1,5 @@
 <?php
-$queues = ['default', 'linkedin'];
+$queues = ['default', 'linkedin', 'instagram'];
 
 return [
 
@@ -77,7 +77,7 @@ return [
                 'connection' => 'redis',
                 'queue' => $queues,
                 'balance' => 'auto',
-                'processes' => 10,
+                'processes' => 30,
                 'tries' => 1,
             ],
         ],
@@ -86,7 +86,7 @@ return [
                 'connection' => 'redis',
                 'queue' => $queues,
                 'balance' => 'auto',
-                'processes' => 10,
+                'processes' => 30,
                 'tries' => 1,
             ],
         ],
@@ -95,7 +95,7 @@ return [
                 'connection' => 'redis',
                 'queue' => $queues,
                 'balance' => 'auto',
-                'processes' => 10,
+                'processes' => 30,
                 'tries' => 1,
             ],
         ],
@@ -104,7 +104,7 @@ return [
                 'connection' => 'redis',
                 'queue' => $queues,
                 'balance' => 'auto',
-                'processes' => 10,
+                'processes' => 30,
                 'tries' => 1,
             ],
         ],
