@@ -4,11 +4,8 @@ namespace APIServices\Zendesk_Instagram\Controllers;
 
 use APIServices\Facebook\Services\FacebookService;
 use APIServices\Zendesk\Controllers\CommonZendeskController;
-use APIServices\Zendesk\Models\EventsTypes\IEventType;
-use APIServices\Zendesk\Models\EventsTypes\UnknownEvent;
 use App\Repositories\ManifestRepository;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Log;
 use JavaScript;
 use Ramsey\Uuid\Uuid;
@@ -215,7 +212,6 @@ class ZendeskController extends CommonZendeskController
 
     public function event_callback(Request $request)
     {
-        //Log::info("Event On Zendesk: \n" . $request->getContent() . "\n");
         try {
             $event = $this->getEventHandler('instagram_' . $request->events[0]['type_id'], $request->events[0]);
             $event->handleEvent();
