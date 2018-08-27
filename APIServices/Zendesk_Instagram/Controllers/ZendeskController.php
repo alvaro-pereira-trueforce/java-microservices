@@ -116,11 +116,16 @@ class ZendeskController extends CommonZendeskController
                 unset($newAccount['code']);
                 $newAccount = array_merge($newAccount, $access_token);
                 $this->saveNewAccountInformation($request->account_id, $newAccount);
+                $expires = null;
+                if (array_key_exists('expires_in', $newAccount)) {
+                    $expires = $newAccount['expires_in'];
+                }
                 Log::debug($newAccount);
-                return response()->json([
+                return response()->json($this->cleanArray([
                     'redirect_url' => env('APP_URL') . '/instagram/admin_ui_save/' . $request->account_id,
-                    'pages' => $pages
-                ], 200);
+                    'pages' => $pages,
+                    'expires' => $expires
+                ]), 200);
             }
             if (array_key_exists('facebook_canceled', $newAccount)) {
                 return response()->json(['facebook_canceled' => true], 401);

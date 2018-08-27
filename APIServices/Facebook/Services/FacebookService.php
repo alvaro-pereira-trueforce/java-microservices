@@ -125,7 +125,7 @@ class FacebookService
         try {
             return $this->api->getPageInstagramID($page_id);
         } catch (\Exception $exception) {
-            throw new \Exception('The page does not have an instagram account, Please use the instagram application to create a facebook page.');
+            throw new \Exception('The page does not have a linked instagram account. Please use the instagram application to link it to a facebook page.');
         }
     }
 
@@ -140,7 +140,7 @@ class FacebookService
         try {
             return $this->api->getPageAccessToken($page_id);
         } catch (\Exception $exception) {
-            throw new \Exception('This is not a valid Facebook page, please create a valid Facebook page.');
+            throw new \Exception('This is not a valid Facebook page. Please create a valid Facebook page or contact support.');
         }
     }
 
@@ -169,7 +169,7 @@ class FacebookService
             $this->setAccessToken($token);
             return $this->api->getMedia($instagram_id, $limit);
         } catch (\Exception $exception) {
-            throw new \Exception('The page does not have an instagram account, Please use the instagram application to create a facebook page.');
+            throw new \Exception('The page does not have a linked instagram account. Please use the instagram application to link it to a facebook page. Media');
         }
     }
 
@@ -186,7 +186,7 @@ class FacebookService
             $this->setAccessToken($token);
             return $this->api->getComment($media_id, $limit);
         } catch (\Exception $exception) {
-            throw new \Exception('The Comment.');
+            throw new \Exception('The page does not have a linked instagram account. Please use the instagram application to link it to a facebook page. Comment');
         }
     }
 

@@ -27,6 +27,7 @@ function AdminUICtrl(windowsService, poller, $timeout, basicService, $window) {
     var save_URL;
     vm.pages = undefined;
     vm.selected_page = undefined;
+    vm.expires = undefined;
 
     function waitLogin(e) {
         if (vm.form.name.$error.required) {
@@ -46,6 +47,7 @@ function AdminUICtrl(windowsService, poller, $timeout, basicService, $window) {
         }).then(function (response) {
             save_URL = response.data.redirect_url;
             vm.pages = response.data.pages;
+            vm.expires = Math.round(response.data.expires / 60 / 60 / 24);
             stopProgress();
         }).catch(function (response) {
             if (response.data.facebook_canceled) {
