@@ -4,9 +4,12 @@ namespace APIServices\Zendesk_Instagram\Controllers;
 
 use APIServices\Facebook\Services\FacebookService;
 use APIServices\Zendesk\Controllers\CommonZendeskController;
+use APIServices\Zendesk\Models\EventsTypes\IEventType;
+use APIServices\Zendesk\Models\EventsTypes\UnknownEvent;
+use App\Repositories\ManifestRepository;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Redis;
 use JavaScript;
 use Ramsey\Uuid\Uuid;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
@@ -15,6 +18,13 @@ class ZendeskController extends CommonZendeskController
 {
 
     protected $channel_name = "Instagram Channel";
+    protected $facebookService;
+
+    public function __construct(ManifestRepository $repository, FacebookService $facebookService)
+    {
+        $this->facebookService = $facebookService;
+        parent::__construct($repository);
+    }
 
     public function admin_UI(Request $request)
     {
@@ -98,7 +108,7 @@ class ZendeskController extends CommonZendeskController
         return view('close_tab_helper');
     }
 
-    public function admin_UI_waiting(Request $request, FacebookService $facebookService)
+    public function admin_UI_waiting(Request $request)
     {
         /* Example Request
          *  'account_id' => '43a63903-eb23-480f-ae2a-f9e598cea089',
@@ -107,9 +117,9 @@ class ZendeskController extends CommonZendeskController
         try {
             $newAccount = $this->getNewAccountInformation($request->account_id);
             if (array_key_exists('code', $newAccount)) {
-                $access_token = $facebookService->getAccessTokenFromFacebookCode($newAccount['code']);
-                $facebookService->setAccessToken($access_token['access_token']);
-                $pages = $facebookService->getUserPages();
+                $access_token = $this->facebookService->getAccessTokenFromFacebookCode($newAccount['code']);
+                $this->facebookService->setAccessToken($access_token['access_token']);
+                $pages = $this->facebookService->getUserPages();
 
 
                 $newAccount['name'] = $request->name;
@@ -151,7 +161,8 @@ class ZendeskController extends CommonZendeskController
 
             $newAccount = array_merge($newAccount, [
                 'instagram_id' => $instagram_id,
-                'page_access_token' => $pageAccessToken
+                'page_access_token' => $pageAccessToken,
+                'page_id' => $page_information['id']
             ]);
             Log::debug("Is A Valid Page:");
             Log::debug($newAccount);
@@ -204,6 +215,14 @@ class ZendeskController extends CommonZendeskController
 
     public function event_callback(Request $request)
     {
-        // TODO: Implement event_callback() method.
+        //Log::info("Event On Zendesk: \n" . $request->getContent() . "\n");
+        try {
+            $event = $this->getEventHandler('instagram_' . $request->events[0]['type_id'], $request->events[0]);
+            $event->handleEvent();
+        } catch (\Exception $exception) {
+            Log::error($exception->getMessage());
+        }
+
+        return $this->successReturn();
     }
 }

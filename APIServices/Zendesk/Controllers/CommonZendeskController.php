@@ -2,9 +2,12 @@
 
 namespace APIServices\Zendesk\Controllers;
 
+use APIServices\Zendesk\Models\EventsTypes\IEventType;
+use APIServices\Zendesk\Models\EventsTypes\UnknownEvent;
 use App\Http\Controllers\Controller;
 use App\Repositories\ManifestRepository;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Redis;
 
@@ -88,12 +91,45 @@ abstract class CommonZendeskController extends Controller implements IZendeskCon
         }
     }
 
+    /**
+     * Delete the NewAccount Information from REDIS before its expiration. (Clean up)
+     * @param $keyName
+     * @throws \Exception
+     */
     public function deleteNewAccountInformation($keyName)
     {
         try {
             Redis::del($keyName);
         } catch (\Exception $exception) {
             throw $exception;
+        }
+    }
+
+    /**
+     * Return Ok with status 200
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function successReturn()
+    {
+        return response()->json('ok', 200);
+    }
+
+    /**
+     * Get the correct Event Handler or Default
+     * @param $event_name
+     * @param $event_data
+     * @return IEventType
+     */
+    protected function getEventHandler($event_name, $event_data)
+    {
+        try {
+            return App::makeWith($event_name, [
+                'data' => $event_data
+            ]);
+        } catch (\Exception $exception) {
+            return App::makeWith(UnknownEvent::class, [
+                'data' => $event_data
+            ]);
         }
     }
 }

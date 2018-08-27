@@ -207,6 +207,7 @@ class Facebook extends FB {
         try {
             $url = '/' . $page_id . '/subscribed_apps';
             $response = $this->postRequest($url);
+            Log::debug($response);
             if(!array_key_exists('success',$response))
                 throw new \Exception($response);
         } catch (\Exception $exception) {
@@ -223,7 +224,8 @@ class Facebook extends FB {
         try
         {
             $url = '/' . $page_id . '/subscribed_apps';
-            $this->deleteRequest($url);
+            $response = $this->deleteRequest($url);
+            Log::debug($response);
         }catch (\Exception $exception)
         {
             throw $exception;
