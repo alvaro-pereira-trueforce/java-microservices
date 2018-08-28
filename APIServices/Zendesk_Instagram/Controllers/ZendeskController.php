@@ -178,10 +178,12 @@ class ZendeskController extends CommonZendeskController
 
             /** @var ZendeskChannelService $channelService */
             $channelService = $this->getChannelService(ZendeskChannelService::class, InstagramChannel::class);
+
             $newAccountDBModel = $newAccount;
             $newAccountDBModel['uuid'] = $newAccount['account_id'];
             $newAccountDBModel['integration_name'] = $newAccount['name'];
 
+            $channelService->checkIfInstagramIdIsAlreadyRegistered($instagram_id);
             $newAccountDBModel = $channelService->registerNewChannelIntegration($newAccountDBModel);
             $newAccount['settings'] = $newAccountDBModel['settings'] ? $newAccountDBModel['settings']->toArray() : [];
             Log::debug("Is A Valid Page:");
@@ -236,6 +238,7 @@ class ZendeskController extends CommonZendeskController
     public function event_callback(Request $request)
     {
         try {
+            $this->configureChannelRepository(InstagramChannel::class);
             $event = $this->getEventHandler('instagram_' . $request->events[0]['type_id'], $request->events[0]);
             $event->handleEvent();
         } catch (\Exception $exception) {

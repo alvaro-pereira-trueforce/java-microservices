@@ -58,6 +58,7 @@ function AdminUICtrl(windowsService, poller, $timeout, basicService, $window) {
             vm.ticket_types = response.data.ticket_types;
             vm.ticket_priorities = response.data.ticket_priorities;
             stopProgress();
+            $window.scrollTo(0, 0);
         }).catch(function (response) {
             if (response.data.facebook_canceled) {
                 CanceledReset();
@@ -84,6 +85,7 @@ function AdminUICtrl(windowsService, poller, $timeout, basicService, $window) {
             $window.location.href = response.data.redirect_url;
         }).catch(function (error) {
             vm.error = error.data.message;
+            $window.scrollTo(0, 0);
         })
     }
 
@@ -100,5 +102,6 @@ function AdminUICtrl(windowsService, poller, $timeout, basicService, $window) {
     function CanceledReset() {
         stopProgress();
         vm.facebook_canceled = true;
+        $window.scrollTo(0, 0);
     }
 }

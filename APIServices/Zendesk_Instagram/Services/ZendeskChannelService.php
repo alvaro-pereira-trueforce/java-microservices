@@ -33,4 +33,20 @@ class ZendeskChannelService
             throw $exception;
         }
     }
+
+    /**
+     * Check if the instagram id has already registered in the database.
+     * @param $instagram_id
+     * @throws \Exception
+     */
+    public function checkIfInstagramIdIsAlreadyRegistered($instagram_id)
+    {
+        try {
+            if ($this->channelRepository->checkIfExist('instagram_id', $instagram_id)) {
+                throw new \Exception("The instagram account is already registered. Please use another instagram account or select a different facebook page.");
+            }
+        } catch (\Exception $exception) {
+            throw $exception;
+        }
+    }
 }

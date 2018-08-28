@@ -7,6 +7,7 @@ abstract class EventType implements IEventType
 {
     protected $data;
     protected $service;
+    protected $repository;
 
     public function __construct($data)
     {

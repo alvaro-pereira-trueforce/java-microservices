@@ -159,18 +159,23 @@ abstract class CommonZendeskController extends Controller implements IZendeskCon
 
     /**
      * @param $channelServiceClass
-     * @param $model
+     * @param $channelModel
      * @param array $params Must have the channelModel Class to instantiate the repository
      * @return mixed
      * @throws \Exception
      */
-    protected function getChannelService($channelServiceClass, $model, array $params = [])
+    protected function getChannelService($channelServiceClass, $channelModel, array $params = [])
     {
         try {
-            App::when(ChannelRepository::class)->needs('$channelModel')->give(new $model);
+            $this->configureChannelRepository($channelModel);
             return App::makeWith($channelServiceClass, $params);
         } catch (\Exception $exception) {
             throw $exception;
         }
+    }
+
+    protected function configureChannelRepository($channelModel)
+    {
+        App::when(ChannelRepository::class)->needs('$channelModel')->give(new $channelModel);
     }
 }

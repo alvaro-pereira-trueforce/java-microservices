@@ -7,6 +7,7 @@ use APIServices\Zendesk\Models\ChannelSettings;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class ChannelRepository
 {
@@ -97,6 +98,52 @@ class ChannelRepository
         } catch (\Exception $exception) {
             DB::rollBack();
             throw $exception;
+        }
+    }
+
+    public function delete($uuid)
+    {
+        DB::beginTransaction();
+        try {
+            /** @var Model $model */
+            $model = $this->channelModel->where('uuid', '=', $uuid)->first();
+            if ($model)
+                $model->delete();
+            DB::commit();
+        } catch (\Exception $exception) {
+            DB::rollBack();
+            Log::error($exception->getMessage());
+        }
+    }
+
+    public function deleteAllByDomain($zendeskDomainName)
+    {
+        DB::beginTransaction();
+        try {
+            /** @var Model $model */
+            $models = $this->channelModel->where('subdomain', '=', $zendeskDomainName);
+            foreach ($models as $model) {
+                if ($model)
+                    $model->delete();
+            }
+            DB::commit();
+        } catch (\Exception $exception) {
+            DB::rollBack();
+            Log::error($exception->getMessage());
+        }
+    }
+
+    public function checkIfExist($columnName, $value)
+    {
+        try {
+            /** @var Model $model */
+            $model = $this->channelModel->where($columnName, '=', $value)->first();
+            if ($model)
+                return true;
+            else
+                return false;
+        } catch (\Exception $exception) {
+            Log::error($exception->getMessage());
         }
     }
 }
