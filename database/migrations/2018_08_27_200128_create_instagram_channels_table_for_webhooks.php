@@ -14,8 +14,8 @@ class CreateInstagramChannelsTableForWebhooks extends Migration
     public function up()
     {
         Schema::create('instagram_channels', function (Blueprint $table) {
-            $table->primary('account_id');
-            $table->uuid('account_id')->unique();
+            $table->primary('uuid');
+            $table->uuid('uuid')->unique();
             $table->string('integration_name')->unique();
             $table->string('instagram_id')->unique();
             $table->string('page_id');
