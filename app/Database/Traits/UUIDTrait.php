@@ -10,7 +10,8 @@ trait UUIDTrait {
     protected static function boot() {
         parent::boot();
         self::creating(function ($model) {
-            $model->uuid = (string) Uuid::uuid4()->toString();
+            if(empty($model->uuid))
+                $model->uuid = (string) Uuid::uuid4()->toString();
         });
     }
 

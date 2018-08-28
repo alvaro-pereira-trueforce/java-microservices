@@ -4,6 +4,8 @@ namespace APIServices\Zendesk_Instagram\Controllers;
 
 use APIServices\Facebook\Services\FacebookService;
 use APIServices\Zendesk\Controllers\CommonZendeskController;
+use APIServices\Zendesk_Instagram\Models\InstagramChannel;
+use APIServices\Zendesk_Instagram\Services\ZendeskChannelService;
 use App\Repositories\ManifestRepository;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -50,9 +52,13 @@ class ZendeskController extends CommonZendeskController
                 //This is the code when the user add an account.
                 $newAccountID = Uuid::uuid4();
             } else {
-                //This is the code for new users.
+                //This is the code for old users.
                 $newAccountID = $metadata['account_id'];
                 $front_end_variables['backend_variables']['metadata'] = true;
+                $front_end_variables['backend_variables']['tags'] = $metadata['settings']['tags'];
+                $front_end_variables['backend_variables']['ticket_type'] = $metadata['settings']['ticket_priority'];
+                $front_end_variables['backend_variables']['ticket_priority'] = $metadata['settings']['ticket_type'];
+                $newAccount = array_merge($newAccount, $metadata);
             }
 
             $newAccount['account_id'] = $newAccountID;
@@ -115,6 +121,8 @@ class ZendeskController extends CommonZendeskController
             $newAccount = $this->getNewAccountInformation($request->account_id);
             if (array_key_exists('code', $newAccount)) {
                 $access_token = $this->facebookService->getAccessTokenFromFacebookCode($newAccount['code']);
+                Log::debug("Access Token");
+                Log::debug($access_token);
                 $this->facebookService->setAccessToken($access_token['access_token']);
                 $pages = $this->facebookService->getUserPages();
 
@@ -131,6 +139,8 @@ class ZendeskController extends CommonZendeskController
                 return response()->json($this->cleanArray([
                     'redirect_url' => env('APP_URL') . '/instagram/admin_ui_save/' . $request->account_id,
                     'pages' => $pages,
+                    'ticket_types' => $this->ticket_types,
+                    'ticket_priorities' => $this->ticket_priorities,
                     'expires' => $expires
                 ]), 200);
             }
@@ -147,9 +157,8 @@ class ZendeskController extends CommonZendeskController
     public function admin_ui_validate_page(Request $request, FacebookService $service)
     {
         $page_information = $request->page_information;
-        $newAccount = $this->getNewAccountInformation($request->account_id);
-
         try {
+            $newAccount = $this->getNewAccountInformation($request->account_id);
             $service->setAccessToken($newAccount['access_token']);
             $instagram_id = $service->getInstagramAccountFromUserPage($page_information['id']);
             $pageAccessToken = $service->getPageAccessToken($page_information['id']);
@@ -159,8 +168,22 @@ class ZendeskController extends CommonZendeskController
             $newAccount = array_merge($newAccount, [
                 'instagram_id' => $instagram_id,
                 'page_access_token' => $pageAccessToken,
-                'page_id' => $page_information['id']
+                'page_id' => $page_information['id'],
+                'settings' => $this->cleanArray([
+                    'ticket_type' => $request->ticket_type,
+                    'ticket_priority' => $request->ticket_priority,
+                    'tags' => $request->tags
+                ])
             ]);
+
+            /** @var ZendeskChannelService $channelService */
+            $channelService = $this->getChannelService(ZendeskChannelService::class, InstagramChannel::class);
+            $newAccountDBModel = $newAccount;
+            $newAccountDBModel['uuid'] = $newAccount['account_id'];
+            $newAccountDBModel['integration_name'] = $newAccount['name'];
+
+            $newAccountDBModel = $channelService->registerNewChannelIntegration($newAccountDBModel);
+            $newAccount['settings'] = $newAccountDBModel['settings'] ? $newAccountDBModel['settings']->toArray() : [];
             Log::debug("Is A Valid Page:");
             Log::debug($newAccount);
             $this->saveNewAccountInformation($request->account_id, $newAccount);

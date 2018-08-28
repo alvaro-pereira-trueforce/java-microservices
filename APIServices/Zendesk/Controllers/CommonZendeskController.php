@@ -4,6 +4,7 @@ namespace APIServices\Zendesk\Controllers;
 
 use APIServices\Zendesk\Models\EventsTypes\IEventType;
 use APIServices\Zendesk\Models\EventsTypes\UnknownEvent;
+use APIServices\Zendesk\Repositories\ChannelRepository;
 use App\Http\Controllers\Controller;
 use App\Repositories\ManifestRepository;
 use Illuminate\Http\Request;
@@ -15,6 +16,28 @@ abstract class CommonZendeskController extends Controller implements IZendeskCon
 {
     protected $manifest;
     protected $service;
+
+    protected $ticket_types = [
+        ['id' => 'problem',
+            'name' => 'Problem'],
+        ['id' => 'incident',
+            'name' => 'Incident'],
+        ['id' => 'question',
+            'name' => 'Question'],
+        ['id' => 'task',
+            'name' => 'Task']
+    ];
+
+    protected $ticket_priorities = [
+        ['id' => 'urgent',
+            'name' => 'Urgent'],
+        ['id' => 'high',
+            'name' => 'High'],
+        ['id' => 'normal',
+            'name' => 'Normal'],
+        ['id' => 'low',
+            'name' => 'Low'],
+    ];
 
     /**
      * This is the name of the integration in the database must be equal than the database record
@@ -130,6 +153,24 @@ abstract class CommonZendeskController extends Controller implements IZendeskCon
             return App::makeWith(UnknownEvent::class, [
                 'data' => $event_data
             ]);
+        }
+    }
+
+
+    /**
+     * @param $channelServiceClass
+     * @param $model
+     * @param array $params Must have the channelModel Class to instantiate the repository
+     * @return mixed
+     * @throws \Exception
+     */
+    protected function getChannelService($channelServiceClass, $model, array $params = [])
+    {
+        try {
+            App::when(ChannelRepository::class)->needs('$channelModel')->give(new $model);
+            return App::makeWith($channelServiceClass, $params);
+        } catch (\Exception $exception) {
+            throw $exception;
         }
     }
 }

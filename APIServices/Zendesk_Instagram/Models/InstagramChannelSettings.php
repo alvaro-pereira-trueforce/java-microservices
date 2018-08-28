@@ -12,12 +12,12 @@ class InstagramChannelSettings extends ChannelSettings
      *
      * @var array
      */
-    protected $touches = ['TelegramChannel'];
+    protected $touches = ['InstagramChannel'];
 
     /**
-     * Get the Telegram that owns the Urls.
+     * Get the channel that owns the Urls.
      */
-    public function TelegramChannel() {
+    public function InstagramChannel() {
         return $this->belongsTo(InstagramChannel::class, 'channel_uuid', 'uuid')->withDefault();
     }
 }

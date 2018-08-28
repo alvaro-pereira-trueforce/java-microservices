@@ -1,6 +1,6 @@
 <div class="panel panel-default center" style="max-width: 800px">
     <div class="panel-heading">
-        <h3 class="panel-title">Facebook configuration</h3>
+        <h3 class="panel-title">Instagram configuration</h3>
     </div>
     <div class="panel-body">
         <p ng-if="!vm.metadata">Welcome, please authenticate first with your Facebook Account in order to start working
@@ -39,6 +39,18 @@
 
         <div ng-if="!vm.processing && !!vm.pages">
             <form id="form_setup" name="vm.form">
+                <div class="form-group" ng-if="vm.expires">
+                    <div class="alert alert-warning">
+                        This Facebook Authentication will expire in {{vm.expires}} days. After saving this integration please refresh this facebook authentication until this message disappears in order to get a long term Facebook Authentication Access.
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <div ng-if="!!vm.error" class="alert alert-danger">
+                        {{vm.error}}
+                    </div>
+                </div>
+
                 <div class="form-group">
                     <label for="name">Integration Name:</label>
                     <input type="text" id="name" name="name" class="form-control" ng-model="vm.name"
@@ -51,18 +63,40 @@
                             ng-model="vm.selected_page">
                     </select>
                 </div>
+                <hr/>
+                <div class="form-group">
+                    <h4>Optional Settings</h4>
+                    <p>Choose the optional ticket field values, all the values are optionals.
+                        Please consider that all your new telegram tickets will be created with the optional settings you choose.</p>
+                </div>
 
-                <div class="form-group" ng-if="vm.expires">
-                    <div class="alert alert-warning">
-                        This Facebook Authentication will expire in {{vm.expires}} days. After saving this integration please refresh this facebook authentication until this message disappears in order to get a long term Facebook Authentication Access.
+                <div class="row">
+                    <div class="col-sm-6">
+                        <div class="form-group">
+                            <label>Ticket Type:</label>
+                            <select class="form-control" name="ticket_type" id="ticket_type"
+                                    ng-model="vm.selected_ticket_type">
+                                <option ng-repeat="type in vm.ticket_types" ng-value="type.id">{{type.name}}</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-sm-6">
+                        <div class="form-group">
+                            <label>Ticket Priority:</label>
+                            <select class="form-control" name="ticket_priority" id="ticket_priority"
+                                    ng-model="vm.selected_ticket_priority">
+                                <option ng-repeat="priority in vm.ticket_priorities" ng-value="priority.id">{{priority.name}}</option>
+                            </select>
+                        </div>
                     </div>
                 </div>
 
                 <div class="form-group">
-                    <div ng-if="!!vm.error" class="alert alert-danger">
-                        {{vm.error}}
-                    </div>
+                    <label>Tags:</label>
+                    <input type="text" name="tags" class="form-control" ng-model="vm.tags">
+                    <div class="text-muted">Please separate tags with spaces.</div>
                 </div>
+
                 <div class="form-group">
                     <button id="send_request" class="btn btn-primary" ng-click="vm.saveIntegration()">Submit</button>
                 </div>

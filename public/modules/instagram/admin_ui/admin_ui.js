@@ -21,6 +21,13 @@ function AdminUICtrl(windowsService, poller, $timeout, basicService, $window) {
     vm.client_ID = windowsService.backend_variables.client_ID;
     vm.account_id = windowsService.backend_variables.account_id;
     vm.return_URL = windowsService.backend_variables.return_URL;
+    vm.tags = windowsService.backend_variables.tags;
+    vm.selected_ticket_type = windowsService.backend_variables.ticket_type;
+    vm.selected_ticket_priority = windowsService.backend_variables.ticket_priority;
+
+    vm.ticket_types = [];
+    vm.ticket_priorities = [];
+
     vm.waitLogin = waitLogin;
     vm.saveIntegration = saveIntegration;
 
@@ -48,6 +55,8 @@ function AdminUICtrl(windowsService, poller, $timeout, basicService, $window) {
             save_URL = response.data.redirect_url;
             vm.pages = response.data.pages;
             vm.expires = Math.round(response.data.expires / 60 / 60 / 24);
+            vm.ticket_types = response.data.ticket_types;
+            vm.ticket_priorities = response.data.ticket_priorities;
             stopProgress();
         }).catch(function (response) {
             if (response.data.facebook_canceled) {
@@ -67,7 +76,10 @@ function AdminUICtrl(windowsService, poller, $timeout, basicService, $window) {
         vm.error = undefined;
         basicService.postRequest('admin_ui_validate_page', {
             page_information: vm.selected_page,
-            account_id: windowsService.backend_variables.account_id
+            account_id: windowsService.backend_variables.account_id,
+            tags: vm.tags,
+            ticket_type: vm.selected_ticket_priority,
+            ticket_priority: vm.selected_ticket_type
         }).then(function (response) {
             $window.location.href = response.data.redirect_url;
         }).catch(function (error) {

@@ -16,4 +16,14 @@ class ModelUUID extends BaseModel{
     public $incrementing = false;
 
     use UUIDTrait;
+
+    /**
+     * Clean the data array to fill just the fillable data
+     * @param array $data
+     * @return array
+     */
+    public function getValidDataToFill($data)
+    {
+        return array_intersect_key($data, array_flip($this->getFillable()));
+    }
 }

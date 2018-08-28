@@ -5,7 +5,7 @@ namespace APIServices\Zendesk\Models;
 
 use App\Database\Eloquent\ModelUUID;
 
-abstract class ChannelSettings extends ModelUUID
+class ChannelSettings extends ModelUUID
 {
     protected $table = 'channels_settings';
 
