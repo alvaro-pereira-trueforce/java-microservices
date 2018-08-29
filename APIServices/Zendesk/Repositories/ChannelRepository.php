@@ -4,6 +4,7 @@ namespace APIServices\Zendesk\Repositories;
 
 use APIServices\Zendesk\Models\BasicChannelModel;
 use APIServices\Zendesk\Models\ChannelSettings;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\DB;
@@ -106,7 +107,7 @@ class ChannelRepository
         DB::beginTransaction();
         try {
             /** @var Model $model */
-            $model = $this->channelModel->where('uuid', '=', $uuid)->first();
+            $model = $this->getQueryByColumnName('uuid', $uuid)->first();
             if ($model)
                 $model->delete();
             DB::commit();
@@ -121,7 +122,7 @@ class ChannelRepository
         DB::beginTransaction();
         try {
             /** @var Model $model */
-            $models = $this->channelModel->where('subdomain', '=', $zendeskDomainName);
+            $models = $this->getQueryByColumnName('subdomain', $zendeskDomainName);
             foreach ($models as $model) {
                 if ($model)
                     $model->delete();
@@ -133,11 +134,22 @@ class ChannelRepository
         }
     }
 
+    /**
+     * Get Builder to make a select where query.
+     * @param $columnName
+     * @param $value
+     * @return Builder
+     */
+    protected function getQueryByColumnName($columnName, $value)
+    {
+        return $model = $this->channelModel->where($columnName, '=', $value);
+    }
+
     public function checkIfExist($columnName, $value)
     {
         try {
             /** @var Model $model */
-            $model = $this->channelModel->where($columnName, '=', $value)->first();
+            $model = $this->getQueryByColumnName($columnName, $value)->first();
             if ($model)
                 return true;
             else
@@ -145,5 +157,10 @@ class ChannelRepository
         } catch (\Exception $exception) {
             Log::error($exception->getMessage());
         }
+    }
+
+    public function getByInstagramID($instagram_id)
+    {
+        return $this->getQueryByColumnName('instagram_id', $instagram_id)->first();
     }
 }
