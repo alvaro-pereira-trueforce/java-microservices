@@ -24,9 +24,9 @@ class FacebookServiceProvider extends ServiceProvider {
             'default_graph_version' => env('FACEBOOK_DEFAULT_GRAPH_VERSION')
         ];
 
-        //Instagram channel Message  Types
-        $this->app->bind('INSTAGRAM.IMAGE', ImagePostFormatter::class);
-        $this->app->bind('INSTAGRAM.VIDEO', VideoPostFormatter::class);
+        //Instagram channel Message Types
+        $this->app->bind('instagram_IMAGE', ImagePostFormatter::class);
+        $this->app->bind('instagram_VIDEO', VideoPostFormatter::class);
 
         $this->app->when(FB::class)
             ->needs('$config')
@@ -45,8 +45,8 @@ class FacebookServiceProvider extends ServiceProvider {
             ->needs('$access_token')
             ->give(function () use ($metadata) {
                 $access_token = '';
-                if ($metadata && array_key_exists('token',$metadata)) {
-                    $access_token = $metadata['token'];
+                if ($metadata && array_key_exists('access_token',$metadata)) {
+                    $access_token = $metadata['access_token'];
                 }
                 return $access_token;
             });
