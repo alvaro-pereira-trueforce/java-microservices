@@ -4,7 +4,6 @@ namespace APIServices\Facebook\Services;
 
 
 use APIServices\Facebook\Models\Facebook;
-use APIServices\Facebook\Repositories\FacebookRepository;
 use Facebook\Exceptions\FacebookResponseException;
 use Facebook\Exceptions\FacebookSDKException;
 use GuzzleHttp\Client;
@@ -15,12 +14,10 @@ class FacebookService
 {
 
     protected $api;
-    protected $repository;
 
-    public function __construct(Facebook $api, FacebookRepository $repository)
+    public function __construct(Facebook $api)
     {
         $this->api = $api;
-        $this->repository = $repository;
     }
 
     /**
