@@ -57,17 +57,6 @@ class ProcessInstagramEvent implements ShouldQueue
                 ->needs('$access_token')
                 ->give($this->instagramChannel->access_token);
 
-            //Configure Zendesk API and Zendesk Client
-            App::when(ZendeskClient::class)
-                ->needs('$access_token')
-                ->give($this->instagramChannel->zendesk_access_token);
-            App::when(ZendeskAPI::class)
-                ->needs('$subDomain')
-                ->give($this->instagramChannel->subdomain);
-            App::when(ZendeskAPI::class)
-                ->needs('$instance_push_id')
-                ->give($this->instagramChannel->instance_push_id);
-
             /** @var IMessageType $message */
             $message = App::makeWith('instagram_' . $this->field_type, [
                 'field_id' => $this->field_id,
@@ -75,7 +64,19 @@ class ProcessInstagramEvent implements ShouldQueue
             ]);
 
             $transformedMessages = $message->getTransformedMessage();
-            $channelService->sendUpdate($transformedMessages);
+            if (!empty($transformedMessages)) {
+                //Configure Zendesk API and Zendesk Client
+                App::when(ZendeskClient::class)
+                    ->needs('$access_token')
+                    ->give($this->instagramChannel->zendesk_access_token);
+                App::when(ZendeskAPI::class)
+                    ->needs('$subDomain')
+                    ->give($this->instagramChannel->subdomain);
+                App::when(ZendeskAPI::class)
+                    ->needs('$instance_push_id')
+                    ->give($this->instagramChannel->instance_push_id);
+                $channelService->sendUpdate($transformedMessages);
+            }
         } catch (\Exception $exception) {
             Log::error($exception->getMessage());
         }

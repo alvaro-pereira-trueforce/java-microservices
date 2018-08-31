@@ -5,6 +5,8 @@ namespace APIServices\Zendesk_Instagram\Models\WebHooks;
 
 use APIServices\Facebook\Services\FacebookService;
 use APIServices\Zendesk\Utility;
+use Carbon\Carbon;
+use Illuminate\Support\Facades\Log;
 
 class CommentPayload extends MessageType
 {
@@ -28,9 +30,18 @@ class CommentPayload extends MessageType
         }
     }
 
+    /**
+     * @return array
+     * @throws \Exception
+     */
     function getTransformedMessage()
     {
         try {
+            $media_date = Carbon::parse($this->media['timestamp']);
+            if ($media_date->diffInMinutes(Carbon::now()) >= (int) env('TIME_EXPIRE_FOR_TICKETS_IN_MINUTES_INSTAGRAM')) {
+                Log::debug('The comment is omitted because is Old: '.$media_date);
+                return [];
+            }
             return $this->getBasicResponse();
         } catch (\Exception $exception) {
             throw $exception;
