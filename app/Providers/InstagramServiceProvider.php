@@ -17,5 +17,9 @@ class InstagramServiceProvider extends ServiceProvider
 
         //Instagram Webhook Payload Types
         $this->app->bind('instagram_comments', WebHooks\CommentPayload::class);
+
+        //Instagram channel Media Types
+        $this->app->bind('instagram_IMAGE', WebHooks\ImageMediaType::class);
+        //$this->app->bind('instagram_VIDEO', VideoPostFormatter::class);
     }
 }

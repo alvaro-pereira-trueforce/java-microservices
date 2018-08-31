@@ -9,6 +9,10 @@ abstract class MessageType implements IMessageType
 {
     protected $field_id;
 
+    /**
+     * MessageType constructor.
+     * @param $field_id
+     */
     public function __construct($field_id)
     {
         $this->field_id = $field_id;

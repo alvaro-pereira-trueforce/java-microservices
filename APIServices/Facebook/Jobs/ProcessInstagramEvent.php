@@ -4,6 +4,7 @@ namespace APIServices\Facebook\Jobs;
 
 use APIServices\Facebook\Models\Facebook;
 use APIServices\Zendesk\Models\IMessageType;
+use APIServices\Zendesk\Repositories\ChannelRepository;
 use APIServices\Zendesk\Services\ZendeskAPI;
 use APIServices\Zendesk\Services\ZendeskClient;
 use APIServices\Zendesk_Instagram\Models\InstagramChannel;
@@ -48,7 +49,10 @@ class ProcessInstagramEvent implements ShouldQueue
     public function handle(ZendeskChannelService $channelService)
     {
         Log::debug('Starting Job With: ' . $this->field_type . $this->field_id);
+        App::when(ChannelRepository::class)->needs('$channelModel')->give(new InstagramChannel());
         try {
+            Log::debug('ok');
+            return;
             $settings = $this->instagramChannel->settings()->firstOrNew([])->toArray();
             $settings = $this->cleanArray($settings);
 
@@ -64,6 +68,7 @@ class ProcessInstagramEvent implements ShouldQueue
             ]);
 
             $transformedMessages = $message->getTransformedMessage();
+
             if (!empty($transformedMessages)) {
                 //Configure Zendesk API and Zendesk Client
                 App::when(ZendeskClient::class)

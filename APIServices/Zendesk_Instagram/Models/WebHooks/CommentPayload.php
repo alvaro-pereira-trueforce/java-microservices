@@ -4,8 +4,10 @@ namespace APIServices\Zendesk_Instagram\Models\WebHooks;
 
 
 use APIServices\Facebook\Services\FacebookService;
+use APIServices\Zendesk\Models\IMessageType;
 use APIServices\Zendesk\Utility;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Log;
 
 class CommentPayload extends MessageType
@@ -16,6 +18,14 @@ class CommentPayload extends MessageType
     protected $settings;
     protected $utility;
 
+    /**
+     * CommentPayload constructor.
+     * @param $field_id
+     * @param $settings
+     * @param FacebookService $facebookService
+     * @param Utility $utility
+     * @throws \Exception
+     */
     public function __construct($field_id, $settings, FacebookService $facebookService, Utility $utility)
     {
         parent::__construct($field_id);
@@ -38,8 +48,8 @@ class CommentPayload extends MessageType
     {
         try {
             $media_date = Carbon::parse($this->media['timestamp']);
-            if ($media_date->diffInMinutes(Carbon::now()) >= (int) env('TIME_EXPIRE_FOR_TICKETS_IN_MINUTES_INSTAGRAM')) {
-                Log::debug('The comment is omitted because is Old: '.$media_date);
+            if ($media_date->diffInMinutes(Carbon::now()) >= (int)env('TIME_EXPIRE_FOR_TICKETS_IN_MINUTES_INSTAGRAM')) {
+                Log::debug('The comment is omitted because is Old: ' . $media_date);
                 return [];
             }
             return $this->getBasicResponse();
@@ -124,17 +134,14 @@ class CommentPayload extends MessageType
     {
         try {
             $created_at_comment = date("c", strtotime($this->comment['timestamp']));
-            $created_at_media = date("c", strtotime($this->media['timestamp']));
 
-            $basic_media_response = $this->utility->getBasicResponse(
-                $this->getMediaExternalID(),
-                $this->media['caption'],
-                'thread_id',
-                $this->getParentID(),
-                $created_at_media,
-                $this->getMediaAuthorExternalID(),
-                $this->getMediaAuthorName()
-            );
+            /** @var IMessageType $media_type */
+            $media_type = App::makeWith('instagram_' . $this->media['media_type'], [
+                'media' => $this->media,
+                'comment' => $this->comment
+            ]);
+
+            $basic_media_response = $media_type->getTransformedMessage();
 
             $basic_comment_response = $this->utility->getBasicResponse(
                 $this->getExternalID(),
@@ -145,10 +152,16 @@ class CommentPayload extends MessageType
                 $this->getAuthorExternalID(),
                 $this->getAuthorName()
             );
-            return [
-                $this->utility->addCustomFieldsArray($basic_media_response, $this->settings),
-                $this->utility->addCustomFieldsArray($basic_comment_response, $this->settings)
-            ];
+
+            $response = [];
+            if (!empty($basic_media_response))
+                array_push($response, $this->utility->addCustomFieldsArray($basic_media_response, $this->settings));
+
+            if (!empty($basic_comment_response))
+                array_push($response, $this->utility->addCustomFieldsArray($basic_comment_response, $this->settings));
+
+            return $response;
+
         } catch (\Exception $exception) {
             throw $exception;
         }
