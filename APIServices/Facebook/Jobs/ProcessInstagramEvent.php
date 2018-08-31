@@ -68,7 +68,7 @@ class ProcessInstagramEvent implements ShouldQueue
 
             $transformedMessages = $message->getTransformedMessage();
             Log::debug($transformedMessages);
-            
+
             if (!empty($transformedMessages)) {
                 //Configure Zendesk API and Zendesk Client
                 App::when(ZendeskClient::class)

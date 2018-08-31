@@ -114,7 +114,7 @@ class Utility
         if (array_key_exists('tags', $settings)) {
             array_push($fields, [
                 'id' => 'tags',
-                'value' => json_encode(explode(' ', $settings['tags']), true)
+                'value' => explode(' ', $settings['tags'])
             ]);
         }
         if (empty($fields))
