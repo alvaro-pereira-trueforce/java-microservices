@@ -7,7 +7,8 @@ use Facebook\Exceptions\FacebookSDKException;
 use Facebook\Facebook as FB;
 use Illuminate\Support\Facades\Log;
 
-class Facebook extends FB {
+class Facebook extends FB
+{
 
     protected $access_token;
     protected $instagram_id;
@@ -16,14 +17,15 @@ class Facebook extends FB {
     /**
      * Facebook constructor.
      *
-     * @param array  $config
+     * @param array $config
      * @param string $access_token
      * @param string $instagram_id
      * @param string $page_id
      * @throws FacebookSDKException
      */
     public function __construct(array $config = [], $access_token = '', $instagram_id = '',
-                                $page_id = '') {
+                                $page_id = '')
+    {
         try {
             parent::__construct($config);
             if ($access_token && $access_token != '') {
@@ -45,7 +47,8 @@ class Facebook extends FB {
      * @var $cookie_string
      * @return FacebookLaravelScriptHelper
      */
-    function getLaravelScriptHelper($cookie_string) {
+    function getLaravelScriptHelper($cookie_string)
+    {
         return new FacebookLaravelScriptHelper($this->app, $this->client,
             $this->defaultGraphVersion, $cookie_string);
     }
@@ -55,7 +58,8 @@ class Facebook extends FB {
      * @return array
      * @throws FacebookSDKException
      */
-    protected function getRequest($endpoint) {
+    protected function getRequest($endpoint)
+    {
         try {
             $response = json_decode($this->get($endpoint)->getBody(), true);
             return $response;
@@ -69,7 +73,8 @@ class Facebook extends FB {
      * @return mixed
      * @throws FacebookSDKException
      */
-    protected function postRequest($endpoint) {
+    protected function postRequest($endpoint)
+    {
         try {
             $response = json_decode($this->post($endpoint)->getBody(), true);
             return $response;
@@ -99,7 +104,8 @@ class Facebook extends FB {
      * @return array
      * @throws FacebookSDKException
      */
-    public function getUserPages() {
+    public function getUserPages()
+    {
         try {
             $response = $this->getRequest('/me/accounts');
             if (array_key_exists('data', $response)) {
@@ -116,7 +122,8 @@ class Facebook extends FB {
      * @return string
      * @throws \Exception
      */
-    public function getPageInstagramID($page_id) {
+    public function getPageInstagramID($page_id)
+    {
         try {
             $response = $this->getRequest('/' . $page_id . '?fields=instagram_business_account');
             return $response['instagram_business_account']['id'];
@@ -132,11 +139,10 @@ class Facebook extends FB {
      */
     public function getPageAccessToken($page_id)
     {
-        try{
+        try {
             $response = $this->getRequest('/' . $page_id . '?fields=access_token,name');
             return $response['access_token'];
-        }catch (\Exception $exception)
-        {
+        } catch (\Exception $exception) {
             throw $exception;
         }
     }
@@ -145,9 +151,10 @@ class Facebook extends FB {
      * @return array
      * @throws \Exception
      */
-    public function getOwnerInstagram() {
+    public function getOwnerInstagram()
+    {
         try {
-            $url_get_owner = '/'.$this->instagram_id.'?fields=id,name,username,profile_picture_url';
+            $url_get_owner = '/' . $this->instagram_id . '?fields=id,name,username,profile_picture_url';
             return $this->getRequest($url_get_owner);
         } catch (\Exception $exception) {
             throw  $exception;
@@ -159,9 +166,10 @@ class Facebook extends FB {
      * @return array
      * @throws \Exception
      */
-    public function getPosts($limit=1000) {
+    public function getPosts($limit = 1000)
+    {
         try {
-            $url_post = '/'.$this->instagram_id.'/media?fields=id,media_type,caption,media_url,thumbnail_url,permalink,username,timestamp,comments_count&limit=' . $limit;
+            $url_post = '/' . $this->instagram_id . '/media?fields=id,media_type,caption,media_url,thumbnail_url,permalink,username,timestamp,comments_count&limit=' . $limit;
             return $this->getRequest($url_post);
         } catch (\Exception $exception) {
             throw  $exception;
@@ -174,9 +182,10 @@ class Facebook extends FB {
      * @return array
      * @throws \Exception
      */
-    public function getComments($post_id,$limit=1000) {
+    public function getComments($post_id, $limit = 1000)
+    {
         try {
-            $url_comments = '/'.$post_id.'/comments?fields=id,text,username,timestamp,replies{id,text,username,timestamp}&limit='.$limit;
+            $url_comments = '/' . $post_id . '/comments?fields=id,text,username,timestamp,replies{id,text,username,timestamp}&limit=' . $limit;
             return $this->getRequest($url_comments);
         } catch (\Exception $exception) {
             throw  $exception;
@@ -189,9 +198,10 @@ class Facebook extends FB {
      * @return mixed
      * @throws \Exception
      */
-    public function postComment($post_id,$message) {
+    public function postComment($post_id, $message)
+    {
         try {
-            $url_comment = '/'.$post_id.'/comments?message=' . $message;
+            $url_comment = '/' . $post_id . '/comments?message=' . $message;
             return $this->postRequest($url_comment);
         } catch (\Exception $exception) {
             throw  $exception;
@@ -209,7 +219,7 @@ class Facebook extends FB {
             $response = $this->postRequest($url);
             Log::debug('WebHook Registered:');
             Log::debug($response);
-            if(!array_key_exists('success',$response))
+            if (!array_key_exists('success', $response))
                 throw new \Exception($response);
         } catch (\Exception $exception) {
             throw  $exception;
@@ -222,15 +232,45 @@ class Facebook extends FB {
      */
     public function deletePageSubscriptionWebhook($page_id)
     {
-        try
-        {
+        try {
             $url = '/' . $page_id . '/subscribed_apps';
             $response = $this->deleteRequest($url);
             Log::debug('Webhook Deleted:');
             Log::debug($response);
-        }catch (\Exception $exception)
-        {
+        } catch (\Exception $exception) {
             throw $exception;
+        }
+    }
+
+    /**
+     * Get instagram Comment
+     * @param $media_id
+     * @return array
+     * @throws \Exception
+     */
+    public function getInstagramMediaByID($media_id)
+    {
+        try {
+            $url_post = '/' . $media_id . '?fields=caption,comments_count,id,ig_id,is_comment_enabled,like_count,media_type,media_url,owner,permalink,shortcode,thumbnail_url,timestamp,username';
+            return $this->getRequest($url_post);
+        } catch (\Exception $exception) {
+            throw  $exception;
+        }
+    }
+
+    /**
+     * Get instagram Comment
+     * @param $comment_id
+     * @return array
+     * @throws \Exception
+     */
+    public function getInstagramCommentByID($comment_id)
+    {
+        try {
+            $url_post = '/' . $comment_id . '?fields=id,media,text,username,timestamp,hidden,like_count';
+            return $this->getRequest($url_post);
+        } catch (\Exception $exception) {
+            throw  $exception;
         }
     }
 }

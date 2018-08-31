@@ -6,6 +6,7 @@ use APIServices\Facebook\Jobs\ProcessInstagramEvent;
 use APIServices\Facebook\Requests\FacebookGetRequest;
 use APIServices\Zendesk\Repositories\ChannelRepository;
 use APIServices\Zendesk_Instagram\Models\InstagramChannel;
+use APIServices\Zendesk_Instagram\Services\ZendeskChannelService;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\App;
@@ -45,7 +46,7 @@ class WebhookController extends Controller
                 $entries = $request['entry'];
                 foreach ($entries as $entry) {
                     if (array_key_exists('changes', $entry) && array_key_exists('id', $entry)) {
-                        $instagramChannel = $channelRepository->getByInstagramID($entry['id']);
+                        $instagramChannel = $channelRepository->getModelByColumnName('instagram_id', $entry['id']);
                         if ($instagramChannel) {
                             foreach ($entry['changes'] as $change) {
                                 if (array_key_exists('field', $change) && array_key_exists('value', $change)) {
@@ -62,5 +63,13 @@ class WebhookController extends Controller
         } catch (\Exception $exception) {
             throw new BadRequestHttpException();
         }
+    }
+
+    public function test(Request $request, ChannelRepository $channelRepository, ZendeskChannelService $channelService)
+    {
+        $instagramChannel = $channelRepository->getModelByColumnName('instagram_id', $request->instagram_id);
+        $job = new ProcessInstagramEvent($instagramChannel, $request->field_type, $request->field_id);
+        $job->handle($channelService);
+        dd('end');
     }
 }

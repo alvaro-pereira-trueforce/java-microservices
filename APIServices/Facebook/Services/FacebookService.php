@@ -156,32 +156,37 @@ class FacebookService
     }
 
     /**
-     * @param $limit
-     * @return mixed
+     * @param string $media_id
+     * @param int $limit
+     * @param string $token
+     * @return array
      * @throws \Exception
      */
-    public function getInstagramMedia($token, $instagram_id, $limit)
+    public function getInstagramMediaByID($media_id, $token = '')
     {
         try {
-            $this->setAccessToken($token);
-            return $this->api->getMedia($instagram_id, $limit);
+            if(!empty($token))
+                $this->setAccessToken($token);
+
+            return $this->api->getInstagramMediaByID($media_id);
         } catch (\Exception $exception) {
             throw new \Exception('The page does not have a linked instagram account. Please use the instagram application to link it to a facebook page. Media');
         }
     }
 
     /**
-     * @param $token
-     * @param $media_id
-     * @param $limit
-     * @return mixed
+     * @param string $token
+     * @param string $comment_id
+     * @param int $limit
+     * @return array
      * @throws \Exception
      */
-    public function getInstagramComment($token, $media_id, $limit)
+    public function getInstagramCommentByID($comment_id, $token = '')
     {
         try {
-            $this->setAccessToken($token);
-            return $this->api->getComment($media_id, $limit);
+            if(!empty($token))
+                $this->setAccessToken($token);
+            return $this->api->getInstagramCommentByID($comment_id);
         } catch (\Exception $exception) {
             throw new \Exception('The page does not have a linked instagram account. Please use the instagram application to link it to a facebook page. Comment');
         }

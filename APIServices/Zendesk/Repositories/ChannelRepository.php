@@ -159,8 +159,13 @@ class ChannelRepository
         }
     }
 
-    public function getByInstagramID($instagram_id)
+    /**
+     * @param $columnName
+     * @param $value
+     * @return Model
+     */
+    public function getModelByColumnName($columnName, $value)
     {
-        return $this->getQueryByColumnName('instagram_id', $instagram_id)->first();
+        return $this->getQueryByColumnName($columnName, $value)->first();
     }
 }

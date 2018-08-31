@@ -7,6 +7,7 @@ use APIServices\Zendesk\Models\EventsTypes\UnknownEvent;
 use APIServices\Zendesk\Repositories\ChannelRepository;
 use App\Http\Controllers\Controller;
 use App\Repositories\ManifestRepository;
+use App\Traits\ArrayTrait;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Log;
@@ -14,6 +15,8 @@ use Illuminate\Support\Facades\Redis;
 
 abstract class CommonZendeskController extends Controller implements IZendeskController
 {
+    use ArrayTrait;
+
     protected $manifest;
     protected $service;
 
@@ -48,13 +51,6 @@ abstract class CommonZendeskController extends Controller implements IZendeskCon
     public function __construct(ManifestRepository $repository)
     {
         $this->manifest = $repository;
-    }
-
-    protected function cleanArray($array)
-    {
-        return array_filter($array, function ($value) {
-            return !empty($value);
-        });
     }
 
     public function getManifest(Request $request)

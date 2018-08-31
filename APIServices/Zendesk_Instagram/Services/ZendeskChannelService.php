@@ -3,8 +3,12 @@
 namespace APIServices\Zendesk_Instagram\Services;
 
 use APIServices\Zendesk\Repositories\ChannelRepository;
+use APIServices\Zendesk\Services\IChannelService;
+use APIServices\Zendesk\Services\ZendeskAPI;
+use Illuminate\Support\Facades\App;
+use Illuminate\Support\Facades\Log;
 
-class ZendeskChannelService
+class ZendeskChannelService implements IChannelService
 {
     /**
      * @var array
@@ -13,6 +17,7 @@ class ZendeskChannelService
 
     /** @var ChannelRepository $channelRepository */
     protected $channelRepository;
+
 
     /**
      * ZendeskChannelService constructor.
@@ -25,7 +30,7 @@ class ZendeskChannelService
         $this->state = $state;
     }
 
-    public function registerNewChannelIntegration($data)
+    public function registerNewChannelIntegration(array $data)
     {
         try {
             return $this->channelRepository->updateOrCreateChannelWithSettings($data, 'uuid', $data['settings']);
@@ -45,6 +50,21 @@ class ZendeskChannelService
             if ($this->channelRepository->checkIfExist('instagram_id', $instagram_id)) {
                 throw new \Exception("The instagram account is already registered. Please use another instagram account or select a different facebook page.");
             }
+        } catch (\Exception $exception) {
+            throw $exception;
+        }
+    }
+
+    /**
+     * @param array $transformedMessages
+     * @throws \Exception
+     */
+    public function sendUpdate(array $transformedMessages)
+    {
+        try {
+            /** @var ZendeskAPI $zendeskAPI */
+            $zendeskAPI = App::make(ZendeskAPI::class);
+            $zendeskAPI->pushNewMessages($transformedMessages);
         } catch (\Exception $exception) {
             throw $exception;
         }

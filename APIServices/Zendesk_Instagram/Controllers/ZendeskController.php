@@ -242,7 +242,7 @@ class ZendeskController extends CommonZendeskController
             $event = $this->getEventHandler('instagram_' . $request->events[0]['type_id'], $request->events[0]);
             $event->handleEvent();
         } catch (\Exception $exception) {
-            Log::error($exception->getMessage());
+            Log::error($exception->getMessage() . ' Line: ' . $exception->getLine());
         }
 
         return $this->successReturn();

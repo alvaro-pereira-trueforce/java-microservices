@@ -158,6 +158,8 @@ return [
         App\Providers\TelegramServiceProvider::class,
         App\Providers\FacebookServiceProvider::class,
         App\Providers\ZendeskServiceProvider::class,
+        App\Providers\InstagramServiceProvider::class,
+
         App\Providers\AuthServiceProvider::class,
         // App\Providers\BroadcastServiceProvider::class,
         App\Providers\EventServiceProvider::class,
