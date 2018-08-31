@@ -43,16 +43,15 @@ class ProcessInstagramEvent implements ShouldQueue
 
     /**
      * Execute the job.
-     * @param ZendeskChannelService $channelService
      * @return void
      */
-    public function handle(ZendeskChannelService $channelService)
+    public function handle()
     {
         Log::debug('Starting Job With: ' . $this->field_type . $this->field_id);
-        App::when(ChannelRepository::class)->needs('$channelModel')->give(new InstagramChannel());
         try {
-            Log::debug('ok');
-            return;
+            App::when(ChannelRepository::class)->needs('$channelModel')->give(new InstagramChannel());
+            $channelService = App::make(ZendeskChannelService::class);
+
             $settings = $this->instagramChannel->settings()->firstOrNew([])->toArray();
             $settings = $this->cleanArray($settings);
 
@@ -68,7 +67,8 @@ class ProcessInstagramEvent implements ShouldQueue
             ]);
 
             $transformedMessages = $message->getTransformedMessage();
-
+            Log::debug($transformedMessages);
+            
             if (!empty($transformedMessages)) {
                 //Configure Zendesk API and Zendesk Client
                 App::when(ZendeskClient::class)

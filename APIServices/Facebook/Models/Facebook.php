@@ -273,4 +273,20 @@ class Facebook extends FB
             throw  $exception;
         }
     }
+
+    /**
+     * This will get only ids
+     * @param $comment_id
+     * @return array
+     * @throws \Exception
+     */
+    public function getMediaWithCommentsAndReplies($media_id)
+    {
+        try {
+            $url_post = '/' . $media_id . '?fields=comments{replies{id}}';
+            return $this->getRequest($url_post);
+        } catch (\Exception $exception) {
+            throw  $exception;
+        }
+    }
 }

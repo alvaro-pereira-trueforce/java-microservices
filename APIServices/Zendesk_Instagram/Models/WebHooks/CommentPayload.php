@@ -15,6 +15,7 @@ class CommentPayload extends MessageType
     protected $facebookService;
     protected $comment;
     protected $media;
+    protected $parent;
     protected $settings;
     protected $utility;
 
@@ -33,6 +34,7 @@ class CommentPayload extends MessageType
             $this->utility = $utility;
             $this->facebookService = $facebookService;
             $this->comment = $facebookService->getInstagramCommentByID($field_id);
+            $this->parent = $facebookService->getParentFromComment($this->comment['media']['id'], $field_id);
             $this->media = $facebookService->getInstagramMediaByID($this->comment['media']['id']);
             $this->settings = $settings;
         } catch (\Exception $exception) {
@@ -152,6 +154,14 @@ class CommentPayload extends MessageType
                 $this->getAuthorExternalID(),
                 $this->getAuthorName()
             );
+
+            if ($this->parent)
+                $basic_comment_response = $this->utility->addHtmlMessageToBasicResponse($basic_comment_response,
+                    view('instagram.multimedia.reply_viewer', [
+                        'reply' => $this->comment['text'],
+                        'comment_to_reply' => $this->parent['text']
+                    ])->render()
+                );
 
             $response = [];
             if (!empty($basic_media_response))

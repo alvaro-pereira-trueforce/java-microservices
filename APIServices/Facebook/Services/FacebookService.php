@@ -157,7 +157,6 @@ class FacebookService
 
     /**
      * @param string $media_id
-     * @param int $limit
      * @param string $token
      * @return array
      * @throws \Exception
@@ -165,7 +164,7 @@ class FacebookService
     public function getInstagramMediaByID($media_id, $token = '')
     {
         try {
-            if(!empty($token))
+            if (!empty($token))
                 $this->setAccessToken($token);
 
             return $this->api->getInstagramMediaByID($media_id);
@@ -177,18 +176,52 @@ class FacebookService
     /**
      * @param string $token
      * @param string $comment_id
-     * @param int $limit
      * @return array
      * @throws \Exception
      */
     public function getInstagramCommentByID($comment_id, $token = '')
     {
         try {
-            if(!empty($token))
+            if (!empty($token))
                 $this->setAccessToken($token);
             return $this->api->getInstagramCommentByID($comment_id);
         } catch (\Exception $exception) {
             throw new \Exception('The page does not have a linked instagram account. Please use the instagram application to link it to a facebook page. Comment');
+        }
+    }
+
+    /**
+     * @param string $media_id
+     * @param string $token
+     * @param string $comment_id
+     * @return array
+     * @throws \Exception
+     */
+    public function getParentFromComment($media_id, $comment_id, $token = '')
+    {
+        try {
+            if (!empty($token))
+                $this->setAccessToken($token);
+            $comments = $this->api->getMediaWithCommentsAndReplies($media_id);
+            $parent = null;
+            foreach ($comments['comments']['data'] as $comment)
+            {
+                if(!empty($comment['replies']['data']))
+                {
+                    $parent = $comment;
+                    foreach ($comment['replies']['data'] as $reply)
+                    {
+                        if(!empty($reply['id']) && $reply['id'] == $comment_id)
+                        {
+                            return $this->getInstagramCommentByID($parent['id']);
+                        }
+                    }
+                }
+            }
+            return null;
+        } catch (\Exception $exception) {
+            Log::error($exception);
+            return null;
         }
     }
 
@@ -208,6 +241,7 @@ class FacebookService
             throw new \Exception('The comment Error');
         }
     }
+
 
     /**
      * @param $page_id

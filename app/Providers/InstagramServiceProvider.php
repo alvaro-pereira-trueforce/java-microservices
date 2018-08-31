@@ -14,7 +14,6 @@ class InstagramServiceProvider extends ServiceProvider
      * @return void
      */
     public function register() {
-
         //Instagram Webhook Payload Types
         $this->app->bind('instagram_comments', WebHooks\CommentPayload::class);
 

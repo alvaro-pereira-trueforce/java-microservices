@@ -41,7 +41,7 @@ class WebhookController extends Controller
     {
         try {
             $request = $request->all();
-            //Log::debug($request);
+            Log::debug($request);
             if (array_key_exists('entry', $request)) {
                 $entries = $request['entry'];
                 foreach ($entries as $entry) {
