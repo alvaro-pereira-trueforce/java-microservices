@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Log;
 use JavaScript;
 use Ramsey\Uuid\Uuid;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
+use Symfony\Component\HttpKernel\Exception\ServiceUnavailableHttpException;
 
 class ZendeskController extends CommonZendeskController
 {
@@ -257,22 +258,33 @@ class ZendeskController extends CommonZendeskController
 
     public function pull(Request $request)
     {
-        // TODO: Implement pull() method.
+        return $this->successReturn();
     }
 
     public function channel_back(Request $request)
     {
-        // TODO: Implement channel_back() method.
+        Log::debug($request);
+        try {
+            /*$thread_post_id = explode(':', $request->thread_id);
+            $message = $request->message;
+            $external_id = $service->sendInstagramMessage($thread_post_id[1], $message);
+            $response = [
+                'external_id' => $external_id
+            ];
+            return response()->json($response);*/
+        } catch (\Exception $exception) {
+            throw new ServiceUnavailableHttpException($exception->getMessage());
+        }
     }
 
     public function click_through(Request $request)
     {
-        // TODO: Implement click_through() method.
+        Log::info($request->all());
     }
 
     public function health_check(Request $request)
     {
-        // TODO: Implement health_check() method.
+        return $this->successReturn();
     }
 
     public function event_callback(Request $request)
