@@ -238,9 +238,9 @@ class ZendeskController extends CommonZendeskController
     public function event_callback(Request $request)
     {
         try {
-            Log::notice($request->all());
+            Log::notice("Zendesk Event:");
             $this->configureChannelRepository(InstagramChannel::class);
-            $event = $this->getEventHandler('instagram_' . $request->events[0]['type_id'], $request->events[0]);
+            $event = $this->getEventHandler('instagram_' . $request->events[0]['type_id'], $request->all());
             $event->handleEvent();
         } catch (\Exception $exception) {
             Log::error($exception->getMessage() . ' Line: ' . $exception->getLine());
