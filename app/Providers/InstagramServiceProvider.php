@@ -19,6 +19,6 @@ class InstagramServiceProvider extends ServiceProvider
 
         //Instagram channel Media Types
         $this->app->bind('instagram_IMAGE', WebHooks\ImageMediaType::class);
-        //$this->app->bind('instagram_VIDEO', VideoPostFormatter::class);
+        $this->app->bind('instagram_VIDEO', WebHooks\VideoMediaType::class);
     }
 }

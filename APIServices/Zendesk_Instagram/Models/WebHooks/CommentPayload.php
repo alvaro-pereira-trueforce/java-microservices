@@ -176,4 +176,14 @@ class CommentPayload extends MessageType
             throw $exception;
         }
     }
+
+
+    function getFooterPage()
+    {
+        if (array_key_exists('caption', $this->media)) {
+            return $this->media['caption'];
+        }
+        $media_type = ucfirst(strtolower($this->media['media_type']));
+        return $this->comment['username'] . ' has posted an ' . $media_type;
+    }
 }
