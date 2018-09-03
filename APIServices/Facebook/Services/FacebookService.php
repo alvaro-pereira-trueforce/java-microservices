@@ -236,10 +236,11 @@ class FacebookService
      * @return mixed
      * @throws \Exception
      */
-    public function postInstagramComment($token, $media_id, $message)
+    public function postInstagramComment($media_id, $message, $token = '')
     {
         try {
-            $this->setAccessToken($token);
+            if (!empty($token))
+                $this->setAccessToken($token);
             return $this->api->postComment($media_id, $message);
         } catch (\Exception $exception) {
             throw new \Exception('The comment Error');

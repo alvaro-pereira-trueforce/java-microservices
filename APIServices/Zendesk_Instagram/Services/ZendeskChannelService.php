@@ -6,7 +6,6 @@ use APIServices\Zendesk\Repositories\ChannelRepository;
 use APIServices\Zendesk\Services\IChannelService;
 use APIServices\Zendesk\Services\ZendeskAPI;
 use Illuminate\Support\Facades\App;
-use Illuminate\Support\Facades\Log;
 
 class ZendeskChannelService implements IChannelService
 {
