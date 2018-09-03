@@ -43,6 +43,11 @@ class Facebook extends FB
         }
     }
 
+    public function setInstagramID($instagram_id)
+    {
+        $this->instagram_id = $instagram_id;
+    }
+
     /**
      * @var $cookie_string
      * @return FacebookLaravelScriptHelper
@@ -170,6 +175,31 @@ class Facebook extends FB
     {
         try {
             $url_post = '/' . $this->instagram_id . '/media?fields=id,media_type,caption,media_url,thumbnail_url,permalink,username,timestamp,comments_count&limit=' . $limit;
+            return $this->getRequest($url_post);
+        } catch (\Exception $exception) {
+            throw  $exception;
+        }
+    }
+
+    /**
+     * @param string $limitMedia
+     * @param string $limitComments
+     * @return array
+     * @throws \Exception
+     */
+    public function getMediaWithComments($limitMedia = '', $limitComments = '')
+    {
+        try {
+            $url_post = '/' . $this->instagram_id . '/media?fields=id,comments{id}';
+            if (empty($limitMedia) && !empty($limitComments)) {
+                $url_post = '/' . $this->instagram_id . '/media?fields=id,comments.limit(' . $limitComments . '){id}';
+            }
+            if (!empty($limitMedia) && empty($limitComments)) {
+                $url_post = '/' . $this->instagram_id . '/media?fields=id,comments{id}&limit=' . $limitMedia;
+            }
+            if (!empty($limitMedia) && !empty($limitComments)) {
+                $url_post = '/' . $this->instagram_id . '/media?fields=id,comments.limit(' . $limitComments . '){id}&limit=' . $limitMedia;
+            }
             return $this->getRequest($url_post);
         } catch (\Exception $exception) {
             throw  $exception;

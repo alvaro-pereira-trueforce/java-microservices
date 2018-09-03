@@ -95,6 +95,14 @@ class FacebookService
     }
 
     /**
+     * @param $instagram_id
+     */
+    public function setInstagramID($instagram_id)
+    {
+        $this->api->setInstagramID($instagram_id);
+    }
+
+    /**
      * Get User pages
      *
      * @return array
@@ -204,15 +212,11 @@ class FacebookService
                 $this->setAccessToken($token);
             $comments = $this->api->getMediaWithCommentsAndReplies($media_id);
             $parent = null;
-            foreach ($comments['comments']['data'] as $comment)
-            {
-                if(!empty($comment['replies']['data']))
-                {
+            foreach ($comments['comments']['data'] as $comment) {
+                if (!empty($comment['replies']['data'])) {
                     $parent = $comment;
-                    foreach ($comment['replies']['data'] as $reply)
-                    {
-                        if(!empty($reply['id']) && $reply['id'] == $comment_id)
-                        {
+                    foreach ($comment['replies']['data'] as $reply) {
+                        if (!empty($reply['id']) && $reply['id'] == $comment_id) {
                             return $this->getInstagramCommentByID($parent['id']);
                         }
                     }
@@ -269,6 +273,24 @@ class FacebookService
             $this->api->deletePageSubscriptionWebhook($page_id);
         } catch (\Exception $exception) {
             throw $exception;
+        }
+    }
+
+    /**
+     * @param $limit
+     * @param $token
+     * @return array
+     * @throws \Exception
+     */
+    public function getInstagramMediaWithComments($limit, $token = '')
+    {
+        try {
+            if (!empty($token))
+                $this->setAccessToken($token);
+
+            return $this->api->getMediaWithComments($limit, $limit);
+        } catch (\Exception $exception) {
+
         }
     }
 }

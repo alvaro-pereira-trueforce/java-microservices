@@ -84,7 +84,8 @@ function AdminUICtrl(windowsService, poller, $timeout, basicService, $window) {
                 account_id: windowsService.backend_variables.account_id,
                 tags: vm.tags,
                 ticket_type: vm.selected_ticket_type,
-                ticket_priority: vm.selected_ticket_priority
+                ticket_priority: vm.selected_ticket_priority,
+                old_post_number: vm.old_post_number
             }).then(function (response) {
                 $window.location.href = response.data.redirect_url;
             }).catch(function (error) {

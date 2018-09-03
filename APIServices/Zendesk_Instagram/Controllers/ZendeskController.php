@@ -2,6 +2,7 @@
 
 namespace APIServices\Zendesk_Instagram\Controllers;
 
+use APIServices\Facebook\Jobs\ProcessInstagramEvent;
 use APIServices\Facebook\Services\FacebookService;
 use APIServices\Zendesk\Controllers\CommonZendeskController;
 use APIServices\Zendesk_Instagram\Models\InstagramChannel;
@@ -161,24 +162,24 @@ class ZendeskController extends CommonZendeskController
         return response()->json('Not Registered', 440);
     }
 
-    public function admin_ui_validate_page(Request $request, FacebookService $service)
+    public function admin_ui_validate_page(Request $request, FacebookService $facebookService)
     {
         $page_information = $request->page_information;
         try {
             $newAccount = $this->getNewAccountInformation($request->account_id);
             $channelService = $this->getChannelService(ZendeskChannelService::class, InstagramChannel::class);
 
-            $service->setAccessToken($newAccount['access_token']);
-            $instagram_id = $service->getInstagramAccountFromUserPage($page_information['id']);
-            
+            $facebookService->setAccessToken($newAccount['access_token']);
+            $instagram_id = $facebookService->getInstagramAccountFromUserPage($page_information['id']);
+
             if (empty($newAccount['settings'])) {
                 /** @var ZendeskChannelService $channelService */
                 $channelService->checkIfInstagramIdIsAlreadyRegistered($instagram_id);
             }
 
-            $pageAccessToken = $service->getPageAccessToken($page_information['id']);
-            $service->setAccessToken($pageAccessToken);
-            $service->setSubscribePageWebHooks($page_information['id']);
+            $pageAccessToken = $facebookService->getPageAccessToken($page_information['id']);
+            $facebookService->setAccessToken($pageAccessToken);
+            $facebookService->setSubscribePageWebHooks($page_information['id']);
 
             $newAccount = array_merge($newAccount, [
                 'instagram_id' => $instagram_id,
@@ -200,6 +201,9 @@ class ZendeskController extends CommonZendeskController
             Log::debug("Is A Valid Page:");
             Log::debug($newAccount);
             $this->saveNewAccountInformation($request->account_id, $newAccount);
+
+            $this->sendOldPosts($request->old_post_number, $newAccount['instagram_id'], $newAccountDBModel, $facebookService);
+
             return response()->json([
                 'redirect_url' => env('APP_URL') . '/instagram/admin_ui_save/' . $request->account_id
             ], 200);
@@ -223,6 +227,31 @@ class ZendeskController extends CommonZendeskController
         } catch (\Exception $exception) {
             Log::error($exception->getMessage());
             return view('please_contact_support');
+        }
+    }
+
+    protected function sendOldPosts($postsAmount, $instagram_id, $instagramChannel, FacebookService $facebookService)
+    {
+
+        try {
+            $facebookService->setInstagramID($instagram_id);
+            if (!empty($postsAmount)) {
+                Log::notice('Getting old posts to send...');
+                $posts = $facebookService->getInstagramMediaWithComments($postsAmount - 1);
+                if (!empty($posts['data'])) {
+                    foreach ($posts['data'] as $post) {
+                        if (!empty($post['comments']['data'])) {
+                            foreach ($post['comments']['data'] as $comment) {
+                                if (!empty($comment['id'])) {
+                                    ProcessInstagramEvent::dispatch($instagramChannel, 'comments', $comment['id'])->onQueue('instagram');
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        } catch (\Exception $exception) {
+            Log::error($exception);
         }
     }
 

@@ -114,6 +114,23 @@
                 </div>
 
                 <div class="form-group">
+                    <label>Receive Old Post?</label>
+                    <input type="checkbox" ng-model="vm.receiveOldPost">
+                </div>
+
+                <div class="form-group" ng-if="vm.receiveOldPost">
+                    <label>How many post do you want to receive? <br><span class="text-muted">The same amount of comments per post will be
+                        added.</span></label>
+                    <select class="form-control" name="old_post_number" id="old_post_number" ng-required="true"
+                            ng-model="vm.old_post_number" ng-options="n for n in [] | range:1:51">
+                    </select>
+                    <div class="alert alert-danger"
+                         ng-if="vm.form.old_post_number.$invalid && vm.form.old_post_number.$touched || vm.form.$submitted && vm.form.old_post_number.$invalid">
+                        Please, select the amount of posts you want to receive.
+                    </div>
+                </div>
+
+                <div class="form-group">
                     <button id="send_request" class="btn btn-primary" ng-click="vm.saveIntegration()">Submit</button>
                 </div>
             </form>
