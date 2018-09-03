@@ -121,7 +121,7 @@ class ZendeskController extends CommonZendeskController
             $newAccount = $this->getNewAccountInformation($request->account_id);
             if (array_key_exists('code', $newAccount)) {
                 $access_token = $this->facebookService->getAccessTokenFromFacebookCode($newAccount['code']);
-                Log::debug("Access Token");
+                Log::debug("Access Token:");
                 Log::debug($access_token);
                 $this->facebookService->setAccessToken($access_token['access_token']);
                 $pages = $this->facebookService->getUserPages();
@@ -136,13 +136,20 @@ class ZendeskController extends CommonZendeskController
                     $expires = $newAccount['expires_in'];
                 }
                 Log::debug($newAccount);
-                return response()->json($this->cleanArray([
+                $response = [
                     'redirect_url' => env('APP_URL') . '/instagram/admin_ui_save/' . $request->account_id,
                     'pages' => $pages,
                     'ticket_types' => $this->ticket_types,
                     'ticket_priorities' => $this->ticket_priorities,
                     'expires' => $expires
-                ]), 200);
+                ];
+
+                if (!empty($newAccount['settings'])) {
+                    $response['ticket_priority'] = $newAccount['settings']['ticket_priority'];
+                    $response['ticket_type'] = $newAccount['settings']['ticket_type'];
+                    $response['tags'] = $newAccount['settings']['tags'];
+                }
+                return response()->json($this->cleanArray($response), 200);
             }
             if (array_key_exists('facebook_canceled', $newAccount)) {
                 return response()->json(['facebook_canceled' => true], 401);
@@ -159,8 +166,16 @@ class ZendeskController extends CommonZendeskController
         $page_information = $request->page_information;
         try {
             $newAccount = $this->getNewAccountInformation($request->account_id);
+            $channelService = $this->getChannelService(ZendeskChannelService::class, InstagramChannel::class);
+
             $service->setAccessToken($newAccount['access_token']);
             $instagram_id = $service->getInstagramAccountFromUserPage($page_information['id']);
+            
+            if (empty($newAccount['settings'])) {
+                /** @var ZendeskChannelService $channelService */
+                $channelService->checkIfInstagramIdIsAlreadyRegistered($instagram_id);
+            }
+
             $pageAccessToken = $service->getPageAccessToken($page_information['id']);
             $service->setAccessToken($pageAccessToken);
             $service->setSubscribePageWebHooks($page_information['id']);
@@ -169,21 +184,17 @@ class ZendeskController extends CommonZendeskController
                 'instagram_id' => $instagram_id,
                 'page_access_token' => $pageAccessToken,
                 'page_id' => $page_information['id'],
-                'settings' => $this->cleanArray([
+                'settings' => [
                     'ticket_type' => $request->ticket_type,
                     'ticket_priority' => $request->ticket_priority,
                     'tags' => $request->tags
-                ])
+                ]
             ]);
-
-            /** @var ZendeskChannelService $channelService */
-            $channelService = $this->getChannelService(ZendeskChannelService::class, InstagramChannel::class);
 
             $newAccountDBModel = $newAccount;
             $newAccountDBModel['uuid'] = $newAccount['account_id'];
             $newAccountDBModel['integration_name'] = $newAccount['name'];
 
-            $channelService->checkIfInstagramIdIsAlreadyRegistered($instagram_id);
             $newAccountDBModel = $channelService->registerNewChannelIntegration($newAccountDBModel);
             $newAccount['settings'] = $newAccountDBModel['settings'] ? $newAccountDBModel['settings']->toArray() : [];
             Log::debug("Is A Valid Page:");
