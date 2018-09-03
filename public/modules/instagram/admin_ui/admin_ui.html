@@ -1,0 +1,139 @@
+<div class="panel panel-default center" style="max-width: 800px">
+    <div class="panel-heading">
+        <h3 class="panel-title">Instagram configuration</h3>
+    </div>
+    <div class="panel-body">
+        <p ng-if="!vm.metadata">Welcome, please authenticate first with your Facebook Account in order to start working
+            with Instagram Channel service.</p>
+
+        <p ng-if="!!vm.metadata">Welcome back. In order to update your order authentication please use the
+            following button to log in with your Facebook Account.</p>
+
+        <div id="spinner" class="loader center" ng-if="vm.processing"></div>
+
+        <div ng-if="!vm.processing && !vm.pages">
+            <form id="form_setup" name="vm.form">
+                <div class="form-group">
+                    <label for="name">Integration Name:</label>
+                    <input type="text" id="name" name="name" class="form-control" ng-model="vm.name"
+                           ng-disabled="vm.processing" ng-required="true">
+                    <div class="alert alert-danger"
+                         ng-if="vm.form.name.$invalid && vm.form.name.$touched || vm.form.$submitted && vm.form.name.$invalid">
+                        The integration name field is required.
+                    </div>
+                </div>
+                <div class="form-group" ng-if="vm.timeout">
+                    <div class="alert alert-danger">
+                        Facebook authentication timeout was reached. Please, Try again.
+                    </div>
+                </div>
+                <div class="form-group" ng-if="vm.facebook_canceled">
+                    <div class="alert alert-danger">
+                        The Facebook user does not approve the authentication, in order to connect with Instagram you
+                        must to accept the required permissions.
+                    </div>
+                </div>
+            </form>
+            <a class="btn btn-block btn-social btn-facebook center" style="max-width: 220px"
+               ng-disabled="vm.form.name.$error.required"
+               target="_blank" ng-click="vm.waitLogin($event)"
+               ng-href="https://www.facebook.com/v3.0/dialog/oauth?client_id={{vm.client_ID}}&redirect_uri={{vm.return_URL}}&state={{vm.account_id}}&scope=manage_pages,pages_show_list,instagram_basic,instagram_manage_comments,business_management">
+                <span class="fa fa-facebook"></span>Connect with Facebook
+            </a>
+        </div>
+
+        <div ng-if="!vm.processing && !!vm.pages">
+            <form id="form_setup" name="vm.form">
+                <div class="form-group" ng-if="vm.expires">
+                    <div class="alert alert-warning">
+                        This Facebook Authentication will expire in {{vm.expires}} days. After saving this integration
+                        please refresh this facebook authentication until this message disappears in order to get a long
+                        term Facebook Authentication Access.
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <div ng-if="!!vm.error" class="alert alert-danger">
+                        {{vm.error}}
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="name">Integration Name:</label>
+                    <input type="text" id="name" name="name" class="form-control" ng-model="vm.name"
+                           ng-disabled="true" ng-required="true">
+                </div>
+                <div class="form-group">
+                    <label for="page_id">Select the facebook page with a valid instagram account:</label>
+                    <select class="form-control" name="page_id" id="page_id" ng-required="true"
+                            ng-options="page.name for page in vm.pages track by page.id"
+                            ng-model="vm.selected_page">
+                    </select>
+                    <div class="alert alert-danger"
+                         ng-if="vm.form.page_id.$invalid && vm.form.page_id.$touched || vm.form.$submitted && vm.form.page_id.$invalid">
+                        The facebook page field is required.
+                    </div>
+                </div>
+                <hr/>
+                <div class="form-group">
+                    <h4>Optional Settings</h4>
+                    <p>Choose the optional ticket field values, all the values are optionals.
+                        Please consider that all your new telegram tickets will be created with the optional settings
+                        you choose.</p>
+                </div>
+
+                <div class="row">
+                    <div class="col-sm-6">
+                        <div class="form-group">
+                            <label>Ticket Type:</label>
+                            <select class="form-control" name="ticket_type" id="ticket_type"
+                                    ng-model="vm.selected_ticket_type">
+                                <option value="">-</option>
+                                <option ng-repeat="type in vm.ticket_types" ng-value="type.id">{{type.name}}</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-sm-6">
+                        <div class="form-group">
+                            <label>Ticket Priority:</label>
+                            <select class="form-control" name="ticket_priority" id="ticket_priority"
+                                    ng-model="vm.selected_ticket_priority">
+                                <option value="">-</option>
+                                <option ng-repeat="priority in vm.ticket_priorities" ng-value="priority.id">
+                                    {{priority.name}}
+                                </option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Tags:</label>
+                    <input type="text" name="tags" class="form-control" ng-model="vm.tags">
+                    <div class="text-muted">Please separate tags with spaces.</div>
+                </div>
+
+                <div class="form-group">
+                    <label>Receive Old Post?</label>
+                    <input type="checkbox" ng-model="vm.receiveOldPost">
+                </div>
+
+                <div class="form-group" ng-if="vm.receiveOldPost">
+                    <label>How many post do you want to receive? <br><span class="text-muted">The same amount of comments per post will be
+                        added.</span></label>
+                    <select class="form-control" name="old_post_number" id="old_post_number" ng-required="true"
+                            ng-model="vm.old_post_number" ng-options="n for n in [] | range:1:51">
+                    </select>
+                    <div class="alert alert-danger"
+                         ng-if="vm.form.old_post_number.$invalid && vm.form.old_post_number.$touched || vm.form.$submitted && vm.form.old_post_number.$invalid">
+                        Please, select the amount of posts you want to receive.
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <button id="send_request" class="btn btn-primary" ng-click="vm.saveIntegration()">Submit</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

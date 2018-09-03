@@ -3,7 +3,7 @@
 namespace APIServices\Zendesk_Telegram\Services;
 
 
-use APIServices\Zendesk_Telegram\Repositories\TicketRepository;
+use APIServices\Zendesk\Repositories\TicketRepository;
 use Carbon\Carbon;
 use Ramsey\Uuid\Uuid;
 

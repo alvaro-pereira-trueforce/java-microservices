@@ -1,0 +1,41 @@
+<div class="panel panel-default center" style="max-width: 800px">
+    <div class="panel-heading">
+        <h3 class="panel-title">Linked In configuration</h3>
+    </div>
+    <div class="panel-body">
+        <p ng-if="!vm.metadata">Welcome, please authenticate first with your Linked In Account in order to start working
+            with the Linkedin
+            Channel service.</p>
+
+        <p ng-if="!!vm.metadata">Welcome back. In order to update your order authentication please use the
+            following button to log in with your Linked In Account.</p>
+
+        <div id="spinner" class="loader center" ng-if="vm.processing"></div>
+
+        <div ng-if="!vm.processing">
+            <form id="form_setup" name="vm.form">
+                <div class="form-group">
+                    <label for="name">Integration Name:</label>
+                    <input type="text" id="name" name="name" class="form-control" ng-model="vm.name"
+                           ng-disabled="vm.processing" ng-required="true">
+                </div>
+                <div class="form-group">
+                    <div ng-if="vm.timeout" class="alert alert-danger">
+                        Linked In authentication timeout was reached. Please, Try again.
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div ng-if="vm.linkedin_canceled" class="alert alert-danger">
+                        The Linked In user does not approve the authentication, in order to connect with Linked In you
+                        must to accept the required permissions.
+                    </div>
+                </div>
+            </form>
+            <a class="btn btn-block btn-social btn-linkedin center" style="max-width: 200px" ng-disabled="vm.form.name.$error.required"
+               target="_blank" ng-click="vm.waitLogin($event)"
+               ng-href="https://www.linkedin.com/oauth/v2/authorization?response_type=code&client_id={{vm.client_ID}}&redirect_uri={{vm.linkedin_return_URL}}&state={{vm.account_id}}&scope=r_basicprofile,rw_company_admin">
+                <span class="fa fa-linkedin"></span>Connect To Linked In
+            </a>
+        </div>
+    </div>
+</div>
