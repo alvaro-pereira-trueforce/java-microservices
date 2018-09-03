@@ -2,6 +2,8 @@
 
 namespace APIServices\Zendesk;
 
+use Illuminate\Support\Facades\Log;
+
 class Utility
 {
     /**
@@ -112,9 +114,11 @@ class Utility
 
         //The tags must be saved as words separated with spaces in the model
         if (array_key_exists('tags', $settings)) {
+            $tags = explode(' ', $settings['tags']);
+
             array_push($fields, [
                 'id' => 'tags',
-                'value' => explode(' ', $settings['tags'])
+                'value' => $tags
             ]);
         }
         if (empty($fields))
