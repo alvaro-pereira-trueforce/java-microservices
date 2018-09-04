@@ -52,7 +52,7 @@ class WebhookController extends Controller
                                 if (array_key_exists('field', $change) && array_key_exists('value', $change)) {
                                     $field_type = $change['field'];
                                     $field_id = $change['value']['id'];
-                                    ProcessInstagramEvent::dispatch($instagramChannel, $field_type, $field_id)->onQueue('horizon');
+                                    ProcessInstagramEvent::dispatch($instagramChannel, $field_type, $field_id);
                                 }
                             }
                         }
