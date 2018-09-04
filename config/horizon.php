@@ -76,7 +76,7 @@ return [
             'supervisor-1' => [
                 'connection' => 'redis',
                 'queue' => $queues,
-                'balance' => 'auto',
+                'balance' => 'simple',
                 'processes' => 1,
                 'tries' => 3,
             ],
@@ -85,7 +85,7 @@ return [
             'supervisor-1' => [
                 'connection' => 'redis',
                 'queue' => $queues,
-                'balance' => 'auto',
+                'balance' => 'simple',
                 'processes' => 1,
                 'tries' => 3,
             ],
@@ -94,7 +94,7 @@ return [
             'supervisor-1' => [
                 'connection' => 'redis',
                 'queue' => $queues,
-                'balance' => 'auto',
+                'balance' => 'simple',
                 'processes' => 1,
                 'tries' => 3,
             ],
@@ -103,7 +103,7 @@ return [
             'supervisor-1' => [
                 'connection' => 'redis',
                 'queue' => $queues,
-                'balance' => 'auto',
+                'balance' => 'simple',
                 'processes' => 1,
                 'tries' => 3,
             ],
