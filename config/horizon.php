@@ -1,5 +1,5 @@
 <?php
-$queues = ['default', 'linkedin', 'instagram'];
+$queues = ['horizon'];
 
 return [
 
@@ -74,38 +74,38 @@ return [
     'environments' => [
         'production' => [
             'supervisor-1' => [
-                'connection' => 'database',
+                'connection' => 'redis',
                 'queue' => $queues,
                 'balance' => 'auto',
                 'processes' => 1,
-                'tries' => 1,
+                'tries' => 3,
             ],
         ],
         'developer' => [
             'supervisor-1' => [
-                'connection' => 'database',
+                'connection' => 'redis',
                 'queue' => $queues,
                 'balance' => 'auto',
                 'processes' => 1,
-                'tries' => 1,
+                'tries' => 3,
             ],
         ],
         'staging' => [
             'supervisor-1' => [
-                'connection' => 'database',
+                'connection' => 'redis',
                 'queue' => $queues,
                 'balance' => 'auto',
                 'processes' => 1,
-                'tries' => 1,
+                'tries' => 3,
             ],
         ],
         'local' => [
             'supervisor-1' => [
-                'connection' => 'database',
+                'connection' => 'redis',
                 'queue' => $queues,
                 'balance' => 'auto',
                 'processes' => 1,
-                'tries' => 1,
+                'tries' => 3,
             ],
         ],
     ],
