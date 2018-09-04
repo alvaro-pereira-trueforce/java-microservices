@@ -60,6 +60,12 @@ function AdminUICtrl(windowsService, poller, $timeout, basicService, $window) {
             vm.selected_ticket_type = response.data.ticket_type;
             vm.selected_ticket_priority = response.data.ticket_priority;
             vm.tags = response.data.tags;
+            vm.pages.forEach(function (value) {
+                if (value.id === response.data.selected_page) {
+                    vm.selected_page = value;
+                    vm.isASavedIntegration = true;
+                }
+            });
             stopProgress();
             $window.scrollTo(0, 0);
         }).catch(function (response) {
@@ -76,9 +82,14 @@ function AdminUICtrl(windowsService, poller, $timeout, basicService, $window) {
         });
     }
 
+    vm.receiveOldPost = false;
+
     function saveIntegration() {
         vm.error = undefined;
         if (vm.form.$valid) {
+            if (vm.receiveOldPost === false) {
+                vm.old_post_number = undefined;
+            }
             basicService.postRequest('admin_ui_validate_page', {
                 page_information: vm.selected_page,
                 account_id: windowsService.backend_variables.account_id,
