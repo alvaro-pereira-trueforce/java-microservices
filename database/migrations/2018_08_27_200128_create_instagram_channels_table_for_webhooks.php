@@ -20,10 +20,10 @@ class CreateInstagramChannelsTableForWebhooks extends Migration
             $table->string('instagram_id')->unique();
             $table->string('page_id');
             $table->string('subdomain');
-            $table->string('instance_push_id');
-            $table->string('zendesk_access_token');
-            $table->string('access_token');
-            $table->string('page_access_token');
+            $table->string('instance_push_id',255);
+            $table->string('zendesk_access_token', 255);
+            $table->string('access_token', 255);
+            $table->string('page_access_token', 255);
             $table->timestamps();
         });
     }
