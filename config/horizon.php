@@ -86,7 +86,7 @@ return [
                 'connection' => 'redis',
                 'queue' => $queues,
                 'balance' => 'auto',
-                'processes' => 20,
+                'processes' => 10,
                 'tries' => 1,
             ],
         ],
