@@ -23,6 +23,8 @@ class ProcessInstagramEvent implements ShouldQueue
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
     use ArrayTrait;
 
+    public $tries = 3;
+
     protected $instagramChannel;
     protected $field_id;
     protected $field_type;
@@ -99,5 +101,15 @@ class ProcessInstagramEvent implements ShouldQueue
     public function failed(\Exception $exception)
     {
         Log::error('Message: ' . $exception->getMessage() . ' On Line: ' . $exception->getLine());
+    }
+
+    /**
+     * Determine the time at which the job should timeout.
+     *
+     * @return \DateTime
+     */
+    public function retryUntil()
+    {
+        return now()->addSeconds(10);
     }
 }
