@@ -74,7 +74,7 @@ return [
     'environments' => [
         'production' => [
             'supervisor-1' => [
-                'connection' => 'redis',
+                'connection' => 'database',
                 'queue' => $queues,
                 'balance' => 'auto',
                 'processes' => 1,
@@ -83,7 +83,7 @@ return [
         ],
         'developer' => [
             'supervisor-1' => [
-                'connection' => 'redis',
+                'connection' => 'database',
                 'queue' => $queues,
                 'balance' => 'auto',
                 'processes' => 1,
@@ -92,7 +92,7 @@ return [
         ],
         'staging' => [
             'supervisor-1' => [
-                'connection' => 'redis',
+                'connection' => 'database',
                 'queue' => $queues,
                 'balance' => 'auto',
                 'processes' => 1,
@@ -101,7 +101,7 @@ return [
         ],
         'local' => [
             'supervisor-1' => [
-                'connection' => 'redis',
+                'connection' => 'database',
                 'queue' => $queues,
                 'balance' => 'auto',
                 'processes' => 1,
