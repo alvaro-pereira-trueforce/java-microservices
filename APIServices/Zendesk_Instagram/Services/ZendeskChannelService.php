@@ -6,6 +6,7 @@ use APIServices\Zendesk\Repositories\ChannelRepository;
 use APIServices\Zendesk\Services\IChannelService;
 use APIServices\Zendesk\Services\ZendeskAPI;
 use Illuminate\Support\Facades\App;
+use Illuminate\Support\Facades\Log;
 
 class ZendeskChannelService implements IChannelService
 {
@@ -34,7 +35,8 @@ class ZendeskChannelService implements IChannelService
         try {
             return $this->channelRepository->updateOrCreateChannelWithSettings($data, 'uuid', $data['settings']);
         } catch (\Exception $exception) {
-            throw $exception;
+            Log::error("Database Error: " . $exception->getMessage() . " Line:" . $exception->getLine());
+            throw new \Exception("Something went wrong please close the pop up configuration and try again.");
         }
     }
 

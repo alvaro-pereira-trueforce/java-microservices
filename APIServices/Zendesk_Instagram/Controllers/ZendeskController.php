@@ -159,6 +159,7 @@ class ZendeskController extends CommonZendeskController
                     $response['ticket_priority'] = $newAccount['settings']['ticket_priority'];
                     $response['ticket_type'] = $newAccount['settings']['ticket_type'];
                     $response['tags'] = $newAccount['settings']['tags'];
+                    $response['selected_page'] = $newAccount['page_id'];
                 }
                 return response()->json($this->cleanArray($response), 200);
             }
@@ -217,6 +218,7 @@ class ZendeskController extends CommonZendeskController
                 'redirect_url' => env('APP_URL') . '/instagram/admin_ui_save/' . $request->account_id
             ], 200);
         } catch (\Exception $exception) {
+            Log::error("Controller Error: " . $exception->getMessage() . " Line:" . $exception->getLine());
             throw new BadRequestHttpException($exception->getMessage());
         }
     }
