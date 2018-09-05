@@ -255,8 +255,13 @@ class ZendeskController extends CommonZendeskController
                         if (!empty($post['comments']['data'])) {
                             foreach ($post['comments']['data'] as $comment) {
                                 if (!empty($comment['id'])) {
-                                    Log::debug($comment['id']);
-                                    ProcessInstagramEvent::dispatch($instagramChannel, 'comments', $comment['id'])->delay(15);
+                                    $payload = [
+                                        'id' => $comment['id'],
+                                        'text' => $comment['text'],
+                                        'media' => $comment['media']
+                                    ];
+                                    Log::debug($payload['id']);
+                                    ProcessInstagramEvent::dispatch($instagramChannel, 'comments', $payload)->delay(15);
                                 }
                             }
                         }
