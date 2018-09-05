@@ -220,11 +220,11 @@ class FacebookService
             Log::debug($limits);
 
             if ($page) {
-                if ($limits['x-page-usage']['call_count'] >= 100 || $limits['x-page-usage']['total_cputime'] || $limits['x-page-usage']['total_time']) {
+                if ($limits['x-page-usage']['call_count'] >= 100 || $limits['x-page-usage']['total_cputime'] >= 100 || $limits['x-page-usage']['total_time'] >= 100) {
                     return true;
                 }
             } else {
-                if ($limits['x-app-usage']['call_count'] >= 100 || $limits['x-app-usage']['total_cputime'] || $limits['x-app-usage']['total_time']) {
+                if ($limits['x-app-usage']['call_count'] >= 100 || $limits['x-app-usage']['total_cputime'] >= 100 || $limits['x-app-usage']['total_time'] >= 100) {
                     return true;
                 }
             }
