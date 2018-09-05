@@ -77,8 +77,10 @@ class ProcessInstagramEvent implements ShouldQueue
 
                 $media = $facebookService->getInstagramMediaByID($this->payload['media']['id']);
 
-                if (empty($media))
-                    throw new \Exception('The media does not exist, empty media.');
+                if (empty($media) || empty($media['comments'])) {
+                    Log::debug('The media does not exist or it has not comments');
+                    return;
+                }
             } catch (\Exception $exception) {
                 Log::error('Facebook says: ' . $exception->getMessage() . 'this is the try number: ' . $this->triesCount);
                 if ($this->triesCount > 10) {
@@ -89,12 +91,14 @@ class ProcessInstagramEvent implements ShouldQueue
                 return;
             }
             Log::notice('Success..Processing Data..');
+
             $this->payload['media'] = $media;
             /** @var IMessageType $message */
             $message = App::makeWith('instagram_' . $this->field_type, [
                 'payload' => $this->payload,
                 'settings' => $settings
             ]);
+            
             $transformedMessages = $message->getTransformedMessage();
             Log::debug($transformedMessages);
 

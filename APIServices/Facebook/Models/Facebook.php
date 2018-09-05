@@ -192,13 +192,13 @@ class Facebook extends FB
         try {
             $url_post = '/' . $this->instagram_id . '/media?fields=id,comments{id}';
             if (empty($limitMedia) && !empty($limitComments)) {
-                $url_post = '/' . $this->instagram_id . '/media?fields=id,comments.limit(' . $limitComments . '){id}';
+                $url_post = '/' . $this->instagram_id . '/media?fields=id,comments.limit(' . $limitComments . '){id,text}';
             }
             if (!empty($limitMedia) && empty($limitComments)) {
-                $url_post = '/' . $this->instagram_id . '/media?fields=id,comments{id}&limit=' . $limitMedia;
+                $url_post = '/' . $this->instagram_id . '/media?fields=id,comments{id,text}&limit=' . $limitMedia;
             }
             if (!empty($limitMedia) && !empty($limitComments)) {
-                $url_post = '/' . $this->instagram_id . '/media?fields=id,comments.limit(' . $limitComments . '){id}&limit=' . $limitMedia;
+                $url_post = '/' . $this->instagram_id . '/media?fields=id,comments.limit(' . $limitComments . '){id,text}&limit=' . $limitMedia;
             }
             return $this->getRequest($url_post);
         } catch (\Exception $exception) {
