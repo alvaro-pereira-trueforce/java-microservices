@@ -265,7 +265,7 @@ class ZendeskController extends CommonZendeskController
                                         ]
                                     ];
                                     Log::debug($payload);
-                                    ProcessInstagramEvent::dispatch($instagramChannel, 'comments', $payload)->delay(15);
+                                    ProcessInstagramEvent::dispatch($instagramChannel, 'comments', $payload, 1)->delay(15);
                                 }
                             }
                         }

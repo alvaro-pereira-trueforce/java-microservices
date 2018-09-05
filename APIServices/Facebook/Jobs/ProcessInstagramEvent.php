@@ -37,7 +37,7 @@ class ProcessInstagramEvent implements ShouldQueue
      * @param int $triesCount
      * @return void
      */
-    public function __construct(InstagramChannel $instagramChannel, $field_type, $payload, $triesCount = 1)
+    public function __construct(InstagramChannel $instagramChannel, $field_type, $payload, $triesCount)
     {
         $this->instagramChannel = $instagramChannel;
         $this->payload = $payload;
@@ -87,7 +87,7 @@ class ProcessInstagramEvent implements ShouldQueue
                     Log::error('Tries limit reached.');
                     return;
                 }
-                static:: dispatch($this->instagramChannel, $this->field_type, $this->payload, $this->triesCount++)->delay($this->triesCount * 10 * 60);
+                static:: dispatch($this->instagramChannel, $this->field_type, $this->payload, $this->triesCount + 1)->delay($this->triesCount * 10 * 60);
                 return;
             }
             Log::notice('Success..Processing Data..');
@@ -98,7 +98,7 @@ class ProcessInstagramEvent implements ShouldQueue
                 'payload' => $this->payload,
                 'settings' => $settings
             ]);
-            
+
             $transformedMessages = $message->getTransformedMessage();
             Log::debug($transformedMessages);
 
