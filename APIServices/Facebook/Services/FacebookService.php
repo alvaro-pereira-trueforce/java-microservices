@@ -185,14 +185,26 @@ class FacebookService
         try {
             $lasResponse = $this->getLastFacebookResponse();
             if ($lasResponse) {
+                Log::debug($lasResponse->getHeaders());
                 $limits['x-page-usage'] = json_decode($lasResponse->getHeaders()['x-page-usage'], true);
                 $limits['x-app-usage'] = json_decode($lasResponse->getHeaders()['x-app-usage'], true);
             }
-            return $limits;
         } catch (\Exception $exception) {
-            Log::error($exception);
-            return $limits;
+            Log::error($exception->getMessage() . ' Line:' . $exception->getLine());
+            try {
+                $this->api->get('/me');
+                $lasResponse = $this->getLastFacebookResponse();
+                if ($lasResponse) {
+                    Log::debug($lasResponse->getHeaders());
+                    $limits['x-page-usage'] = json_decode($lasResponse->getHeaders()['x-page-usage'], true);
+                    $limits['x-app-usage'] = json_decode($lasResponse->getHeaders()['x-app-usage'], true);
+                }
+                return $limits;
+            } catch (\Exception $exception) {
+                return $limits;
+            }
         }
+        return $limits;
     }
 
     /**
