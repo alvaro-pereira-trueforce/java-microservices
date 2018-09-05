@@ -281,7 +281,7 @@ class Facebook extends FB
     public function getInstagramMediaByID($media_id)
     {
         try {
-            $url_post = '/' . $media_id . '?fields=caption,comments_count,id,ig_id,is_comment_enabled,like_count,media_type,media_url,owner,permalink,shortcode,thumbnail_url,timestamp,username';
+            $url_post = '/' . $media_id . '?fields=id,comments_count,caption,like_count,media_type,media_url,permalink,username,is_comment_enabled,thumbnail_url,timestamp,owner,shortcode,ig_id,comments{id,text,username,like_count,timestamp,replies{id,text,username,like_count,timestamp,hidden,media,user},media}';
             return $this->getRequest($url_post);
         } catch (\Exception $exception) {
             throw  $exception;

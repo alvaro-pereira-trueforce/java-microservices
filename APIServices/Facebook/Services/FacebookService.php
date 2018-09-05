@@ -164,6 +164,66 @@ class FacebookService
     }
 
     /**
+     * @return \Facebook\FacebookBatchResponse|\Facebook\FacebookResponse|null
+     */
+    public function getLastFacebookResponse()
+    {
+        return $this->api->getLastResponse();
+    }
+
+    /**
+     * Returns facebook limits usage this function must be called before making a facebook Request.
+     * @return array
+     */
+    public function getLimits()
+    {
+        // Facebook API saves the last response in cache this default value is just for information about it, it never being used.
+        $limits = [
+            'x-page-usage' => json_decode('{"call_count":0,"total_cputime":0,"total_time":0}', true),
+            'x-app-usage' => json_decode('{"call_count":0,"total_cputime":0,"total_time":0}', true)
+        ];
+        try {
+            $lasResponse = $this->getLastFacebookResponse();
+            if ($lasResponse) {
+                $limits['x-page-usage'] = json_decode($lasResponse->getHeaders()['x-page-usage'], true);
+                $limits['x-app-usage'] = json_decode($lasResponse->getHeaders()['x-app-usage'], true);
+            }
+            return $limits;
+        } catch (\Exception $exception) {
+            Log::error($exception);
+            return $limits;
+        }
+    }
+
+    /**
+     * Check if facebook Limit is enabled, this function uses the last request data.
+     * @param bool $page
+     * @return bool
+     */
+    public function isFacebookLimitEnable($page = false)
+    {
+        try {
+            $limits = $this->getLimits();
+            Log::debug('Current Facebook Limits: ');
+            Log::debug($limits);
+
+            if ($page) {
+                if ($limits['x-page-usage']['call_count'] >= 100 || $limits['x-page-usage']['total_cputime'] || $limits['x-page-usage']['total_time']) {
+                    return true;
+                }
+            } else {
+                if ($limits['x-app-usage']['call_count'] >= 100 || $limits['x-app-usage']['total_cputime'] || $limits['x-app-usage']['total_time']) {
+                    return true;
+                }
+            }
+            return false;
+        } catch (\Exception $exception) {
+            Log::error($exception);
+            return true;
+        }
+    }
+
+    /**
      * @param string $media_id
      * @param string $token
      * @return array

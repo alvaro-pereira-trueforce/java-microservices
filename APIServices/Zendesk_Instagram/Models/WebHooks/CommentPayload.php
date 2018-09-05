@@ -3,7 +3,6 @@
 namespace APIServices\Zendesk_Instagram\Models\WebHooks;
 
 
-use APIServices\Facebook\Services\FacebookService;
 use APIServices\Zendesk\Models\IMessageType;
 use APIServices\Zendesk\Utility;
 use Carbon\Carbon;
@@ -21,22 +20,38 @@ class CommentPayload extends MessageType
 
     /**
      * CommentPayload constructor.
-     * @param $field_id
+     * @param $payload
      * @param $settings
-     * @param FacebookService $facebookService
      * @param Utility $utility
      * @throws \Exception
      */
-    public function __construct($field_id, $settings, FacebookService $facebookService, Utility $utility)
+    public function __construct($payload, $settings, Utility $utility)
     {
-        parent::__construct($field_id);
+        parent::__construct($payload);
         try {
             $this->utility = $utility;
-            $this->facebookService = $facebookService;
-            $this->comment = $facebookService->getInstagramCommentByID($field_id);
-            $this->parent = $facebookService->getParentFromComment($this->comment['media']['id'], $field_id);
-            $this->media = $facebookService->getInstagramMediaByID($this->comment['media']['id']);
             $this->settings = $settings;
+            $this->media = $payload['media'];
+
+            foreach ($this->media['comments']['data'] as $comment) {
+                if ($comment['id'] == $payload['id']) {
+                    $this->comment = $comment;
+                    unset($this->comment['replies']);
+                    break;
+                }
+
+                if (!empty($comment['replies']['data'])) {
+                    foreach ($comment['replies']['data'] as $reply) {
+                        if (!empty($reply['id']) && $reply['id'] == $payload['id']) {
+                            $this->comment = $reply;
+                            $this->parent = $comment;
+                            unset($this->parent['replies']);
+                            break;
+                        }
+                    }
+                }
+            }
+            unset($this->media['comments']);
         } catch (\Exception $exception) {
             throw $exception;
         }
