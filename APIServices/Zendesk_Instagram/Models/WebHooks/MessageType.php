@@ -7,14 +7,14 @@ use APIServices\Zendesk\Models\IMessageType;
 
 abstract class MessageType implements IMessageType
 {
-    protected $field_id;
+    protected $payload;
 
     /**
      * MessageType constructor.
-     * @param $field_id
+     * @param $payload
      */
-    public function __construct($field_id)
+    public function __construct($payload)
     {
-        $this->field_id = $field_id;
+        $this->payload = $payload;
     }
 }

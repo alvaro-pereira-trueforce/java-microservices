@@ -3,6 +3,7 @@
 namespace APIServices\Facebook\Jobs;
 
 use APIServices\Facebook\Models\Facebook;
+use APIServices\Facebook\Services\FacebookService;
 use APIServices\Zendesk\Models\IMessageType;
 use APIServices\Zendesk\Repositories\ChannelRepository;
 use APIServices\Zendesk\Services\ZendeskAPI;
@@ -24,31 +25,37 @@ class ProcessInstagramEvent implements ShouldQueue
     use ArrayTrait;
 
     protected $instagramChannel;
-    protected $field_id;
+    protected $payload;
     protected $field_type;
+    protected $triesCount;
 
     /**
      * Create a new job instance.
      * @param InstagramChannel $instagramChannel
-     * @param string $field_id
+     * @param array $payload
      * @param string $field_type
+     * @param int $triesCount
      * @return void
      */
-    public function __construct(InstagramChannel $instagramChannel, $field_type, $field_id)
+    public function __construct(InstagramChannel $instagramChannel, $field_type, $payload, $triesCount = 1)
     {
         $this->instagramChannel = $instagramChannel;
-        $this->field_id = $field_id;
+        $this->payload = $payload;
         $this->field_type = $field_type;
+        $this->triesCount = $triesCount;
     }
 
     /**
      * Execute the job.
      * @return void
+     * @throws \Exception
      */
     public function handle()
     {
-        Log::debug('Starting Job With: ' . $this->field_type . $this->field_id);
+        Log::debug('Starting Job With: ' . $this->field_type);
         try {
+            Log::debug('Log Worker');
+            Log::debug($this->payload);
             App::when(ChannelRepository::class)->needs('$channelModel')->give(new InstagramChannel());
             /** @var ZendeskChannelService $channelService */
             $channelService = App::make(ZendeskChannelService::class);
@@ -59,16 +66,36 @@ class ProcessInstagramEvent implements ShouldQueue
             //Configure Facebook API
             App::when(Facebook::class)
                 ->needs('$access_token')
-                ->give($this->instagramChannel->access_token);
+                ->give($this->instagramChannel->page_access_token);
 
+            /** @var FacebookService $facebookService */
+            $facebookService = App::make(FacebookService::class);
+            Log::notice('Starting Facebook Communication...');
+            try {
+                if ($facebookService->isFacebookLimitEnable())
+                    throw new \Exception('Facebook limit reached.');
+
+                $media = $facebookService->getInstagramMediaByID($this->payload['media']['id']);
+
+                if (empty($media))
+                    throw new \Exception('The media does not exist, empty media.');
+            } catch (\Exception $exception) {
+                Log::error('Facebook says: ' . $exception->getMessage() . 'this is the try number: ' . $this->triesCount);
+                if ($this->triesCount > 10) {
+                    Log::error('Tries limit reached.');
+                    return;
+                }
+                static:: dispatch($this->instagramChannel, $this->field_type, $this->payload, $this->triesCount++)->delay($this->triesCount * 10 * 60);
+                return;
+            }
+            Log::notice('Success..Processing Data..');
+            $this->payload['media'] = $media;
             /** @var IMessageType $message */
             $message = App::makeWith('instagram_' . $this->field_type, [
-                'field_id' => $this->field_id,
+                'payload' => $this->payload,
                 'settings' => $settings
             ]);
-
             $transformedMessages = $message->getTransformedMessage();
-            Log::debug('Log Worker');
             Log::debug($transformedMessages);
 
             if (!empty($transformedMessages)) {
@@ -87,6 +114,7 @@ class ProcessInstagramEvent implements ShouldQueue
             }
         } catch (\Exception $exception) {
             Log::error($exception->getMessage());
+            throw $exception;
         }
     }
 

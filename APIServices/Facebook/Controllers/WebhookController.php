@@ -51,8 +51,14 @@ class WebhookController extends Controller
                             foreach ($entry['changes'] as $change) {
                                 if (array_key_exists('field', $change) && array_key_exists('value', $change)) {
                                     $field_type = $change['field'];
-                                    $field_id = $change['value']['id'];
-                                    ProcessInstagramEvent::dispatch($instagramChannel, $field_type, $field_id);
+                                    if (!empty($change['value']['id']) && !empty($change['value']['text']) && !empty($change['value']['media'])) {
+                                        $payload = [
+                                            'id' => $change['value']['id'],
+                                            'text' => $change['value']['text'],
+                                            'media' => $change['value']['media']
+                                        ];
+                                        ProcessInstagramEvent::dispatch($instagramChannel, $field_type, $payload);
+                                    }
                                 }
                             }
                         }
@@ -64,4 +70,21 @@ class WebhookController extends Controller
             throw new BadRequestHttpException();
         }
     }
+
+    // Just for tests we can make a unit test with this steps
+    /*
+    public function test(Request $request, ChannelRepository $channelRepository, ZendeskChannelService $channelService)
+    {
+        $payload = [
+            'id' => $request->field_id,
+            'text' => "Test",
+            'media' => [
+                'id' => $request->field_media
+            ]
+        ];
+        $instagramChannel = $channelRepository->getModelByColumnName('instagram_id', $request->instagram_id);
+        $job = new ProcessInstagramEvent($instagramChannel, $request->field_type, $payload);
+        $job->handle($channelService);
+        dd('end');
+    }*/
 }

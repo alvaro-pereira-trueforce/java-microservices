@@ -246,6 +246,7 @@ class ZendeskController extends CommonZendeskController
 
         try {
             $this->facebookService->setInstagramID($instagram_id);
+            $this->facebookService->setAccessToken($instagramChannel['page_access_token']);
             if (!empty($postsAmount)) {
                 Log::notice('Getting old posts to send...' . $postsAmount);
                 $posts = $this->facebookService->getInstagramMediaWithComments($postsAmount - 1);
