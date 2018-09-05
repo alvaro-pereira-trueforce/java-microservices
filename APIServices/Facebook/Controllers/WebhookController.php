@@ -51,6 +51,8 @@ class WebhookController extends Controller
                             foreach ($entry['changes'] as $change) {
                                 if (array_key_exists('field', $change) && array_key_exists('value', $change)) {
                                     $field_type = $change['field'];
+
+                                    /** Because the facebook Validation the type field strategy only works with the transformed message format, here we need to set and if else logic */
                                     if (!empty($change['value']['id']) && !empty($change['value']['text']) && !empty($change['value']['media'])) {
                                         $payload = [
                                             'id' => $change['value']['id'],
