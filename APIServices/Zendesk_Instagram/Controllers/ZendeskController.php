@@ -11,6 +11,7 @@ use App\Repositories\ManifestRepository;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use JavaScript;
+use function Psy\debug;
 use Ramsey\Uuid\Uuid;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\HttpKernel\Exception\ServiceUnavailableHttpException;
@@ -249,7 +250,8 @@ class ZendeskController extends CommonZendeskController
             $this->facebookService->setAccessToken($instagramChannel['page_access_token']);
             if (!empty($postsAmount)) {
                 Log::notice('Getting old posts to send...' . $postsAmount);
-                $posts = $this->facebookService->getInstagramMediaWithComments($postsAmount - 1);
+                $posts = $this->facebookService->getInstagramMediaWithComments($postsAmount);
+                Log::debug($posts);
                 if (!empty($posts['data'])) {
                     foreach ($posts['data'] as $post) {
                         if (!empty($post['comments']['data'])) {
