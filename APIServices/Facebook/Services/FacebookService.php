@@ -130,7 +130,7 @@ class FacebookService
         try {
             return $this->api->getPageInstagramID($page_id);
         } catch (\Exception $exception) {
-            throw new \Exception('The page does not have a linked instagram account. Please use the instagram application to link it to a facebook page.');
+            throw new \Exception('This Facebook page does not have a linked Instagram account. Please use the Instagram application to link it to a Facebook page.');
         }
     }
 
@@ -249,7 +249,7 @@ class FacebookService
 
             return $this->api->getInstagramMediaByID($media_id);
         } catch (\Exception $exception) {
-            throw new \Exception('The page does not have a linked instagram account. Please use the instagram application to link it to a facebook page. Media');
+            throw new \Exception('This Facebook page does not have a linked Instagram account. Please use the Instagram application to link it to a Facebook page. Media');
         }
     }
 
@@ -266,7 +266,7 @@ class FacebookService
                 $this->setAccessToken($token);
             return $this->api->getInstagramCommentByID($comment_id);
         } catch (\Exception $exception) {
-            throw new \Exception('The page does not have a linked instagram account. Please use the instagram application to link it to a facebook page. Comment');
+            throw new \Exception('This Facebook page does not have a linked Instagram account. Please use the Instagram application to link it to a Facebook page. Comment');
         }
     }
 
@@ -330,7 +330,7 @@ class FacebookService
             $this->api->setSubscribePageWebHooks($page_id);
         } catch (\Exception $exception) {
             Log::error($exception->getMessage());
-            throw new \Exception('The page does not have a valid instagram account, Please use the instagram application to create a facebook page.');
+            throw new \Exception('This Facebook page does not have a linked Instagram account. Please use the Instagram application to link it to a Facebook page.');
         }
     }
 
