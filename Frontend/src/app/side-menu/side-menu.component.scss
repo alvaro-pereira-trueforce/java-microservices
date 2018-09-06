@@ -38,10 +38,16 @@ a{
   color: black;
 }
 
-.active{
+.menu-option.active{
   background-color: $sidebar-bg-hover;
   color: whitesmoke;
 }
+
+.sub-menu-option.active{
+  background-color: $sidebar-bg-hover-submenu;
+  color: whitesmoke;
+}
+
 .menu-title{
   display: flex;
   align-items: center;
@@ -65,6 +71,30 @@ a{
 
   &:hover {
     background-color: $sidebar-bg-hover;
+    cursor: pointer;
+  }
+  @include media-breakpoint-down(md) {
+    display: block;
+    padding: 8px;
+    .text {
+      display: none;
+    }
+  }
+}
+
+.sub-menu-option {
+  display: flex;
+  align-items: center;
+  flex-direction: row-reverse;
+  padding: 5px 20px 5px 20px;
+  .text {
+    display: block;
+    font-size: 1rem;
+    font-weight: 200;
+  }
+
+  &:hover {
+    background-color: $sidebar-bg-hover-submenu;
     cursor: pointer;
   }
   @include media-breakpoint-down(md) {
