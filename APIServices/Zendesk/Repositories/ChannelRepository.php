@@ -6,6 +6,7 @@ use APIServices\Zendesk\Models\BasicChannelModel;
 use APIServices\Zendesk\Models\ChannelSettings;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -167,5 +168,15 @@ class ChannelRepository
     public function getModelByColumnName($columnName, $value)
     {
         return $this->getQueryByColumnName($columnName, $value)->first();
+    }
+
+    /**
+     * @param $columnName
+     * @param $value
+     * @return Collection
+     */
+    public function getModelsByColumnName($columnName, $value)
+    {
+        return $this->getQueryByColumnName($columnName, $value)->get();
     }
 }
