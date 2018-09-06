@@ -1,10 +1,10 @@
 <div class="panel panel-default center" style="max-width: 800px">
     <div class="panel-heading">
-        <h3 class="panel-title">Instagram configuration</h3>
+        <h3 class="panel-title">Instagram Channel Configuration</h3>
     </div>
     <div class="panel-body">
         <p ng-if="!vm.metadata">Welcome, please authenticate first with your Facebook Account in order to start working
-            with Instagram Channel service.</p>
+            with the Instagram Channel service.</p>
 
         <p ng-if="!!vm.metadata">Welcome back. In order to update your authentication please use the
             following button to log in with your Facebook Account.</p>
@@ -24,7 +24,7 @@
                 </div>
                 <div class="form-group" ng-if="vm.timeout">
                     <div class="alert alert-danger">
-                        Facebook authentication timeout was reached. Please, Try again.
+                        Facebook authentication timeout was reached, please try again.
                     </div>
                 </div>
                 <div class="form-group" ng-if="vm.facebook_canceled">
@@ -47,7 +47,7 @@
                 <div class="form-group" ng-if="vm.expires">
                     <div class="alert alert-warning">
                         This Facebook Authentication will expire in {{vm.expires}} days. After saving this integration
-                        please refresh this facebook authentication until this message disappears in order to get a long
+                        please refresh this Facebook authentication until this message disappears in order to get a long
                         term Facebook Authentication Access.
                     </div>
                 </div>
@@ -64,22 +64,21 @@
                            ng-disabled="true" ng-required="true">
                 </div>
                 <div class="form-group">
-                    <label for="page_id">Select the facebook page with a valid instagram account:</label>
+                    <label for="page_id">Select a Facebook page with a linked Instagram account:</label>
                     <select class="form-control" name="page_id" id="page_id" ng-required="true"
                             ng-options="page.name for page in vm.pages track by page.id"
                             ng-model="vm.selected_page" ng-disabled="vm.isASavedIntegration">
                     </select>
                     <div class="alert alert-danger"
                          ng-if="vm.form.page_id.$invalid && vm.form.page_id.$touched || vm.form.$submitted && vm.form.page_id.$invalid">
-                        The facebook page field is required.
+                        A Facebook Page is required.
                     </div>
                 </div>
                 <hr/>
                 <div class="form-group">
                     <h4>Optional Settings</h4>
-                    <p>Choose the optional ticket field values, all the values are optionals.
-                        Please consider that all your new instagram tickets will be created with the optional settings
-                        you choose.</p>
+                    <p>Choose optional ticket values, all the fields are optional. Please consider that all your new
+                        Instagram tickets will be created with the optional setting you choose.</p>
                 </div>
 
                 <div class="row">
@@ -115,12 +114,11 @@
 
                 <div ng-if="!vm.isASavedIntegration">
                     <div class="form-group">
-                        <label>Receive Old Post?</label>
+                        <label>Receive Old Posts?</label>
                         <input type="checkbox" ng-model="vm.receiveOldPost">
                     </div>
                     <div class="form-group" ng-if="vm.receiveOldPost">
-                        <label>How many post do you want to receive? <br><span class="text-muted">The same amount of comments per post will be
-                        added.</span></label>
+                        <label>How many post do you want to receive?</label>
                         <select class="form-control" name="old_post_number" id="old_post_number" ng-required="true"
                                 ng-model="vm.old_post_number" ng-init="vm.old_post_number = '1'">
                             <option value="1">1</option>
@@ -135,6 +133,7 @@
                             <option value="45">45</option>
                             <option value="50">50</option>
                         </select>
+                        <div class="text-muted">The same amount of comments per post will be added.</div>
                         <div class="alert alert-danger"
                              ng-if="vm.form.old_post_number.$invalid && vm.form.old_post_number.$touched || vm.form.$submitted && vm.form.old_post_number.$invalid">
                             Please, select the amount of posts you want to receive.

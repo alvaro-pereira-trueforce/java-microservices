@@ -49,7 +49,7 @@ class ZendeskChannelService implements IChannelService
     {
         try {
             if ($this->channelRepository->checkIfExist('instagram_id', $instagram_id)) {
-                throw new \Exception("The instagram account is already registered. Please use another instagram account or select a different facebook page.");
+                throw new \Exception("This Instagram account is already registered. Please user another Instagram account or select a different Facebook page. If you want to delete old integrations from our database please uninstall the app and install it again, all accounts related to this domain will be erased.");
             }
         } catch (\Exception $exception) {
             throw $exception;
