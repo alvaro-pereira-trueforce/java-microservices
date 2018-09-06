@@ -11,7 +11,11 @@ const instagramRoutes: Routes = [
     children:[
       { path: 'how-to-install',  component: HowToInstallPageComponent },
       { path: 'faq', component: FAQPageComponent },
-      { path: '',  component: HowToInstallPageComponent }
+      {
+        path: '',
+        redirectTo: 'how-to-install',
+        pathMatch: 'full'
+      }
     ]
   }
 ];

@@ -11,5 +11,6 @@ export class AppComponent {
   componentAdded(component)
   {
     this.navBarTemplate = component.navBarTemplate;
+    window.scroll(0,0);
   }
 }
