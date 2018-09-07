@@ -24,7 +24,7 @@ import { TelegramModule } from './telegram/telegram.module';
     RoutingModule,
     BrowserAnimationsModule,
     NgbModule,
-    BrowserModule,
+    BrowserModule
   ],
   providers: [],
   bootstrap: [ AppComponent ]
