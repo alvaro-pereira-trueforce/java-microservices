@@ -9,6 +9,11 @@
         <p ng-if="!!vm.metadata">Welcome back. In order to update your authentication please use the
             following button to log in with your Facebook Account.</p>
 
+        <p>For more information about how to connect Instagram Account with Facebook Page use the following link <a
+                href="{{env('APP_URL')}}/app/#/instagram/how-to-install" target="_blank"> "How to Install"</a> or visit our  <a
+                href="{{env('APP_URL')}}/app/#/instagram/faq" target="_blank">Frequently Asked Questions</a> Page.<br><br>
+        </p>
+
         <div id="spinner" class="loader center" ng-if="vm.processing"></div>
 
         <div ng-if="!vm.processing && !vm.pages">
