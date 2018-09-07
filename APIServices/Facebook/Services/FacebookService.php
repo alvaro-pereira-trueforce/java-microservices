@@ -250,7 +250,7 @@ class FacebookService
             return $this->api->getInstagramMediaByID($media_id);
         } catch (\Exception $exception) {
             Log::error($exception->getMessage());
-            throw new \Exception('This Facebook page does not have a linked Instagram account. Please use the Instagram application to link it to a Facebook page. Media');
+            throw new \Exception($exception->getMessage());
         }
     }
 
@@ -267,7 +267,8 @@ class FacebookService
                 $this->setAccessToken($token);
             return $this->api->getInstagramCommentByID($comment_id);
         } catch (\Exception $exception) {
-            throw new \Exception('This Facebook page does not have a linked Instagram account. Please use the Instagram application to link it to a Facebook page. Comment');
+            Log::error($exception->getMessage());
+            throw new \Exception($exception->getMessage());
         }
     }
 
