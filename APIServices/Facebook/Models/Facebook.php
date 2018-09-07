@@ -29,9 +29,9 @@ class Facebook extends FB
         parent::__construct($config);
         if ($access_token && $access_token != '') {
             /* // this is just an example do not set the state before instantiate it.
-            $this->setDefaultAccessToken($access_token);
             $user = $this->get('/me');
             $user->getGraphUser();*/
+            $this->setDefaultAccessToken($access_token);
             $this->access_token = $access_token;
             $this->instagram_id = $instagram_id;
             $this->page_id = $page_id;
