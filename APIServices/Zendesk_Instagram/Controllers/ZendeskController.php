@@ -131,6 +131,9 @@ class ZendeskController extends CommonZendeskController
          */
         try {
             $newAccount = $this->getNewAccountInformation($request->account_id);
+            if (array_key_exists('expires_in', $newAccount)) {
+                unset($newAccount['expires_in']);
+            }
             if (array_key_exists('code', $newAccount)) {
                 $access_token = $this->facebookService->getAccessTokenFromFacebookCode($newAccount['code']);
                 Log::debug("Access Token:");
