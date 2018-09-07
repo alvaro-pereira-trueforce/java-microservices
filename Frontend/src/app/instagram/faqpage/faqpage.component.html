@@ -1,3 +1,52 @@
-<p>
-  faqpage works!
-</p>
+<div class="container mt-4">
+  <h1 class="font-weight-bold">FAQ</h1>
+  <h3 class="mt-3">Authentication Token</h3>
+
+  <div class="text-justify">
+    <ul>
+      <li>
+        What is the Authentication token?
+        <div>The Authentication token is a code we use to setup the communication between Facebook/Instagram and
+          Zendesk.
+        </div>
+      </li>
+      <li class="mt-3">
+        Does the Authentication token expire?
+        <div>Yes, it expires 60 days after you integrated Instagram and Zendesk for the first time.</div>
+      </li>
+      <li class="mt-3">
+        What do I need to do if the Authentication token has expired?
+        <div>
+          You need to update your Instagram Channel configuration on Zendesk, this action will renew your Authentication
+          token automatically, you can do it at anytime.
+        </div>
+        <p class="text-muted">Note: After your Authentication token is renewed it becomes a token with no expiration.</p>
+      </li>
+    </ul>
+
+    <h3 class="mt-4">Instagram Channel and Zendesk integration</h3>
+    <ul>
+      <li>My Instagram Channel integration stopped creating new tickets, what happened?
+        <div>If you did not renewed your Authentication token before and you integrated Instagram Channel with Zendesk
+          around 60 days ago, you will need to update your Instagram Channel configuration, this will make your
+          Authentication token to be renewed automatically.
+        </div>
+
+        <p class="mt-4">
+          If you already renewed your Authentication token and still having issues, please take a look to this points:
+        </p>
+        <ul>
+          <li>
+            Review your Facebook configuration, the apps section.
+          </li>
+          <li>
+            Ensure the Instagram Account you are using is an Instagram Business Account.
+          </li>
+          <li>
+            Ensure the Instagram BA is linked to the Facebook Page you chose on the integration.
+          </li>
+        </ul>
+      </li>
+    </ul>
+  </div>
+</div>
