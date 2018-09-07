@@ -62,6 +62,7 @@ class Facebook extends FB
     {
         try {
             $response = json_decode($this->get($endpoint)->getBody(), true);
+            Log::debug($response);
             return $response;
         } catch (FacebookSDKException $exception) {
             throw $exception;

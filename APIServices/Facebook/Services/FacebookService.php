@@ -249,6 +249,7 @@ class FacebookService
 
             return $this->api->getInstagramMediaByID($media_id);
         } catch (\Exception $exception) {
+            Log::error($exception->getMessage());
             throw new \Exception('This Facebook page does not have a linked Instagram account. Please use the Instagram application to link it to a Facebook page. Media');
         }
     }
