@@ -3,6 +3,8 @@
 namespace APIServices\Zendesk\Services;
 
 
+use Illuminate\Support\Facades\Log;
+
 class ZendeskAPI implements IZendeskAPI
 {
     protected $pushService;
@@ -16,5 +18,10 @@ class ZendeskAPI implements IZendeskAPI
     function pushNewMessage($message)
     {
         $this->pushService->pushNewMessage($message);
+    }
+
+    function pushNewMessages($messages)
+    {
+        $this->pushService->pushNewMessages($messages);
     }
 }

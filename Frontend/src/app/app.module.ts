@@ -23,8 +23,8 @@ import { TelegramModule } from './telegram/telegram.module';
     NavBarModule,
     RoutingModule,
     BrowserAnimationsModule,
-    NgbModule.forRoot(),
-    BrowserModule,
+    NgbModule,
+    BrowserModule
   ],
   providers: [],
   bootstrap: [ AppComponent ]

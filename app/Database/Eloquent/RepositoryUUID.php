@@ -3,7 +3,8 @@
 namespace App\Database\Eloquent;
 
 
-abstract class RepositoryUUID extends Repository {
+abstract class RepositoryUUID extends Repository
+{
 
     /**
      * Get the first row that has the following uuid
@@ -11,7 +12,8 @@ abstract class RepositoryUUID extends Repository {
      * @param $uuid
      * @return Model
      */
-    public function getByUUID($uuid) {
+    public function getByUUID($uuid)
+    {
         $model = $this->getModel();
         return $model->where('uuid', '=', $uuid)->first();
     }
@@ -21,7 +23,8 @@ abstract class RepositoryUUID extends Repository {
      * @param array $data
      * @return Model
      */
-    public function create(array $data) {
+    public function create(array $data)
+    {
         $model = $this->getModel();
         $model->fill($data);
         $model->save();
@@ -33,8 +36,7 @@ abstract class RepositoryUUID extends Repository {
         /** @var ModelUUID $model */
         $model = $this->getModel();
         $rows = $model->where($clauses)->get();
-        foreach ($rows as $row)
-        {
+        foreach ($rows as $row) {
             $row->delete();
         }
     }

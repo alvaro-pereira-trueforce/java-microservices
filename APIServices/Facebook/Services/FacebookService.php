@@ -4,43 +4,52 @@ namespace APIServices\Facebook\Services;
 
 
 use APIServices\Facebook\Models\Facebook;
-use APIServices\Facebook\Repositories\FacebookRepository;
 use Facebook\Exceptions\FacebookResponseException;
 use Facebook\Exceptions\FacebookSDKException;
+use GuzzleHttp\Client;
+use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Log;
 
 class FacebookService
 {
-    /**
-     * @var Facebook
-     */
-    protected $api;
-    /**
-     * @var FacebookRepository
-     */
-    protected $repository;
 
-    /**
-     * FacebookService constructor.
-     * @param Facebook $api
-     * @param FacebookRepository $repository
-     */
-    public function __construct(Facebook $api, FacebookRepository $repository)
+    protected $api;
+
+    public function __construct(Facebook $api)
     {
         $this->api = $api;
-        $this->repository = $repository;
     }
 
     /**
-     * @param $pages
-     * @return bool
+     * Get the access token for facebook endpoints using the code retrieved from the facebook authentication URL
+     * @param $code
+     * @return array
+     * @throws \Exception
      */
-    public function userHasPages($pages)
+    public function getAccessTokenFromFacebookCode($code)
     {
-        if (count($pages) == 0)
-            return false;
-        else
-            return true;
+        try {
+            /** @var Client $http_client */
+            $http_client = App::make(Client::class);
+            $response = $http_client->request('GET', 'https://graph.facebook.com/v3.0/oauth/access_token', [
+                'query' => [
+                    'client_id' => env('FACEBOOK_APP_ID'),
+                    'redirect_uri' => env('APP_URL') . '/instagram/admin_ui',
+                    'client_secret' => env('FACEBOOK_APP_SECRET'),
+                    'code' => $code
+                ]
+            ]);
+            $facebook_data = json_decode($response->getBody()->getContents(), true);
+            if (array_key_exists('access_token', $facebook_data)) {
+                return $facebook_data;
+            } else {
+                throw new \Exception("Facebook Bad Response: " . $facebook_data);
+            }
+        } catch (\Exception $exception) {
+            throw $exception;
+        } catch (\GuzzleHttp\Exception\GuzzleException $exception) {
+            throw new \Exception($exception->getMessage(), $exception->getCode(), $exception->getPrevious());
+        }
     }
 
     /**
@@ -86,21 +95,11 @@ class FacebookService
     }
 
     /**
-     * Get AccessToken from user registration status
-     * @param $uuid
-     * @return string
-     * @throws \Exception
+     * @param $instagram_id
      */
-    public function getAccessTokenForNewRegistrationUser($uuid)
+    public function setInstagramID($instagram_id)
     {
-        try {
-            $model = $this->repository->getByUUID($uuid);
-            $access_token = $model->facebook_token;
-            $model->delete();
-            return $access_token;
-        } catch (\Exception $exception) {
-            throw $exception;
-        }
+        $this->api->setInstagramID($instagram_id);
     }
 
     /**
@@ -113,9 +112,6 @@ class FacebookService
     {
         try {
             $pages = $this->api->getUserPages();
-            if (!$this->userHasPages($pages)) {
-                throw new \Exception('User does not have pages. Please create a new business page and connect it to instagram business account.');
-            }
             return $pages;
         } catch (\Exception $exception) {
             throw $exception;
@@ -128,12 +124,28 @@ class FacebookService
      * @return string
      * @throws \Exception
      */
+
     public function getInstagramAccountFromUserPage($page_id)
     {
         try {
             return $this->api->getPageInstagramID($page_id);
         } catch (\Exception $exception) {
-            throw new \Exception('The page does not have an instagram account, Please use the instagram application to create a facebook page.');
+            throw new \Exception('This Facebook page does not have a linked Instagram account. Please use the Instagram application to link it to a Facebook page.');
+        }
+    }
+
+    /**
+     * @var string $page_id
+     * Get Page Access Token
+     * @return string
+     * @throws \Exception
+     */
+    public function getPageAccessToken($page_id)
+    {
+        try {
+            return $this->api->getPageAccessToken($page_id);
+        } catch (\Exception $exception) {
+            throw new \Exception('This is not a valid Facebook page. Please create a valid Facebook page or contact support.');
         }
     }
 
@@ -152,65 +164,208 @@ class FacebookService
     }
 
     /**
-     * @param $limit
-     * @return array
-     * @throws \Exception
+     * @return \Facebook\FacebookBatchResponse|\Facebook\FacebookResponse|null
      */
-    public function getPosts($limit)
+    public function getLastFacebookResponse()
+    {
+        return $this->api->getLastResponse();
+    }
+
+    /**
+     * Returns facebook limits usage this function must be called before making a facebook Request.
+     * @return array
+     */
+    public function getLimits()
+    {
+        // Facebook API saves the last response in cache this default value is just for information about it, it never being used.
+        $limits = [
+            'x-page-usage' => json_decode('{"call_count":0,"total_cputime":0,"total_time":0}', true),
+            'x-app-usage' => json_decode('{"call_count":0,"total_cputime":0,"total_time":0}', true)
+        ];
+        try {
+            $lasResponse = $this->getLastFacebookResponse();
+            if ($lasResponse) {
+                Log::debug($lasResponse->getHeaders());
+                $limits['x-page-usage'] = json_decode($lasResponse->getHeaders()['x-page-usage'], true);
+                $limits['x-app-usage'] = json_decode($lasResponse->getHeaders()['x-app-usage'], true);
+            }
+        } catch (\Exception $exception) {
+            Log::error($exception->getMessage() . ' Line:' . $exception->getLine());
+            try {
+                $this->api->get('/me');
+                $lasResponse = $this->getLastFacebookResponse();
+                if ($lasResponse) {
+                    Log::debug($lasResponse->getHeaders());
+                    $limits['x-page-usage'] = json_decode($lasResponse->getHeaders()['x-page-usage'], true);
+                    $limits['x-app-usage'] = json_decode($lasResponse->getHeaders()['x-app-usage'], true);
+                }
+                return $limits;
+            } catch (\Exception $exception) {
+                return $limits;
+            }
+        }
+        return $limits;
+    }
+
+    /**
+     * Check if facebook Limit is enabled, this function uses the last request data.
+     * @param bool $page
+     * @return bool
+     */
+    public function isFacebookLimitEnable($page = false)
     {
         try {
-            return $this->api->getPosts($limit);
+            $limits = $this->getLimits();
+            Log::debug('Current Facebook Limits: ');
+            Log::debug($limits);
+
+            if ($page) {
+                if ($limits['x-page-usage']['call_count'] >= 100 || $limits['x-page-usage']['total_cputime'] >= 100 || $limits['x-page-usage']['total_time'] >= 100) {
+                    return true;
+                }
+            } else {
+                if ($limits['x-app-usage']['call_count'] >= 100 || $limits['x-app-usage']['total_cputime'] >= 100 || $limits['x-app-usage']['total_time'] >= 100) {
+                    return true;
+                }
+            }
+            return false;
         } catch (\Exception $exception) {
-            Log::error($exception->getMessage());
-            throw $exception;
+            Log::error($exception);
+            return true;
         }
     }
 
     /**
-     * @param $post_id
-     * @param int $limit
+     * @param string $media_id
+     * @param string $token
      * @return array
      * @throws \Exception
      */
-    public function getComments($post_id, $limit = 1000)
+    public function getInstagramMediaByID($media_id, $token = '')
     {
         try {
-            return $this->api->getComments($post_id, $limit);
+            if (!empty($token))
+                $this->setAccessToken($token);
+
+            return $this->api->getInstagramMediaByID($media_id);
         } catch (\Exception $exception) {
             Log::error($exception->getMessage());
-            throw $exception;
+            throw new \Exception($exception->getMessage());
         }
     }
 
     /**
-     * @param $post_id
+     * @param string $token
+     * @param string $comment_id
+     * @return array
+     * @throws \Exception
+     */
+    public function getInstagramCommentByID($comment_id, $token = '')
+    {
+        try {
+            if (!empty($token))
+                $this->setAccessToken($token);
+            return $this->api->getInstagramCommentByID($comment_id);
+        } catch (\Exception $exception) {
+            Log::error($exception->getMessage());
+            throw new \Exception($exception->getMessage());
+        }
+    }
+
+    /**
+     * @param string $media_id
+     * @param string $token
+     * @param string $comment_id
+     * @return array
+     * @throws \Exception
+     */
+    public function getParentFromComment($media_id, $comment_id, $token = '')
+    {
+        try {
+            if (!empty($token))
+                $this->setAccessToken($token);
+            $comments = $this->api->getMediaWithCommentsAndReplies($media_id);
+            $parent = null;
+            foreach ($comments['comments']['data'] as $comment) {
+                if (!empty($comment['replies']['data'])) {
+                    $parent = $comment;
+                    foreach ($comment['replies']['data'] as $reply) {
+                        if (!empty($reply['id']) && $reply['id'] == $comment_id) {
+                            return $this->getInstagramCommentByID($parent['id']);
+                        }
+                    }
+                }
+            }
+            return null;
+        } catch (\Exception $exception) {
+            Log::error($exception);
+            return null;
+        }
+    }
+
+    /**
+     * @param $token
+     * @param $media_id
      * @param $message
      * @return mixed
      * @throws \Exception
      */
-    public function sendMessage($post_id, $message)
+    public function postInstagramComment($media_id, $message, $token = '')
     {
         try {
-            return $this->api->postComment($post_id, $message);
+            if (!empty($token))
+                $this->setAccessToken($token);
+            return $this->api->postComment($media_id, $message);
+        } catch (\Exception $exception) {
+            throw new \Exception('The comment Error');
+        }
+    }
+
+
+    /**
+     * @param $page_id
+     * @throws \Exception
+     */
+    public function setSubscribePageWebHooks($page_id)
+    {
+        try {
+            $this->api->setSubscribePageWebHooks($page_id);
         } catch (\Exception $exception) {
             Log::error($exception->getMessage());
+            throw new \Exception('This Facebook page does not have a linked Instagram account. Please use the Instagram application to link it to a Facebook page.');
+        }
+    }
+
+    /**
+     * @param $page_id
+     * @param $page_access_token
+     * @throws \Exception
+     */
+    public function deletePageSubscriptionWebhook($page_id, $page_access_token)
+    {
+        try {
+            $this->api->setDefaultAccessToken($page_access_token);
+            $this->api->deletePageSubscriptionWebhook($page_id);
+        } catch (\Exception $exception) {
             throw $exception;
         }
     }
 
     /**
-     * @param $comment_id
      * @param $limit
-     * @return mixed
+     * @param $token
+     * @return array
      * @throws \Exception
      */
-    public function getReplies($comment_id, $limit)
+    public function getInstagramMediaWithComments($limit, $token = '')
     {
         try {
-            return $this->api->getReplies($comment_id,$limit);
+            if (!empty($token))
+                $this->setAccessToken($token);
+
+            return $this->api->getMediaWithComments($limit, $limit);
         } catch (\Exception $exception) {
-            Log::error($exception->getMessage());
-            throw $exception;
+
         }
     }
 }

@@ -5,17 +5,18 @@ import { slideInDownAnimation } from '../../animations/Router';
   selector: 'app-faqpage',
   templateUrl: './faqpage.component.html',
   styleUrls: ['./faqpage.component.scss'],
-  animations: [ slideInDownAnimation ]
+  //animations: [ slideInDownAnimation ]
 })
 export class FAQPageComponent implements OnInit {
 
-  @HostBinding('@routeAnimation') routeAnimation = true;
-  @HostBinding('style.display')   display = 'block';
-  @HostBinding('style.position')  position = 'absolute';
+  //@HostBinding('@routeAnimation') routeAnimation = true;
+  //@HostBinding('style.display')   display = 'block';
+  //@HostBinding('style.position')  position = 'absolute';
 
   constructor() { }
 
   ngOnInit() {
+    window.scroll(0,0);
   }
 
 }

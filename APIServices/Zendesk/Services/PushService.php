@@ -9,14 +9,24 @@ class PushService extends API
 
     public function pushNewMessage($message)
     {
-        try
-        {
+        try {
             $body = $this->getPushBody($message);
             $response = $this->pushRequest($body);
             Log::debug($response);
             return $response;
-        }catch (\Exception $exception)
-        {
+        } catch (\Exception $exception) {
+            Log::error($exception->getMessage());
+        }
+    }
+
+    public function pushNewMessages($messages)
+    {
+        try {
+            $body = $this->getPushBodyForMany($messages);
+            $response = $this->pushRequest($body);
+            Log::debug($response);
+            return $response;
+        } catch (\Exception $exception) {
             Log::error($exception->getMessage());
         }
     }
@@ -29,12 +39,10 @@ class PushService extends API
      */
     public function pushRequest($body)
     {
-        try
-        {
+        try {
             $endpoint = $this->getPushEndpointWithDomain($this->subDomain);
             return $this->client->sendRequest($endpoint, $body);
-        }catch (\Exception $exception)
-        {
+        } catch (\Exception $exception) {
             throw $exception;
         }
     }
@@ -46,7 +54,7 @@ class PushService extends API
      */
     private function getPushEndpointWithDomain($subDomain)
     {
-        return $this->client->getBasicEndpointWithSubDomain($subDomain).'any_channel/push';
+        return $this->client->getBasicEndpointWithSubDomain($subDomain) . 'any_channel/push';
     }
 
     protected function getPushBody($message)
@@ -56,6 +64,15 @@ class PushService extends API
             'external_resources' => [
                 $message
             ],
+            'state' => ""
+        ];
+    }
+
+    protected function getPushBodyForMany($messages)
+    {
+        return [
+            'instance_push_id' => $this->instance_push_id,
+            'external_resources' => $messages,
             'state' => ""
         ];
     }

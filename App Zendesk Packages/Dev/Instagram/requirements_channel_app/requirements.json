@@ -2,7 +2,7 @@
   "channel_integrations": {
     "Instagram Channel Developer": {
       "manifest_url":
-      "https://280b899c.ngrok.io/instagram/manifest"
+      "https://zendesk-channel-server-dev.herokuapp.com/instagram/manifest"
     }
   }
 }

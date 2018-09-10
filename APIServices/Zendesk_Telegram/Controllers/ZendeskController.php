@@ -3,24 +3,25 @@
 namespace APIServices\Zendesk_Telegram\Controllers;
 
 use APIServices\Telegram\Services\TelegramService;
+use APIServices\Zendesk\Controllers\CommonZendeskController;
 use APIServices\Zendesk_Telegram\Models\EventsTypes\IEventType;
 use APIServices\Zendesk_Telegram\Models\EventsTypes\UnknownEvent;
 use APIServices\Zendesk_Telegram\Services\ChannelService;
-use App\Http\Controllers\Controller;
 use App\Repositories\ManifestRepository;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Log;
 use Symfony\Component\HttpKernel\Exception\ServiceUnavailableHttpException;
 
-class ZendeskController extends Controller
+class ZendeskController extends CommonZendeskController
 {
+    protected $channel_service;
 
-    protected $manifest;
-
-    public function __construct(ManifestRepository $repository)
+    public function __construct(ManifestRepository $repository, TelegramService $service, ChannelService $channelService)
     {
-        $this->manifest = $repository;
+        parent::__construct($repository);
+        $this->service = $service;
+        $this->channel_service = $channelService;
     }
 
     public function getManifest(Request $request)
@@ -29,7 +30,7 @@ class ZendeskController extends Controller
         return response()->json($this->manifest->getByName('Telegram Channel'));
     }
 
-    public function adminUI(Request $request, TelegramService $service)
+    public function admin_UI(Request $request)
     {
         $metadata = json_decode($request->metadata, true); //will be null on empty
         $state = json_decode($request->state, true); //will be null on empty
@@ -61,7 +62,7 @@ class ZendeskController extends Controller
         try {
             if (!$metadata) {
                 //This is the code when the user add an account.
-                $newRecord = $service->setAccountRegistration([
+                $newRecord = $this->service->setAccountRegistration([
                     'zendesk_access_token' => $zendesk_access_token,
                     'instance_push_id' => $instance_push_id,
                     'zendesk_app_id' => $data['subdomain']
@@ -74,9 +75,9 @@ class ZendeskController extends Controller
                 {
                     $data['token_hide'] = true;
                     $data['submitURL'] = env('APP_URL') . '/telegram/admin_ui_edit';
-                    $token = $service->getById($metadata['token']);
+                    $token = $this->service->getById($metadata['token']);
                     $data['token'] = $token->token;
-                    $settings = $service->getChannelSettings();
+                    $settings = $this->service->getChannelSettings();
                     if(empty($settings))
                     {
                         return view('telegram.admin_ui_old_users_without_settings', $data);
@@ -117,7 +118,7 @@ class ZendeskController extends Controller
         return view('telegram.admin_ui', $data);
     }
 
-    public function admin_ui_add(Request $request, TelegramService $service)
+    public function admin_ui_add(Request $request)
     {
         try {
             $data = $request->all();
@@ -164,23 +165,23 @@ class ZendeskController extends Controller
                 $errors = ['Custom Message is required.'];
                 return $this->showErrorMessageAdminUI($errors, $data);
             }
-            $telegramBot = $service->checkValidTelegramBot($token);
+            $telegramBot = $this->service->checkValidTelegramBot($token);
             if (!$telegramBot) {
                 $errors = ['Invalid token, use Telegram Bot Father to create one.'];
                 return $this->showErrorMessageAdminUI($errors, $data);
             }
-            if ($service->isTokenRegistered($token)) {
+            if ($this->service->isTokenRegistered($token)) {
                 $errors = ['That telegram token is already registered.'];
                 return $this->showErrorMessageAdminUI($errors, $data);
             }
-            if ($service->isNameRegistered($subdomain, $name)) {
+            if ($this->service->isNameRegistered($subdomain, $name)) {
                 $errors = ['That integration name is already registered.'];
                 return $this->showErrorMessageAdminUI($errors, $data);
             }
 
             if (!$request->telegram_mode) {
                 Log::debug("Enabling Telegram Webhook.");
-                $telegramResponse = $service->setWebhook($token);
+                $telegramResponse = $this->service->setWebhook($token);
                 if (!$telegramResponse || !$telegramResponse[0]) {
                     $errors = ['There was an error with bots configuration, please contact support.'];
                     return $this->showErrorMessageAdminUI($errors, $data);
@@ -200,7 +201,7 @@ class ZendeskController extends Controller
                 'ticket_priority' => $request->ticket_priority,
                 'tags' => $tags
             ];
-            $metadata = $service->registerNewIntegration([
+            $metadata = $this->service->registerNewIntegration([
                 'name' => $name,
                 'token' => $token,
                 'subDomain' => $subdomain,
@@ -219,7 +220,7 @@ class ZendeskController extends Controller
         }
     }
 
-    public function admin_ui_edit(Request $request, TelegramService $service)
+    public function admin_ui_edit(Request $request)
     {
         $data = $request->all();
 
@@ -267,13 +268,13 @@ class ZendeskController extends Controller
                 $errors = ['Custom Message is required.'];
                 return $this->showErrorMessageAdminUI($errors, $data);
             }
-            $telegramBot = $service->checkValidTelegramBot($token);
+            $telegramBot = $this->service->checkValidTelegramBot($token);
             if (!$telegramBot) {
                 $errors = ['Invalid token, use Telegram Bot Father to create one.'];
                 return $this->showErrorMessageAdminUI($errors, $data);
             }
 
-            $telegramResponse = $service->setWebhook($token);
+            $telegramResponse = $this->service->setWebhook($token);
             if (!$telegramResponse || !$telegramResponse[0]) {
                 $errors = ['There was an error with bots configuration, please contact support.'];
                 return $this->showErrorMessageAdminUI($errors, $data);
@@ -294,7 +295,7 @@ class ZendeskController extends Controller
                 'tags' => $tags
             ];
             $data['settings'] = $settings;
-            $metadata = $service->updateIntegrationData($data);
+            $metadata = $this->service->updateIntegrationData($data);
 
             Log::debug(json_encode($metadata));
             return view('telegram.post_metadata', ['return_url' => $return_url, 'name' => $name, 'metadata' => json_encode($metadata)]);
@@ -304,10 +305,10 @@ class ZendeskController extends Controller
         }
     }
 
-    public function pull(Request $request, ChannelService $service)
+    public function pull(Request $request)
     {
         Log::debug($request);
-        $updates = $service->getUpdates();
+        $updates = $this->channel_service->getUpdates();
         $response = [
             'external_resources' => $updates,
             'state' => ""
@@ -316,10 +317,10 @@ class ZendeskController extends Controller
         return response()->json($response);
     }
 
-    public function channelback(Request $request, ChannelService $service)
+    public function channel_back(Request $request)
     {
         try {
-            $external_id = $service->channelBackRequest($request->parent_id, $request->message);
+            $external_id = $this->channel_service->channelBackRequest($request->parent_id, $request->message);
 
             $response = [
                 'external_id' => $external_id
@@ -330,12 +331,12 @@ class ZendeskController extends Controller
         }
     }
 
-    public function clickthrough(Request $request)
+    public function click_through(Request $request)
     {
         Log::info($request->all());
     }
 
-    public function healthcheck(Request $request)
+    public function health_check(Request $request)
     {
         return $this->successReturn();
     }

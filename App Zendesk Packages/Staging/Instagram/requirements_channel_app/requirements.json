@@ -2,7 +2,7 @@
   "channel_integrations": {
     "Instagram Channel Staging": {
       "manifest_url":
-      "https://help-desk-server-staging.herokuapp.com/instagram/manifest"
+      "https://zendesk-channel-server-staging.herokuapp.com/instagram/manifest"
     }
   }
 }

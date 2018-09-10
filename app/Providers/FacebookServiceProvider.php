@@ -3,8 +3,6 @@
 namespace App\Providers;
 
 use APIServices\Facebook\Models\Facebook;
-use APIServices\Zendesk\Models\Formatters\Instagram\ImagePostFormatter;
-use APIServices\Zendesk\Models\Formatters\Instagram\VideoPostFormatter;
 use Facebook\Facebook as FB;
 use Illuminate\Http\Request;
 use Illuminate\Support\ServiceProvider;
@@ -24,10 +22,6 @@ class FacebookServiceProvider extends ServiceProvider {
             'default_graph_version' => env('FACEBOOK_DEFAULT_GRAPH_VERSION')
         ];
 
-        //Instagram channel Message  Types
-        $this->app->bind('INSTAGRAM.IMAGE', ImagePostFormatter::class);
-        $this->app->bind('INSTAGRAM.VIDEO', VideoPostFormatter::class);
-
         $this->app->when(FB::class)
             ->needs('$config')
             ->give($facebookData);
@@ -45,8 +39,8 @@ class FacebookServiceProvider extends ServiceProvider {
             ->needs('$access_token')
             ->give(function () use ($metadata) {
                 $access_token = '';
-                if ($metadata && array_key_exists('token',$metadata)) {
-                    $access_token = $metadata['token'];
+                if ($metadata && array_key_exists('access_token',$metadata)) {
+                    $access_token = $metadata['access_token'];
                 }
                 return $access_token;
             });

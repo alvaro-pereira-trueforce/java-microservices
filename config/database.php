@@ -1,21 +1,26 @@
 <?php
-if(env('APP_ENV','local') != 'local')
-{
+if (env('APP_ENV', 'local') != 'local') {
     $url = parse_url(getenv("CLEARDB_DATABASE_URL"));
 
     $host = $url["host"];
     $username = $url["user"];
     $password = $url["pass"];
     $database = substr($url["path"], 1);
-}
-else
-{
+} else {
     $host = '127.0.0.1';
     $username = 'homestead';
     $password = 'secret';
     $database = 'homestead';
 }
 
+
+if (getenv('REDIS_URL')) {
+    $url = parse_url(getenv('REDIS_URL'));
+
+    putenv('REDIS_HOST=' . $url['host']);
+    putenv('REDIS_PORT=' . $url['port']);
+    putenv('REDIS_PASSWORD=' . $url['pass']);
+}
 
 return [
 
@@ -124,6 +129,7 @@ return [
     'redis' => [
 
         'client' => 'predis',
+        'cluster' => false,
 
         'default' => [
             'host' => env('REDIS_HOST', '127.0.0.1'),

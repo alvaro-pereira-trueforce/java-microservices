@@ -7,12 +7,12 @@ use GuzzleHttp\Client;
 
 class ZendeskClient
 {
-    protected $client;
+    protected $http_client;
     public $access_token;
 
-    public function __construct($access_token, Client $client)
+    public function __construct($access_token, Client $http_client)
     {
-        $this->client = $client;
+        $this->http_client = $http_client;
         $this->access_token = $access_token;
     }
 
@@ -33,7 +33,7 @@ class ZendeskClient
                 'Accept' => 'application/json'
             ];
 
-            $response = $this->client->post($endpoint, [
+            $response = $this->http_client->post($endpoint, [
                 'body' => json_encode($body),
                 'headers' => $headers
             ]);
