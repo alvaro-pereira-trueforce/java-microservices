@@ -26,20 +26,15 @@ class Facebook extends FB
     public function __construct(array $config = [], $access_token = '', $instagram_id = '',
                                 $page_id = '')
     {
-        try {
-            parent::__construct($config);
-            if ($access_token && $access_token != '') {
-                $this->setDefaultAccessToken($access_token);
-                $user = $this->get('/me');
-                $user->getGraphUser();
-                $this->access_token = $access_token;
-                $this->instagram_id = $instagram_id;
-                $this->page_id = $page_id;
-            }
-
-
-        } catch (FacebookSDKException $exception) {
-            throw $exception;
+        parent::__construct($config);
+        if ($access_token && $access_token != '') {
+            /* // this is just an example do not set the state before instantiate it.
+            $user = $this->get('/me');
+            $user->getGraphUser();*/
+            $this->setDefaultAccessToken($access_token);
+            $this->access_token = $access_token;
+            $this->instagram_id = $instagram_id;
+            $this->page_id = $page_id;
         }
     }
 
@@ -67,6 +62,7 @@ class Facebook extends FB
     {
         try {
             $response = json_decode($this->get($endpoint)->getBody(), true);
+            Log::debug($response);
             return $response;
         } catch (FacebookSDKException $exception) {
             throw $exception;
