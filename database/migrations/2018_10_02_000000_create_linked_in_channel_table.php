@@ -15,13 +15,13 @@ class CreateLinkedInChannelTable extends Migration
         Schema::create('linkedin_channels', function (Blueprint $table) {
             $table->primary('uuid');
             $table->uuid('uuid')->unique();
-            $table->string('integration_name',255);
-            $table->string('instance_push_id',255);
-            $table->string('zendesk_access_token', 255);
+            $table->string('integration_name');
+            $table->string('instance_push_id');
+            $table->string('zendesk_access_token');
             $table->string('subdomain');
             $table->string('access_token', 500);
-            $table->string('expires_in', 255);
-            $table->string('company_id', 255)->unique();
+            $table->string('expires_in');
+            $table->string('company_id')->unique();
             $table->timestamps();
         });
     }
