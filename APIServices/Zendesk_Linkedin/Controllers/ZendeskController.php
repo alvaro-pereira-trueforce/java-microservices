@@ -14,7 +14,7 @@ use Ramsey\Uuid\Uuid;
 class ZendeskController extends CommonZendeskController
 {
 
-    protected $channel_name = "Linkedin Channel";
+    protected $channel_name = "LinkedIn Channel";
     /** @var LinkedinService $linkedinService */
     protected $linkedinService;
 
