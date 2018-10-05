@@ -12,7 +12,7 @@
 
         <div id="spinner" class="loader center" ng-if="vm.processing"></div>
 
-        <div ng-if="!vm.processing">
+        <div ng-if="!vm.processing && !vm.company">
             <form id="form_setup" name="vm.form">
                 <div class="form-group">
                     <label for="name">Integration Name:</label>
@@ -38,4 +38,88 @@
             </a>
         </div>
     </div>
+
+
+
+
+    <div ng-if="!vm.processing && !!vm.company">
+        <form id="form_setup_data" name="vm.form">
+            <div class="form-group">
+                <div class="alert alert-warning">
+                    This Linkedin Authentication will expire in 60 days. After saving this integration
+                    please refresh this Linkedin authentication until this message disappears in order to get a long
+                    term Linkedin Authentication Access.
+                </div>
+            </div>
+
+            <div class="form-group">
+                <div ng-if="!!vm.error" class="alert alert-danger">
+                    {{vm.error}}
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="name">Integration Name:</label>
+                <input type="text" id="name" name="name" class="form-control" ng-model="vm.name"
+                       ng-disabled="true" ng-required="true">
+            </div>
+            <div class="form-group">
+                <label for="company_id">Select a Linked company account:</label>
+                <select class="form-control" name="company_id" id="company_id" ng-required="true"
+                        ng-options="company.name for company in vm.company track by company.id"
+                        ng-model="vm.selected_company" ng-disabled="vm.isASavedIntegration">
+                </select>
+                <div class="alert alert-danger"
+                     ng-if="vm.form.page_id.$invalid && vm.form.page_id.$touched || vm.form.$submitted && vm.form.page_id.$invalid">
+                    A Linked Page is required.
+                </div>
+            </div>
+            <hr/>
+            <div class="form-group">
+                <h4>Optional Settings</h4>
+                <p>Choose optional ticket values, all the fields are optional. Please consider that all your new
+                    Linked tickets will be created with the optional setting you choose.</p>
+            </div>
+
+            <div class="row">
+                <div class="col-sm-6">
+                    <div class="form-group">
+                        <label>Ticket Type:</label>
+                        <select class="form-control" name="ticket_type" id="ticket_type"
+                                ng-model="vm.selected_ticket_type">
+                            <option value="">-</option>
+                            <option ng-repeat="type in vm.ticket_types" ng-value="type.id">{{type.name}}</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-sm-6">
+                    <div class="form-group">
+                        <label>Ticket Priority:</label>
+                        <select class="form-control" name="ticket_priority" id="ticket_priority"
+                                ng-model="vm.selected_ticket_priority">
+                            <option value="">-</option>
+                            <option ng-repeat="priority in vm.ticket_priorities" ng-value="priority.id">
+                                {{priority.name}}
+                            </option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Tags:</label>
+                <input type="text" name="tags" class="form-control" ng-model="vm.tags">
+                <div class="text-muted">Please separate tags with spaces.</div>
+            </div>
+
+            <div class="form-group">
+                <button id="send_request" class="btn btn-primary" ng-click="vm.ValidateIntegration()">Submit</button>
+            </div>
+        </form>
+    </div>
+
+
+
+
+
 </div>

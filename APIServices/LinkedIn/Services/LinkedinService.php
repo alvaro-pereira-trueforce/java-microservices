@@ -3,29 +3,45 @@
 namespace APIServices\Services\LinkedIn;
 
 
-use APIServices\LinkedIn\Services\LinkedinAPIClient;
+use APIServices\LinkedIn\Services\LinkedInAPI;
 
 class LinkedinService
 {
     protected $linkedinAPIClient;
 
-    public function __construct(LinkedinAPIClient $linkedinAPIClient)
+    public function __construct(LinkedInAPI $linkedinAPIClient)
     {
         $this->linkedinAPIClient = $linkedinAPIClient;
     }
 
     /**
      * Get Access Token is for your application to ask for one using the Authorization Code it just acquired.
-     * @param $params
-     * @return string
+     * @param $code
+     * @return array
      * @throws \Exception
      */
-    public function getAuthorizationCode($params)
+    public function getAuthorizationToken($code)
     {
         try {
-            return $this->linkedinAPIClient->getAuthorizationCode($params);
+            return $this->linkedinAPIClient->getAuthorizationToken($code);
         } catch (\Exception $exception) {
             throw $exception;
+        }
+    }
+
+    /**
+     * @param array
+     * @return array
+     * @throws \Exception
+     */
+    public function getCompanies($token_access)
+    {
+        try {
+            return $this->linkedinAPIClient->getCompanies($token_access);
+
+        } catch (\Exception $exception) {
+            throw $exception;
+
         }
     }
 }

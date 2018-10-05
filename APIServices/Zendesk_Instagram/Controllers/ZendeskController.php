@@ -223,7 +223,7 @@ class ZendeskController extends CommonZendeskController
             ], 200);
         } catch (\Exception $exception) {
             Log::error("Controller Error: " . $exception->getMessage() . " Line:" . $exception->getLine());
-            throw new BadRequestHttpException($exception->getMessage());
+            return response()->json(['message' => $exception->getMessage(), 'status' => 400], 400);
         }
     }
 

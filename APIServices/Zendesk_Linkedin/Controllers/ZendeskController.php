@@ -2,16 +2,35 @@
 
 namespace APIServices\Zendesk_Linkedin\Controllers;
 
+use APIServices\Zendesk_Linkedin\Models\LinkedInChannel;
+use APIServices\Services\LinkedIn\LinkedinService;
 use APIServices\Zendesk\Controllers\CommonZendeskController;
+use APIServices\Zendesk_Linkedin\Services\ZendeskChannelService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Redis;
 use JavaScript;
 use Ramsey\Uuid\Uuid;
 
 class ZendeskController extends CommonZendeskController
 {
+
     protected $channel_name = "Linkedin Channel";
+    /** @var LinkedinService $linkedinService */
+    protected $linkedinService;
+
+    /** @var ZendeskChannelService $channelService */
+    protected $channelService;
+
+    public function __construct(LinkedinService $linkedinService)
+    {
+        try {
+            $this->linkedinService = $linkedinService;
+            $this->channelService = parent::getChannelService(ZendeskChannelService::class, LinkedInChannel::class);
+        } catch (\Exception $exception) {
+            Log::error('Zendesk Controller Constructor Error:');
+        }
+    }
+
     public function admin_UI(Request $request)
     {
         $metadata = json_decode($request->metadata, true); //will be null on empty
@@ -48,10 +67,14 @@ class ZendeskController extends CommonZendeskController
             } else {
                 $newAccountID = $metadata['account_id'];
                 $front_end_variables['backend_variables']['metadata'] = true;
+                $front_end_variables['backend_variables']['tags'] = $metadata['settings']['tags'];
+                $front_end_variables['backend_variables']['ticket_type'] = $metadata['settings']['ticket_priority'];
+                $front_end_variables['backend_variables']['ticket_priority'] = $metadata['settings']['ticket_type'];
+                $newAccount = array_merge($newAccount, $metadata);
             }
 
             $newAccount['account_id'] = $newAccountID;
-            Redis::set($newAccountID, json_encode($newAccount, true));
+            $this->saveNewAccountInformation($newAccountID, $newAccount);
             $front_end_variables['backend_variables']['account_id'] = $newAccountID;
             JavaScript::put($front_end_variables);
             return view('linkedin.admin_ui');
@@ -78,7 +101,7 @@ class ZendeskController extends CommonZendeskController
          */
         try {
             if ($request->has('state')) {
-                $newAccount = json_decode(Redis::get($request->state), true);
+                $newAccount = $this->getNewAccountInformation($request->state);
 
                 if ($request->has('code')) {
                     $newAccount['linkedin_code'] = $request->code;
@@ -87,7 +110,7 @@ class ZendeskController extends CommonZendeskController
                 if ($request->has('error')) {
                     $newAccount['linkedin_canceled'] = true;
                 }
-                Redis::set($request->state, json_encode($newAccount, true));
+                $this->saveNewAccountInformation($request->state, $newAccount);
             }
         } catch (\Exception $exception) {
             Log::error($exception->getMessage());
@@ -97,21 +120,43 @@ class ZendeskController extends CommonZendeskController
         return view('close_tab_helper');
     }
 
-    public function admin_UI_waiting(Request $request)
+    public function admin_UI_waiting(Request $request, LinkedinService $linkedinService)
     {
         /* Example Request
          *  'account_id' => '43a63903-eb23-480f-ae2a-f9e598cea089',
          *  'name' => 'Integration Name'
          */
         try {
-            $newAccount = json_decode(Redis::get($request->account_id), true);
+            $newAccount = $this->getNewAccountInformation($request->account_id);
+
             if (array_key_exists('linkedin_code', $newAccount)) {
                 $newAccount['name'] = $request->name;
-                return response()->json(['linkedin_invalid_code' => true], 403);
-                Redis::set($request->account_id, json_encode($newAccount, true));
-                return response()->json([
-                    'redirect_url' => env('APP_URL') . '/linkedin/admin_ui_save/' . $request->account_id
-                ], 200);
+                $LinkedToken = $this->linkedinService->getAuthorizationToken($newAccount['linkedin_code']);
+                Log::debug('Access_token');
+                unset($newAccount['linkedin_code']);
+                $pagesData = $linkedinService->getCompanies($LinkedToken);;
+                $newAccount = array_merge($newAccount, $LinkedToken);
+
+                $this->saveNewAccountInformation($request->account_id, $newAccount);
+
+                if (array_key_exists('expires_in', $newAccount)) {
+                    $expires = $newAccount['expires_in'];
+                }
+                $response = [
+                    'redirect_url' => env('APP_URL') . '/linkedin/admin_ui_save/' . $request->account_id,
+                    'company' => $pagesData['values'],
+                    'ticket_types' => $this->ticket_types,
+                    'ticket_priorities' => $this->ticket_priorities,
+                    'expires' => $expires
+                ];
+                if (!empty($newAccount['settings'])) {
+                    $response['ticket_priority'] = $newAccount['settings']['ticket_priority'];
+                    $response['ticket_type'] = $newAccount['settings']['ticket_type'];
+                    $response['tags'] = $newAccount['settings']['tags'];
+                    $response['selected_company'] = $newAccount['company_id'];
+                }
+                return response()->json($this->cleanArray($response), 200);
+
             }
             if (array_key_exists('linkedin_canceled', $newAccount)) {
                 return response()->json(['linkedin_canceled' => true], 401);
@@ -122,11 +167,60 @@ class ZendeskController extends CommonZendeskController
         return response()->json('Not Registered', 440);
     }
 
+
+    public function admin_ui_validate_company(Request $request)
+    {
+
+        $company_information = $request->company_information;
+
+        try {
+            $newAccount = $this->getNewAccountInformation($request->account_id);
+
+            if (empty($newAccount['settings'])) {
+                $this->channelService->checkIfLinkedIdIsAlreadyRegistered($company_information['id']);
+            }
+            $newAccount = array_merge($newAccount, [
+                'company_id' => $company_information['id'],
+                'settings' => [
+                    'ticket_type' => $request->ticket_type,
+                    'ticket_priority' => $request->ticket_priority,
+                    'tags' => $request->tags
+                ]
+            ]);
+            Log::debug($newAccount);
+            unset($newAccount['locale']);
+            //return response()->json('Not Registered', 440);
+            $newAccountDBModel = $newAccount;
+            $newAccountDBModel['uuid'] = $newAccount['account_id'];
+            $newAccountDBModel['integration_name'] = $newAccount['name'];
+            unset($newAccountDBModel['account_id']);
+            unset($newAccountDBModel['name']);
+            Log::debug($newAccountDBModel);
+            //return response()->json('Not Registered', 440);
+
+            $newAccountDBModel = $this->channelService->registerNewChannelIntegration($newAccountDBModel);
+            $newAccount['settings'] = $newAccountDBModel['settings'] ? $newAccountDBModel['settings']->toArray() : [];
+
+            Log::debug('A valid Company');
+
+            $this->saveNewAccountInformation($request->account_id, $newAccount);
+
+            return response()->json([
+                'redirect_url' => env('APP_URL') . '/linkedin/admin_ui_save/' . $request->account_id
+            ], 200);
+
+        } catch (\Exception $exception) {
+            Log::error("Controller Error: " . $exception->getMessage() . " Line:" . $exception->getLine());
+            return response()->json(['message' => $exception->getMessage(), 'status' => 400], 400);
+        }
+
+    }
+
     public function admin_ui_save($account_id)
     {
         try {
-            $newAccount = json_decode(Redis::get($account_id), true);
-            Redis::del($account_id);
+            $newAccount = $this->getNewAccountInformation($account_id);
+            $this->deleteNewAccountInformation($account_id);
             $return_url = $newAccount['return_url'];
             $name = $newAccount['name'];
             unset($newAccount['return_url']);
@@ -142,7 +236,7 @@ class ZendeskController extends CommonZendeskController
 
     public function pull(Request $request)
     {
-
+        return $this->successReturn();
     }
 
     public function channel_back(Request $request)
@@ -157,7 +251,7 @@ class ZendeskController extends CommonZendeskController
 
     public function health_check(Request $request)
     {
-
+        return $this->successReturn();
     }
 
     public function event_callback(Request $request)
