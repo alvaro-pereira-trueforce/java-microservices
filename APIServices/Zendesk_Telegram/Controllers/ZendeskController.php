@@ -19,7 +19,7 @@ class ZendeskController extends CommonZendeskController
 
     public function __construct(ManifestRepository $repository, TelegramService $service, ChannelService $channelService)
     {
-        parent::__construct($repository);
+        $this->manifest = $repository;
         $this->service = $service;
         $this->channel_service = $channelService;
     }

@@ -6,6 +6,7 @@ use APIServices\Zendesk_Linkedin\Models\LinkedInChannel;
 use APIServices\Services\LinkedIn\LinkedinService;
 use APIServices\Zendesk\Controllers\CommonZendeskController;
 use APIServices\Zendesk_Linkedin\Services\ZendeskChannelService;
+use App\Repositories\ManifestRepository;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use JavaScript;
@@ -21,11 +22,11 @@ class ZendeskController extends CommonZendeskController
     /** @var ZendeskChannelService $channelService */
     protected $channelService;
 
-    public function __construct(LinkedinService $linkedinService)
+    public function __construct(LinkedinService $linkedinService, ManifestRepository $manifestRepository, ZendeskChannelService $channelService, LinkedInChannel $linkedInModel)
     {
         try {
             $this->linkedinService = $linkedinService;
-            $this->channelService = parent::getChannelService(ZendeskChannelService::class, LinkedInChannel::class);
+            parent::__construct($manifestRepository, $channelService, $linkedInModel);
         } catch (\Exception $exception) {
             Log::error('Zendesk Controller Constructor Error:');
         }

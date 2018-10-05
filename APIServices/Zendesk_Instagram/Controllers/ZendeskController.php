@@ -11,9 +11,7 @@ use App\Repositories\ManifestRepository;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use JavaScript;
-use function Psy\debug;
 use Ramsey\Uuid\Uuid;
-use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\HttpKernel\Exception\ServiceUnavailableHttpException;
 
 class ZendeskController extends CommonZendeskController
@@ -25,12 +23,11 @@ class ZendeskController extends CommonZendeskController
     /** @var ZendeskChannelService $channelService */
     protected $channelService;
 
-    public function __construct(ManifestRepository $repository, FacebookService $facebookService)
+    public function __construct(ManifestRepository $repository, FacebookService $facebookService, ZendeskChannelService $channelService, InstagramChannel $model)
     {
         try {
-            parent::__construct($repository);
             $this->facebookService = $facebookService;
-            $this->channelService = parent::getChannelService(ZendeskChannelService::class, InstagramChannel::class);
+            parent::__construct($repository, $channelService, $model);
         } catch (\Exception $exception) {
             Log::error('Zendesk Controller Constructor Error:');
             Log::error($exception->getMessage());
