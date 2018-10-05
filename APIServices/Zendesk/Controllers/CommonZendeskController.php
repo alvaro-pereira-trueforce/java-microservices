@@ -18,7 +18,8 @@ abstract class CommonZendeskController extends Controller implements IZendeskCon
     use ArrayTrait;
 
     protected $manifest;
-    protected $service;
+    protected $channelService;
+
 
     protected $ticket_types = [
         ['id' => 'problem',
@@ -48,14 +49,20 @@ abstract class CommonZendeskController extends Controller implements IZendeskCon
      */
     protected $channel_name;
 
-    public function __construct(ManifestRepository $repository)
+    public function __construct(ManifestRepository $repository, $channelService, $channelModel)
     {
         $this->manifest = $repository;
+        try {
+                $this->channelService = $this->getChannelService($channelService, $channelModel);
+        } catch (\Exception $exception) {
+            Log::error($exception->getMessage());
+        }
     }
 
-    public function getManifest(Request $request)
+    public
+    function getManifest(Request $request)
     {
-        Log::notice("Zendesk Request: " . $request->method() . ' ' . $request->getPathInfo());
+        Log::notice("Zendesk Request: " . $request->method() . ' ' . $request->getPathInfo() . ' ' . $this->channel_name);
         return response()->json($this->manifest->getByName($this->channel_name));
     }
 
@@ -66,7 +73,8 @@ abstract class CommonZendeskController extends Controller implements IZendeskCon
      * @param $name
      * @return array
      */
-    public function getBasicBackendVariables($return_URL, $name)
+    public
+    function getBasicBackendVariables($return_URL, $name)
     {
         return [
             'backend_variables' => [
@@ -84,7 +92,8 @@ abstract class CommonZendeskController extends Controller implements IZendeskCon
      * @param $keyName
      * @throws \Exception
      */
-    public function saveNewAccountInformation($keyName, $newAccount)
+    public
+    function saveNewAccountInformation($keyName, $newAccount)
     {
         try {
             Redis::set($keyName, json_encode($newAccount, true));
@@ -101,7 +110,8 @@ abstract class CommonZendeskController extends Controller implements IZendeskCon
      * @return array
      * @throws \Exception
      */
-    public function getNewAccountInformation($keyName)
+    public
+    function getNewAccountInformation($keyName)
     {
         try {
             return json_decode(Redis::get($keyName), true);
@@ -115,7 +125,8 @@ abstract class CommonZendeskController extends Controller implements IZendeskCon
      * @param $keyName
      * @throws \Exception
      */
-    public function deleteNewAccountInformation($keyName)
+    public
+    function deleteNewAccountInformation($keyName)
     {
         try {
             Redis::del($keyName);
@@ -128,7 +139,8 @@ abstract class CommonZendeskController extends Controller implements IZendeskCon
      * Return Ok with status 200
      * @return \Illuminate\Http\JsonResponse
      */
-    public function successReturn()
+    public
+    function successReturn()
     {
         return response()->json('ok', 200);
     }
@@ -139,7 +151,8 @@ abstract class CommonZendeskController extends Controller implements IZendeskCon
      * @param $event_data
      * @return IEventType
      */
-    protected function getEventHandler($event_name, $event_data)
+    protected
+    function getEventHandler($event_name, $event_data)
     {
         try {
             return App::makeWith($event_name, [
@@ -160,7 +173,8 @@ abstract class CommonZendeskController extends Controller implements IZendeskCon
      * @return mixed
      * @throws \Exception
      */
-    protected function getChannelService($channelServiceClass, $channelModel, array $params = [])
+    protected
+    function getChannelService($channelServiceClass, $channelModel, array $params = [])
     {
         try {
             $this->configureChannelRepository($channelModel);
@@ -170,7 +184,8 @@ abstract class CommonZendeskController extends Controller implements IZendeskCon
         }
     }
 
-    protected function configureChannelRepository($channelModel)
+    protected
+    function configureChannelRepository($channelModel)
     {
         App::when(ChannelRepository::class)->needs('$channelModel')->give(new $channelModel);
     }
