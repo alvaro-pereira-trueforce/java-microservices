@@ -23,11 +23,11 @@ class ZendeskController extends CommonZendeskController
     /** @var ZendeskChannelService $channelService */
     protected $channelService;
 
-    public function __construct(ManifestRepository $repository, FacebookService $facebookService, ZendeskChannelService $channelService, InstagramChannel $model)
+    public function __construct(ManifestRepository $repository, FacebookService $facebookService)
     {
         try {
             $this->facebookService = $facebookService;
-            parent::__construct($repository, $channelService, $model);
+            parent::__construct($repository, ZendeskChannelService::class, InstagramChannel::class);
         } catch (\Exception $exception) {
             Log::error('Zendesk Controller Constructor Error:');
             Log::error($exception->getMessage());
