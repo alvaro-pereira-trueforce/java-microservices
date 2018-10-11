@@ -4,6 +4,7 @@ namespace APIServices\Zendesk_Instagram\Controllers;
 
 use APIServices\Facebook\Jobs\ProcessInstagramEvent;
 use APIServices\Facebook\Services\FacebookService;
+use APIServices\Utilities\StringUtilities;
 use APIServices\Zendesk\Controllers\CommonZendeskController;
 use APIServices\Zendesk_Instagram\Models\InstagramChannel;
 use APIServices\Zendesk_Instagram\Services\ZendeskChannelService;
@@ -298,7 +299,7 @@ class ZendeskController extends CommonZendeskController
                 $channelService->configureZendeskAPI($metadata['zendesk_access_token'], $metadata['subdomain'], $metadata['instance_push_id']);
                 $channelService->sendUpdate([
                         [
-                            'external_id' => $request->thread_id . ':' . 'error',
+                            'external_id' => $request->thread_id . ':' . StringUtilities::RandomString(),
                             'message' => 'The following message couldn\'t be posted on your Instagram Business Account. 
                     Facebook denied the action because of security reasons, please try again later. 
                     In order to not have this issue wait 30 seconds between each message sent from Zendesk.',
