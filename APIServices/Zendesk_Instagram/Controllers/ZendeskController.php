@@ -67,9 +67,6 @@ class ZendeskController extends CommonZendeskController
                 //This is the code for old users.
                 $newAccountID = $metadata['account_id'];
                 $front_end_variables['backend_variables']['metadata'] = true;
-                $front_end_variables['backend_variables']['tags'] = $metadata['settings']['tags'];
-                $front_end_variables['backend_variables']['ticket_type'] = $metadata['settings']['ticket_priority'];
-                $front_end_variables['backend_variables']['ticket_priority'] = $metadata['settings']['ticket_type'];
                 $newAccount = array_merge($newAccount, $metadata);
             }
 
