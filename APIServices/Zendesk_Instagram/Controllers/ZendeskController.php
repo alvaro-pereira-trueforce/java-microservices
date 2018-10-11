@@ -9,6 +9,7 @@ use APIServices\Zendesk_Instagram\Models\InstagramChannel;
 use APIServices\Zendesk_Instagram\Services\ZendeskChannelService;
 use App\Repositories\ManifestRepository;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Log;
 use JavaScript;
 use function Psy\debug;
@@ -290,11 +291,33 @@ class ZendeskController extends CommonZendeskController
             $message = $request->message;
             $newPost = $this->facebookService->postInstagramComment($thread_id[0], $message);
             Log::debug($newPost);
+            if (empty($newPost)) {
+                /** @var ZendeskChannelService $channelService */
+                $channelService = $this->getChannelService(ZendeskChannelService::class, InstagramChannel::class);
+                $metadata = json_decode($request->metadata, true);
+                $channelService->configureZendeskAPI($metadata['zendesk_access_token'], $metadata['subdomain'], $metadata['instance_push_id']);
+                $channelService->sendUpdate([
+                        [
+                            'external_id' => $request->thread_id . ':' . 'error',
+                            'message' => 'The following message couldn\'t be posted on your Instagram Business Account. 
+                    Facebook denied the action because of security reasons, please try again later. 
+                    In order to not have this issue wait 30 seconds between each message sent from Zendesk.',
+                            'thread_id' => $request->thread_id,
+                            'created_at' => date('Y-m-d\TH:i:s\Z'),
+                            'author' => [
+                                'external_id' => $request->recipient_id
+                            ]
+                        ]
+                    ]
+                );
+                return $this->successReturn();
+            }
             $response = [
                 'external_id' => $request->thread_id . ':' . $newPost['id']
             ];
             return response()->json($response);
         } catch (\Exception $exception) {
+            Log::error($exception->getMessage());
             throw new ServiceUnavailableHttpException($exception->getMessage());
         }
     }

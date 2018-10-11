@@ -317,7 +317,7 @@ class FacebookService
                 $this->setAccessToken($token);
             return $this->api->postComment($media_id, $message);
         } catch (\Exception $exception) {
-            throw new \Exception('The comment Error');
+            throw $exception;
         }
     }
 

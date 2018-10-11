@@ -101,19 +101,13 @@ class ProcessInstagramEvent implements ShouldQueue
 
             $transformedMessages = $message->getTransformedMessage();
             Log::debug($transformedMessages);
-
             if (!empty($transformedMessages)) {
                 //Configure Zendesk API and Zendesk Client
-
-                App::when(ZendeskClient::class)
-                    ->needs('$access_token')
-                    ->give($this->instagramChannel->zendesk_access_token);
-                App::when(ZendeskAPI::class)
-                    ->needs('$subDomain')
-                    ->give($this->instagramChannel->subdomain);
-                App::when(ZendeskAPI::class)
-                    ->needs('$instance_push_id')
-                    ->give($this->instagramChannel->instance_push_id);
+                $channelService->configureZendeskAPI(
+                    $this->instagramChannel->zendesk_access_token,
+                    $this->instagramChannel->subdomain,
+                    $this->instagramChannel->instance_push_id
+                );
                 $channelService->sendUpdate($transformedMessages);
             }
         } catch (\Exception $exception) {
