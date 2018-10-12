@@ -73,14 +73,18 @@ class LinkedInAPI
     }
 
     /**
-     * @param array
+     * @param string
+     * @param string
      * @return array
      * @throws \Exception
      */
-    public function getAllUpdatesFromAdministratorProfile($id_company)
+    public function getAllUpdates($params_token)
     {
+        $paramsCompanyToken = [
+            'Authorization' => 'Bearer ' . $params_token['access_token']
+        ];
 
-        return $this->client->getFormRequest('https://api.linkedin.com/v1/companies/' . $id_company . '/updates?format=json');
+        return $this->client->getFormRequest('https://api.linkedin.com/v1/companies/'. $params_token['company_id']. '/updates?format=json', $paramsCompanyToken);
     }
 
     /**
@@ -88,10 +92,10 @@ class LinkedInAPI
      * @return array
      * @throws \Exception
      */
-    public function getUpdatesFromCompany($id_company)
+    public function getUpdatesOneCompany($company_id)
     {
 
-        return $this->client->getFormRequest('https://api.linkedin.com/v1/companies/{id}/updates/key=' . $id_company . '?format=json');
+        return $this->client->getFormRequest('https://api.linkedin.com/v1/companies/{id}/updates/key=' . $company_id . '?format=json');
     }
 
     /**

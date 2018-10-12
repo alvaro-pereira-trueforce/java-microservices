@@ -1,9 +1,6 @@
 <?php
 
-namespace APIServices\Services\LinkedIn;
-
-
-use APIServices\LinkedIn\Services\LinkedInAPI;
+namespace APIServices\LinkedIn\Services;
 
 class LinkedinService
 {
@@ -38,6 +35,20 @@ class LinkedinService
     {
         try {
             return $this->linkedinAPIClient->getCompanies($token_access);
+        } catch (\Exception $exception) {
+            throw $exception;
+        }
+    }
+
+    /**
+     * @param array
+     * @return array
+     * @throws \Exception
+     */
+    public function getUpdates($params)
+    {
+        try {
+            return $this->linkedinAPIClient->getAllUpdates($params);
 
         } catch (\Exception $exception) {
             throw $exception;
