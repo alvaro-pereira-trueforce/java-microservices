@@ -31,6 +31,7 @@ function AdminUICtrl(windowsService, poller, $timeout, basicService, $window) {
 
     vm.company = undefined;
     vm.selected_company = undefined;
+    vm.company_page_selected = undefined;
 
     function waitLogin(e) {
         if (vm.form.name.$error.required) {
@@ -55,6 +56,15 @@ function AdminUICtrl(windowsService, poller, $timeout, basicService, $window) {
             vm.selected_ticket_priority = response.data.ticket_priority;
             vm.tags = response.data.tags;
             vm.company = response.data.company;
+            vm.company.forEach(function (value) {
+                if (value.id === response.data.selected_company) {
+
+                    vm.selected_company = value;
+                    vm.company_page_selected= value.name;
+                    vm.isASavedIntegration = true;
+                }
+            });
+
             stopProgress();
         }).catch(function (response) {
             if (!response || response.status === -1 || !response.data) {

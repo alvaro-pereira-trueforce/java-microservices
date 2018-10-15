@@ -6,7 +6,8 @@ namespace APIServices\Zendesk_Linkedin\Services;
 use APIServices\Zendesk\Repositories\ChannelRepository;
 use APIServices\Zendesk\Services\IChannelService;
 use APIServices\Zendesk_Linkedin\Models\MessageTypes\Comment;
-use APIServices\Zendesk_Linkedin\Models\MessageTypes\Image;
+use APIServices\Zendesk_Linkedin\Models\MessageTypes\CommentUpdate;
+use APIServices\Zendesk_Linkedin\Models\MessageTypes\ImageUpdate;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Log;
 
@@ -72,13 +73,13 @@ class ZendeskChannelService implements IChannelService
             throw $exception;
         }
     }
+
     /**
      * @param array $messages
      * @return mixed
      */
     public function getFactoryMessageType(array $messages)
     {
-        //Log::debug(collect($messages));
         try {
             foreach ($messages as $message => $item) {
                 if (!empty($messages['values'])) {
@@ -86,11 +87,11 @@ class ZendeskChannelService implements IChannelService
                         if (!empty($messages['values'][$id]['updateContent'])) {
                             foreach ($messages['values'][$id]['updateContent']['companyStatusUpdate']['share'] as $updateMessage => $index) {
                                 if (array_key_exists('content', $messages['values'][$id]['updateContent']['companyStatusUpdate']['share'])) {
-                                    $imageModel = App::make(Image::class);
-                                    return $imageModel->getTransformedMessage($messages['values'][$id]['updateContent']);
+                                    $imageModel = App::make(ImageUpdate::class);
+                                    return $imageModel->getTransformedMessage($messages['values'][$id]);
                                 } else {
-                                    $commentModel = App::make(Comment::class);
-                                    return $commentModel->getTransformedMessage($messages['values'][$id]['updateContent']);
+                                    $commentModel = App::make(CommentUpdate::class);
+                                    return $commentModel->getTransformedMessage($messages['values'][$id]);
                                 }
                             }
                         } else {
@@ -101,10 +102,20 @@ class ZendeskChannelService implements IChannelService
                     Log::error("Transformed Error: ");
                 }
             }
-        }catch (\Exception $exception){
+        } catch (\Exception $exception) {
             Log::error("Transformed Error: " . $exception->getMessage() . " Line:" . $exception->getLine());
         }
 
- }
+    }
+
+    public function verifyCommentBody(array $message)
+    {
+        try {
+            //if (array_key_exists(''))
+
+        } catch (\Exception $exception) {
+            Log::error("Transformed Error: " . $exception->getMessage() . " Line:" . $exception->getLine());
+        }
+    }
 
 }

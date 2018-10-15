@@ -246,14 +246,7 @@ class ZendeskController extends CommonZendeskController
         $metadata = json_decode($request->metadata, true);
         $state = json_decode($request->state, true);
         try {
-            $integrationChannel = $this->channelService->getChannelIntegration($metadata);
-            if (!empty($integrationChannel)) {
-                //ProcessZendeskPullEvent::dispatch($integrationChannel, 1);
-                $job = new ProcessZendeskPullEvent($integrationChannel, 1);
-                $job->handle($metadata);
-            } else {
-                throw new \Exception("there is no account");
-            }
+            Log::debug($metadata);
             return $this->successReturn();
         } catch (\Exception $exception) {
             Log::error($exception->getMessage());

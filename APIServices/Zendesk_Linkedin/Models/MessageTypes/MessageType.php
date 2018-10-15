@@ -3,47 +3,28 @@
 namespace APIServices\Zendesk_Linkedin\Models\MessageTypes;
 
 
-use APIServices\Zendesk\Utility;
-
 /**
  * Class MessageType
  * @package APIServices\Zendesk_Linkedin\Models\MessageTypes
  */
 abstract class MessageType implements IMessageType
 {
-    /**
-     * @var Utility
-     */
-    protected $zendeskUtils;
-
-
-    /**
-     * MessageType constructor.
-     * @param Utility $zendeskUtils
-     */
-    public function __construct(Utility $zendeskUtils)
-    {
-        $this->zendeskUtils = $zendeskUtils;
-
-    }
 
     /**
      * @param $message
      * @return mixed
      */
-    public function getExternalId($message)
+    public function getExternalIdUpdate($message)
     {
-
         return $message['companyStatusUpdate']['share']['id'];
 
-
     }
 
     /**
      * @param $message
      * @return mixed
      */
-    public function getAuthorExternalId($message)
+    public function getAuthorExternalIdUpdate($message)
     {
         return $message['company']['id'];
     }
@@ -52,7 +33,7 @@ abstract class MessageType implements IMessageType
      * @param $message
      * @return mixed
      */
-    public function getAuthorName($message)
+    public function getAuthorNameUpdate($message)
     {
         return $message['company']['name'];
     }
@@ -61,18 +42,33 @@ abstract class MessageType implements IMessageType
      * @param $message
      * @return mixed
      */
-    public function getBasicResponse($message)
+    public function getBasicResponseUpdate($message)
     {
         return $message['companyStatusUpdate']['share']['comment'];
 
     }
+
     /**
      * @param $message
      * @return mixed
      */
-    public function getCreationDate($message)
+    public function getDateUpdate($message)
     {
         return $message['companyStatusUpdate']['share']['timestamp'];
 
     }
+
+    /**
+     * @param $message
+     * @return array
+     */
+    public function getAuthorInformationUpdate($message)
+    {
+
+        return [
+            'external_id' => $this->getAuthorExternalIdUpdate($message),
+            'name' => $this->getAuthorNameUpdate($message)
+        ];
+    }
+
 }

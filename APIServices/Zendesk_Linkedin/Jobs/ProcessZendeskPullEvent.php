@@ -52,11 +52,14 @@ class ProcessZendeskPullEvent implements ShouldQueue
             $linkedInService = App::make(LinkedinService::class);
             $comments=$linkedInService->getUpdates($metadata);
             $zendeskService= App::make(ZendeskChannelService::class);
+            if (!empty($zendeskService->getFactoryMessageType($comments))){
+                Log::debug('Update Body processed');
 
-            $tes= $zendeskService->getFactoryMessageType($comments);
+            }
 
-            Log::debug($tes);
-            dd($tes);
+
+            //Log::debug($tes);
+            //dd($tes);
            // Log::debug($comments);
             //dd($comments);
         } catch (\Exception $exception) {

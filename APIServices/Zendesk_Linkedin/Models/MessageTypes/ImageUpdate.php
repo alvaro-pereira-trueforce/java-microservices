@@ -4,10 +4,10 @@ namespace APIServices\Zendesk_Linkedin\Models\MessageTypes;
 
 
 /**
- * Class Image
- * This class will retrieve a Image Model class
+ * Class ImageUpdate
+ * This class will retrieve a ImageUpdate Model class
  */
-class Image extends MessageType
+class ImageUpdate extends MessageType
 {
 
     /**

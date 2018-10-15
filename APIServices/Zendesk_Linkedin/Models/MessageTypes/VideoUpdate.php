@@ -4,10 +4,10 @@ namespace APIServices\Zendesk_Linkedin\Models\MessageTypes;
 
 
 /**
- * Class Video
- * This class will retrieve a Video Model class
+ * Class VideoUpdate
+ * This class will retrieve a VideoUpdate Model class
  */
-class Video extends MessageType
+class VideoUpdate extends MessageType
 {
 
     /**
@@ -16,6 +16,6 @@ class Video extends MessageType
      */
     function getTransformedMessage($data)
     {
-        // TODO: Implement getTransformedMessage() method.
+
     }
 }
