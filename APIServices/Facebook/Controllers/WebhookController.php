@@ -59,7 +59,7 @@ class WebhookController extends Controller
                                             'text' => $change['value']['text'],
                                             'media' => $change['value']['media']
                                         ];
-                                        //ProcessInstagramEvent::dispatch($instagramChannel, $field_type, $payload, 1);
+                                        ProcessInstagramEvent::dispatch($instagramChannel, $field_type, $payload, 1);
                                     }
                                 }
                             }
