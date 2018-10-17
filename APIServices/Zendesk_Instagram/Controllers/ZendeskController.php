@@ -267,6 +267,8 @@ class ZendeskController extends CommonZendeskController
                                         ]
                                     ];
                                     Log::debug($payload);
+                                    $job = new ProcessInstagramEvent($instagramChannel, 'comments', $payload, 1);
+                                    $job->handle();
                                     //ProcessInstagramEvent::dispatch($instagramChannel, 'comments', $payload, 1)->delay(15);
                                 }
                             }
@@ -275,7 +277,7 @@ class ZendeskController extends CommonZendeskController
                 }
             }
         } catch (\Exception $exception) {
-            Log::error($exception);
+            Log::error($exception->getMessage().' Line: '. $exception->getLine());
         }
     }
 
