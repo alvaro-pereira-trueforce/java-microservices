@@ -3,24 +3,10 @@
 namespace APIServices\Zendesk_Instagram\Models\MessageTypes;
 
 
-use APIServices\Zendesk\Utility;
 use Illuminate\Support\Facades\Log;
 
-class VideoMediaType extends CommentPayload
+class VideoMediaType extends MediaType
 {
-    /**
-     * ImageMediaType constructor.
-     * @param $media
-     * @param $comment
-     * @param Utility $utility
-     */
-    public function __construct($media, $comment, Utility $utility)
-    {
-        $this->media = $media;
-        $this->comment = $comment;
-        $this->utility = $utility;
-    }
-
     function getTransformedMessage()
     {
         try {

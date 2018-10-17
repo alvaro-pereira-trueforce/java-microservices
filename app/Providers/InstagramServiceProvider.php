@@ -20,5 +20,6 @@ class InstagramServiceProvider extends ServiceProvider
         //Instagram channel Media Types
         $this->app->bind('instagram_IMAGE', MessageTypes\ImageMediaType::class);
         $this->app->bind('instagram_VIDEO', MessageTypes\VideoMediaType::class);
+        $this->app->bind('instagram_CAROUSEL_ALBUM', MessageTypes\CarouselAlbumType::class);
     }
 }

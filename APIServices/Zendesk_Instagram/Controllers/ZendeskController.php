@@ -10,12 +10,9 @@ use APIServices\Zendesk_Instagram\Models\InstagramChannel;
 use APIServices\Zendesk_Instagram\Services\ZendeskChannelService;
 use App\Repositories\ManifestRepository;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Log;
 use JavaScript;
-use function Psy\debug;
 use Ramsey\Uuid\Uuid;
-use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\HttpKernel\Exception\ServiceUnavailableHttpException;
 
 class ZendeskController extends CommonZendeskController
@@ -267,9 +264,7 @@ class ZendeskController extends CommonZendeskController
                                         ]
                                     ];
                                     Log::debug($payload);
-                                    $job = new ProcessInstagramEvent($instagramChannel, 'comments', $payload, 1);
-                                    $job->handle();
-                                    //ProcessInstagramEvent::dispatch($instagramChannel, 'comments', $payload, 1)->delay(15);
+                                    ProcessInstagramEvent::dispatch($instagramChannel, 'comments', $payload, 1)->delay(15);
                                 }
                             }
                         }
@@ -277,7 +272,7 @@ class ZendeskController extends CommonZendeskController
                 }
             }
         } catch (\Exception $exception) {
-            Log::error($exception->getMessage().' Line: '. $exception->getLine());
+            Log::error($exception->getMessage() . ' Line: ' . $exception->getLine());
         }
     }
 

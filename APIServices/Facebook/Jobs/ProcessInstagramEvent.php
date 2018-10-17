@@ -106,7 +106,7 @@ class ProcessInstagramEvent implements ShouldQueue
                         $this->instagramChannel->instance_push_id
                     );
                     Log::debug($transformedMessages);
-                    //$channelService->sendUpdate($transformedMessages);
+                    $channelService->sendUpdate($transformedMessages);
                 }
             }
         } catch (\ReflectionException $exception) {
