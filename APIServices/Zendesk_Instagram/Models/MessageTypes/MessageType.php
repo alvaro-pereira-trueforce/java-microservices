@@ -1,6 +1,6 @@
 <?php
 
-namespace APIServices\Zendesk_Instagram\Models\WebHooks;
+namespace APIServices\Zendesk_Instagram\Models\MessageTypes;
 
 
 use APIServices\Zendesk\Models\IMessageType;

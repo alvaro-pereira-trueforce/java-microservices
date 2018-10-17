@@ -1,12 +1,12 @@
 <?php
 
-namespace APIServices\Zendesk_Instagram\Models\WebHooks;
+namespace APIServices\Zendesk_Instagram\Models\MessageTypes;
 
 
 use APIServices\Zendesk\Utility;
 use Illuminate\Support\Facades\Log;
 
-class ImageMediaType extends CommentPayload
+class VideoMediaType extends CommentPayload
 {
     /**
      * ImageMediaType constructor.
@@ -36,8 +36,9 @@ class ImageMediaType extends CommentPayload
                 $this->getMediaAuthorName()
             );
             return $this->utility->addHtmlMessageToBasicResponse($basic_response,
-                view('instagram.multimedia.photo_viewer', [
-                    'photoURL' => $this->media['media_url'],
+                view('instagram.multimedia.video_viewer', [
+                    'photoURL' => $this->media['thumbnail_url'],
+                    'videoURL' => $this->media['media_url'],
                     'message' => $this->getFooterPage()
                 ])->render()
             );
