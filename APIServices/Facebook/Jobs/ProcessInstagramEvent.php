@@ -4,10 +4,8 @@ namespace APIServices\Facebook\Jobs;
 
 use APIServices\Facebook\Models\Facebook;
 use APIServices\Facebook\Services\FacebookService;
-use APIServices\Zendesk\Models\IMessageType;
 use APIServices\Zendesk\Repositories\ChannelRepository;
-use APIServices\Zendesk\Services\ZendeskAPI;
-use APIServices\Zendesk\Services\ZendeskClient;
+use APIServices\Zendesk_Instagram\Models\Factories\MessageTypeFactory;
 use APIServices\Zendesk_Instagram\Models\InstagramChannel;
 use APIServices\Zendesk_Instagram\Services\ZendeskChannelService;
 use App\Traits\ArrayTrait;
@@ -54,7 +52,8 @@ class ProcessInstagramEvent implements ShouldQueue
     {
         Log::debug('Starting Job With: ' . $this->field_type);
         try {
-            Log::debug('Log Worker');
+            Log::notice('Log Worker');
+            Log::notice($this->instagramChannel->uuid);
             Log::debug($this->payload);
             App::when(ChannelRepository::class)->needs('$channelModel')->give(new InstagramChannel());
             /** @var ZendeskChannelService $channelService */
@@ -93,31 +92,28 @@ class ProcessInstagramEvent implements ShouldQueue
             Log::notice('Success..Processing Data..');
 
             $this->payload['media'] = $media;
-            /** @var IMessageType $message */
-            $message = App::makeWith('instagram_' . $this->field_type, [
-                'payload' => $this->payload,
-                'settings' => $settings
-            ]);
 
-            $transformedMessages = $message->getTransformedMessage();
-            Log::debug($transformedMessages);
+            $message = MessageTypeFactory::getMessageType($this->field_type, $this->payload, $settings);
 
-            if (!empty($transformedMessages)) {
-                //Configure Zendesk API and Zendesk Client
-
-                App::when(ZendeskClient::class)
-                    ->needs('$access_token')
-                    ->give($this->instagramChannel->zendesk_access_token);
-                App::when(ZendeskAPI::class)
-                    ->needs('$subDomain')
-                    ->give($this->instagramChannel->subdomain);
-                App::when(ZendeskAPI::class)
-                    ->needs('$instance_push_id')
-                    ->give($this->instagramChannel->instance_push_id);
-                $channelService->sendUpdate($transformedMessages);
+            if (!empty($message)) {
+                $transformedMessages = $message->getTransformedMessage();
+                Log::debug($transformedMessages);
+                if (!empty($transformedMessages)) {
+                    //Configure Zendesk API and Zendesk Client
+                    $channelService->configureZendeskAPI(
+                        $this->instagramChannel->zendesk_access_token,
+                        $this->instagramChannel->subdomain,
+                        $this->instagramChannel->instance_push_id
+                    );
+                    Log::debug($transformedMessages);
+                    $channelService->sendUpdate($transformedMessages);
+                }
             }
+        } catch (\ReflectionException $exception) {
+            Log::error($exception->getMessage() . ' OnLine: ' . $exception->getLine().' '.$exception->getFile());
+            Log::error('class does not exist, new instagram message type added.');
         } catch (\Exception $exception) {
-            Log::error($exception->getMessage());
+            Log::error($exception->getMessage() . ' OnLine: ' . $exception->getLine().' '.$exception->getFile());
             throw $exception;
         }
     }
