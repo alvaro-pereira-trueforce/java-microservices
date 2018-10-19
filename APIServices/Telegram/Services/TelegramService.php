@@ -64,69 +64,14 @@ class TelegramService
         return $model;
     }
 
-    /**
-     * @param $data
-     * @return \APIServices\Zendesk_Telegram\Models\TelegramChannel
-     * @throws \Exception
-     */
-    public function create($data)
-    {
-        try {
-            $user = $this->repository->create($data);
-            return $user;
-        } catch (\Exception $exception) {
-            throw $exception;
-        }
-    }
-
-    /**
-     * @param $uuid
-     * @param array $data
-     * @return \App\Database\Eloquent\Model
-     * @throws \Exception
-     */
-    public function update($uuid, array $data)
-    {
-        try {
-            $model = $this->getRequestedModel($uuid);
-            $this->repository->update($model, $data);
-            return $model;
-        } catch (\Exception $exception) {
-            throw $exception;
-        }
-    }
-
-    public function delete($uuid)
-    {
-        $model = $this->getById($uuid);
-        return $model->delete();
-    }
-
     private function getRequestedModel($uuid)
     {
         $model = $this->repository->getByUUID($uuid);
 
         if (is_null($model)) {
-            throw new ModelNotFoundException();
+            throw new ModelNotFoundException('There is no account with that uuid.');
         }
         return $model;
-    }
-
-    /**
-     * @param array $data
-     * @return array
-     * @throws \Exception
-     */
-    public function setAccountRegistration(array $data)
-    {
-        try {
-            $model = $this->repository->setAccountRegistration($data);
-            if ($model)
-                return $model->toArray();
-            return [];
-        } catch (\Exception $exception) {
-            throw $exception;
-        }
     }
 
     /**
@@ -379,12 +324,7 @@ class TelegramService
     public function registerNewIntegration($data)
     {
         try {
-            $model = $this->repository->setAccountRegistration([
-                'token' => $data['token'],
-                'zendesk_app_id' => $data['subDomain'],
-                'integration_name' => $data['name'],
-                'settings' => $data['settings']
-            ]);
+            $model = $this->repository->updateOrCreateChannelWithSettings($data);
             return [
                 'token' => $model->uuid,
                 'integration_name' => $model->integration_name,

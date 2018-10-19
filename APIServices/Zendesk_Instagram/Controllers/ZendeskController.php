@@ -4,14 +4,15 @@ namespace APIServices\Zendesk_Instagram\Controllers;
 
 use APIServices\Facebook\Jobs\ProcessInstagramEvent;
 use APIServices\Facebook\Services\FacebookService;
+use APIServices\Utilities\StringUtilities;
 use APIServices\Zendesk\Controllers\CommonZendeskController;
+use APIServices\Zendesk\Models\EventsTypes\EventFactory;
+use APIServices\Zendesk\Repositories\ChannelFactory;
 use APIServices\Zendesk_Instagram\Models\InstagramChannel;
 use APIServices\Zendesk_Instagram\Services\ZendeskChannelService;
-use App\Repositories\ManifestRepository;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use JavaScript;
-use Ramsey\Uuid\Uuid;
 use Symfony\Component\HttpKernel\Exception\ServiceUnavailableHttpException;
 
 class ZendeskController extends CommonZendeskController
@@ -23,11 +24,11 @@ class ZendeskController extends CommonZendeskController
     /** @var ZendeskChannelService $channelService */
     protected $channelService;
 
-    public function __construct(ManifestRepository $repository, FacebookService $facebookService, ZendeskChannelService $channelService, InstagramChannel $model)
+    public function __construct(FacebookService $facebookService)
     {
         try {
             $this->facebookService = $facebookService;
-            parent::__construct($repository, $channelService, $model);
+            parent::__construct(ZendeskChannelService::class, InstagramChannel::class);
         } catch (\Exception $exception) {
             Log::error('Zendesk Controller Constructor Error:');
             Log::error($exception->getMessage());
@@ -36,44 +37,9 @@ class ZendeskController extends CommonZendeskController
 
     public function admin_UI(Request $request)
     {
-        $metadata = json_decode($request->metadata, true); //will be null on empty
-        $state = json_decode($request->state, true); //will be null on empty
-        Log::debug($request->all());
-        /* Example{
-            'name' => NULL,
-            'metadata' => NULL,
-            'state' => NULL,
-            'return_url' => 'https://d3v-assuresoft.zendesk.com/zendesk/channels/integration_service_instances/editor_finalizer',
-            'instance_push_id' => '3cd1d2a5-aaf2-41fe-a9f1-519499605854',
-            'zendesk_access_token' => '601444c6f97f74d331bdc5fb8843b245f16079511759581582227c5643771588',
-            'subdomain' => 'd3v-assuresoft',
-            'locale' => 'en-US',
-        }*/
         try {
-            $front_end_variables = $this->getBasicBackendVariables(env('APP_URL') . '/instagram/admin_ui', $request->name);
+            $front_end_variables = $this->getAdminUIVariables($request, env('APP_URL') . '/instagram/admin_ui');
             $front_end_variables['backend_variables']['client_ID'] = env('FACEBOOK_APP_ID');
-
-            $newAccount = $request->all();
-            unset($newAccount['state']);
-            unset($newAccount['metadata']);
-
-            if (!$metadata) {
-                //This is the code when the user add an account.
-                $newAccountID = Uuid::uuid4();
-            } else {
-                //This is the code for old users.
-                $newAccountID = $metadata['account_id'];
-                $front_end_variables['backend_variables']['metadata'] = true;
-                $front_end_variables['backend_variables']['tags'] = $metadata['settings']['tags'];
-                $front_end_variables['backend_variables']['ticket_type'] = $metadata['settings']['ticket_priority'];
-                $front_end_variables['backend_variables']['ticket_priority'] = $metadata['settings']['ticket_type'];
-                $newAccount = array_merge($newAccount, $metadata);
-            }
-
-            $newAccount['account_id'] = $newAccountID;
-            $this->saveNewAccountInformation($newAccountID, $newAccount);
-
-            $front_end_variables['backend_variables']['account_id'] = $newAccountID;
             JavaScript::put($front_end_variables);
             return view('instagram.admin_ui');
         } catch (\Exception $exception) {
@@ -273,7 +239,7 @@ class ZendeskController extends CommonZendeskController
                 }
             }
         } catch (\Exception $exception) {
-            Log::error($exception);
+            Log::error($exception->getMessage() . ' Line: ' . $exception->getLine());
         }
     }
 
@@ -290,11 +256,33 @@ class ZendeskController extends CommonZendeskController
             $message = $request->message;
             $newPost = $this->facebookService->postInstagramComment($thread_id[0], $message);
             Log::debug($newPost);
+            if (empty($newPost)) {
+                /** @var ZendeskChannelService $channelService */
+                $channelService = ChannelFactory::getChannelService(ZendeskChannelService::class, InstagramChannel::class);
+                $metadata = json_decode($request->metadata, true);
+                $channelService->configureZendeskAPI($metadata['zendesk_access_token'], $metadata['subdomain'], $metadata['instance_push_id']);
+                $channelService->sendUpdate([
+                        [
+                            'external_id' => $request->thread_id . ':' . StringUtilities::RandomString(),
+                            'message' => 'The following message couldn\'t be posted on your Instagram Business Account. 
+                    Facebook denied the action because of security reasons, please try again later. 
+                    In order to not have this issue wait 30 seconds between each message sent from Zendesk.',
+                            'thread_id' => $request->thread_id,
+                            'created_at' => date('Y-m-d\TH:i:s\Z'),
+                            'author' => [
+                                'external_id' => $request->recipient_id
+                            ]
+                        ]
+                    ]
+                );
+                return $this->successReturn();
+            }
             $response = [
                 'external_id' => $request->thread_id . ':' . $newPost['id']
             ];
             return response()->json($response);
         } catch (\Exception $exception) {
+            Log::error($exception->getMessage());
             throw new ServiceUnavailableHttpException($exception->getMessage());
         }
     }
@@ -313,8 +301,8 @@ class ZendeskController extends CommonZendeskController
     {
         try {
             Log::notice("Zendesk Event:");
-            $this->configureChannelRepository(InstagramChannel::class);
-            $event = $this->getEventHandler('instagram_' . $request->events[0]['type_id'], $request->all());
+            ChannelFactory::configureChannelRepository(InstagramChannel::class);
+            $event = EventFactory::getEventHandler('instagram_' . $request->events[0]['type_id'], $request->all());
             $event->handleEvent();
         } catch (\Exception $exception) {
             Log::error($exception->getMessage() . ' Line: ' . $exception->getLine());
