@@ -7,10 +7,15 @@ use APIServices\Zendesk\Repositories\ChannelRepository;
 use APIServices\Zendesk\Services\IChannelService;
 use APIServices\Zendesk_Linkedin\Models\MessageTypes\Comment;
 use APIServices\Zendesk_Linkedin\Models\MessageTypes\CommentUpdate;
-use APIServices\Zendesk_Linkedin\Models\MessageTypes\ImageUpdate;
+use APIServices\Zendesk_Linkedin\Models\MessageTypes\TMessageType;
+use APIServices\Zendesk\Services\ZendeskAPI;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Log;
 
+/**
+ * Class ZendeskChannelService
+ * @package APIServices\Zendesk_Linkedin\Services
+ */
 class ZendeskChannelService implements IChannelService
 {
     /**
@@ -49,11 +54,25 @@ class ZendeskChannelService implements IChannelService
         }
     }
 
+    /**
+     * @param array $transformedMessage
+     * @throws \Exception
+     */
     public function sendUpdate(array $transformedMessage)
     {
-        // TODO: Implement sendUpdate() method.
+        try {
+            /** @var ZendeskAPI $zendeskAPI */
+            $zendeskAPI = App::make(ZendeskAPI::class);
+            $zendeskAPI->pushNewMessages($transformedMessage);
+        } catch (\Exception $exception) {
+            throw $exception;
+        }
     }
-
+    /**
+     * @param array $data
+     * @return \Illuminate\Database\Eloquent\Model
+     * @throws \Exception
+     */
     public function registerNewChannelIntegration(array $data)
     {
         try {
@@ -64,6 +83,11 @@ class ZendeskChannelService implements IChannelService
         }
     }
 
+    /**
+     * @param $metadata
+     * @return \Illuminate\Database\Eloquent\Model
+     * @throws \Exception
+     */
     public function getChannelIntegration($metadata)
     {
         try {
@@ -73,49 +97,27 @@ class ZendeskChannelService implements IChannelService
             throw $exception;
         }
     }
-
     /**
      * @param array $messages
+     * @param $access_token
      * @return mixed
      */
-    public function getFactoryMessageType(array $messages)
+    public function getMessageTransform(array $messages , $access_token)
     {
         try {
-            foreach ($messages as $message => $item) {
-                if (!empty($messages['values'])) {
-                    foreach ($messages['values'] as $id => $index) {
-                        if (!empty($messages['values'][$id]['updateContent'])) {
-                            foreach ($messages['values'][$id]['updateContent']['companyStatusUpdate']['share'] as $updateMessage => $index) {
-                                if (array_key_exists('content', $messages['values'][$id]['updateContent']['companyStatusUpdate']['share'])) {
-                                    $imageModel = App::make(ImageUpdate::class);
-                                    return $imageModel->getTransformedMessage($messages['values'][$id]);
-                                } else {
-                                    $commentModel = App::make(CommentUpdate::class);
-                                    return $commentModel->getTransformedMessage($messages['values'][$id]);
-                                }
-                            }
-                        } else {
-                            Log::error("Transformed Error: ");
-                        }
-                    }
-                } else {
-                    Log::error("Transformed Error: ");
-                }
+            $tes=[];
+            $value=[];
+            $messageLoopTransformed = [];
+            $messageTransformed=App::make(TMessageType::class);
+            $response=$messageTransformed->getTransformedMessage($messages['values'],$access_token);
+            foreach ($response  as $key => $value) {
+                $messageLoopTransformed[] = $value;
+                $value=array_merge($messageLoopTransformed,$tes);
             }
+            //$messageTransSorted=collect($value)->sortBy('created_at')->reverse()->toArray();
+            return $value;
         } catch (\Exception $exception) {
-            Log::error("Transformed Error: " . $exception->getMessage() . " Line:" . $exception->getLine());
-        }
-
-    }
-
-    public function verifyCommentBody(array $message)
-    {
-        try {
-            //if (array_key_exists(''))
-
-        } catch (\Exception $exception) {
-            Log::error("Transformed Error: " . $exception->getMessage() . " Line:" . $exception->getLine());
+            Log::error("Transformed Error: " . $exception->getMessage() . " Line:" . $exception->getLine().'problems to sorted message');
         }
     }
-
 }

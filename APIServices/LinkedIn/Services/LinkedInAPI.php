@@ -3,15 +3,29 @@
 namespace APIServices\LinkedIn\Services;
 
 
+/**
+ * Class LinkedInAPI
+ * @package APIServices\LinkedIn\Services
+ */
 class LinkedInAPI
 {
+    /**
+     * @var LinkedInClient
+     */
     protected $client;
+    /**
+     * @var array
+     */
     protected $endpoints = [
         'GetAccessToken' => 'https://www.linkedin.com/oauth/v2/accessToken',
         'GetCompanies' => 'https://api.linkedin.com/v1/companies?format=json&is-company-admin=true'
 
     ];
 
+    /**
+     * LinkedInAPI constructor.
+     * @param LinkedInClient $client
+     */
     public function __construct(LinkedInClient $client)
     {
         $this->client = $client;
@@ -84,23 +98,27 @@ class LinkedInAPI
             'Authorization' => 'Bearer ' . $params_token['access_token']
         ];
 
-        return $this->client->getFormRequest('https://api.linkedin.com/v1/companies/'. $params_token['company_id']. '/updates?format=json', $paramsCompanyToken);
+        return $this->client->getFormRequest('https://api.linkedin.com/v1/companies/' . $params_token['company_id'] . '/updates?format=json', $paramsCompanyToken);
     }
 
     /**
-     * @param array
-     * @return array
+     * @param $params_token
+     * @return mixed
      * @throws \Exception
      */
-    public function getUpdatesOneCompany($company_id)
+    public function getAllFromPost($params_token)
     {
+        $paramsCompanyToken = [
+            'Authorization' => 'Bearer ' . $params_token['access_token']
+        ];
 
-        return $this->client->getFormRequest('https://api.linkedin.com/v1/companies/{id}/updates/key=' . $company_id . '?format=json');
+        return $this->client->getFormRequest('https://api.linkedin.com/v1/companies/' . $params_token['idCompany'] . '/updates/key=' . $params_token['updateKey'] . '?format=json', $paramsCompanyToken);
     }
 
     /**
-     * @param array
-     * @return array
+     * @param $id_company
+     * @param $id_update
+     * @return mixed
      * @throws \Exception
      */
     public function getLikesFromCompany($id_company, $id_update)

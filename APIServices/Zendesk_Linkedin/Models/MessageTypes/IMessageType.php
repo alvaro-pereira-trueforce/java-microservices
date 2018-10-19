@@ -11,9 +11,10 @@ interface IMessageType
 {
     /**
      * @param $message
+     * @param $access_token
      * @return mixed
      */
-    function getTransformedMessage($message);
+    function getTransformedMessage($message, $access_token);
 
 
 }
