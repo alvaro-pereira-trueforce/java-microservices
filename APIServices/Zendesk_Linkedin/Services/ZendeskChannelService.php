@@ -19,7 +19,7 @@ use Illuminate\Support\Facades\Log;
 class ZendeskChannelService implements IChannelService
 {
     /**
-     * @var array
+     * @var $state
      */
     protected $state;
 
@@ -68,6 +68,7 @@ class ZendeskChannelService implements IChannelService
             throw $exception;
         }
     }
+
     /**
      * @param array $data
      * @return \Illuminate\Database\Eloquent\Model
@@ -95,29 +96,6 @@ class ZendeskChannelService implements IChannelService
         } catch (\Exception $exception) {
             Log::error("Database Error: " . $exception->getMessage() . " Line:" . $exception->getLine());
             throw $exception;
-        }
-    }
-    /**
-     * @param array $messages
-     * @param $access_token
-     * @return mixed
-     */
-    public function getMessageTransform(array $messages , $access_token)
-    {
-        try {
-            $tes=[];
-            $value=[];
-            $messageLoopTransformed = [];
-            $messageTransformed=App::make(TMessageType::class);
-            $response=$messageTransformed->getTransformedMessage($messages['values'],$access_token);
-            foreach ($response  as $key => $value) {
-                $messageLoopTransformed[] = $value;
-                $value=array_merge($messageLoopTransformed,$tes);
-            }
-            //$messageTransSorted=collect($value)->sortBy('created_at')->reverse()->toArray();
-            return $value;
-        } catch (\Exception $exception) {
-            Log::error("Transformed Error: " . $exception->getMessage() . " Line:" . $exception->getLine().'problems to sorted message');
         }
     }
 }

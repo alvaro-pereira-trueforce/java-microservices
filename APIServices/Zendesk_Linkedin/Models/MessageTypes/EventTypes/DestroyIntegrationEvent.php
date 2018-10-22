@@ -9,7 +9,7 @@
 namespace APIServices\Zendesk_Linkedin\Models\MessageTypes\EventTypes;
 
 
-class DeleteIntegrationModel
+class DestroyIntegrationEvent
 {
 
 }

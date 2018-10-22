@@ -48,7 +48,7 @@ abstract class MessageType implements IMessageType
         if (!empty($message['updateContent']['companyStatusUpdate']['share']['comment'])) {
             return $message['updateContent']['companyStatusUpdate']['share']['comment'];
         } else {
-            return 'Image was posted by "'.$message['updateContent']['company']['name'].'"';
+            return 'Image was posted by '.$message['updateContent']['company']['name'].'"';
         }
     }
 

@@ -34,6 +34,7 @@ class TMessageType extends MessageType
      */
     protected $messageComment = [];
 
+
     /**
      * TMessageType constructor.
      * @param CommentType $commentType
@@ -44,7 +45,7 @@ class TMessageType extends MessageType
     {
         $this->commentType = $commentType;
         $this->imageType = $imageType;
-        $this->linkedinService=$linkedinService;
+        $this->linkedinService = $linkedinService;
     }
 
     /**
@@ -59,10 +60,10 @@ class TMessageType extends MessageType
             foreach ($messages as $message) {
                 $newArray = $this->linkedinService->getAllCommentPost($message, $access_token);
                 if (array_key_exists('content', $newArray['updateContent']['companyStatusUpdate']['share'])) {
-                    $this->messageImage = array_merge($this->imageType->getTransformedMessage($newArray,$access_token),$this->messageImage);
+                    $this->messageImage = array_merge($this->imageType->getTransformedMessage($newArray, $access_token), $this->messageImage);
                 } else
                     if (array_key_exists('comment', $newArray['updateContent']['companyStatusUpdate']['share'])) {
-                        $this->messageComment = array_merge($this->messageComment,$this->commentType->getTransformedMessage($newArray,$access_token));
+                        $this->messageComment = array_merge($this->messageComment, $this->commentType->getTransformedMessage($newArray, $access_token));
                     } else {
                         Log::debug('here appeared video section');
                     }
@@ -71,6 +72,30 @@ class TMessageType extends MessageType
             return $response;
         } catch (\Exception $exception) {
             Log::error('Message: ' . $exception->getMessage() . ' On Line: ' . $exception->getLine() . 'redirect a messageType');
+        }
+    }
+
+    /**
+     * @param array $messages
+     * @param $access_token
+     * @return array
+     * @throws \Throwable
+     */
+    public function transformMessage(array $messages, $access_token)
+    {
+        try {
+            $loopHep = [];
+            $indexNewMessage = [];
+            $messageLoopTransformed = [];
+            $response = $this->getTransformedMessage($messages['values'], $access_token);
+            $array = collect($response)->sortBy('count')->reverse()->toArray();
+            foreach ($array as $key => $indexNewMessage) {
+                $messageLoopTransformed[] = $indexNewMessage;
+                $indexNewMessage = array_merge($messageLoopTransformed, $loopHep);
+            }
+            return $indexNewMessage;
+        } catch (\Exception $exception) {
+            Log::error("Transformed Error: " . $exception->getMessage() . " Line:" . $exception->getLine() . 'problems to sorted message');
         }
     }
 

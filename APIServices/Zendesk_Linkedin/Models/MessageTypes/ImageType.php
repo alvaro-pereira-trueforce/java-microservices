@@ -10,6 +10,8 @@ use Illuminate\Support\Facades\Log;
  */
 class ImageType extends MessageType
 {
+
+
     /**
      * @param $messages
      * @param $access_token

@@ -23,11 +23,11 @@ class ZendeskController extends CommonZendeskController
     /** @var ZendeskChannelService $channelService */
     protected $channelService;
 
-    public function __construct(ManifestRepository $manifestRepository, LinkedinService $linkedinService)
+    public function __construct(LinkedinService $linkedinService)
     {
         try {
             $this->linkedinService = $linkedinService;
-            parent::__construct($manifestRepository, ZendeskChannelService::class, LinkedInChannel::class);
+            parent::__construct(ZendeskChannelService::class, LinkedInChannel::class);
         } catch (\Exception $exception) {
             Log::error('Zendesk Controller Constructor Error:' . $exception->getMessage() . $exception->getLine());
         }
@@ -249,10 +249,7 @@ class ZendeskController extends CommonZendeskController
         try {
             $integrationChannel = $this->channelService->getChannelIntegration($metadata);
             if (!empty($integrationChannel)) {
-               // ProcessZendeskPullEvent::dispatch($integrationChannel, 1);
-                $job = new ProcessZendeskPullEvent($integrationChannel, 1);
-                $job->handle($metadata);
-                Log::debug('successful message send to zendesks ');
+                ProcessZendeskPullEvent::dispatch($integrationChannel, 1, $metadata);
             } else {
                 throw new \Exception("there is no account");
             }

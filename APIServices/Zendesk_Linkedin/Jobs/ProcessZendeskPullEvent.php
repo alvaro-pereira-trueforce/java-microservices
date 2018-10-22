@@ -4,6 +4,7 @@ namespace APIServices\Zendesk_Linkedin\Jobs;
 
 use APIServices\LinkedIn\Services\LinkedinService;
 use APIServices\Zendesk_Linkedin\Models\LinkedInChannel;
+use APIServices\Zendesk_Linkedin\Models\MessageTypes\TMessageType;
 use APIServices\Zendesk_Linkedin\Services\ZendeskChannelService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Queue\SerializesModels;
@@ -37,25 +38,31 @@ class ProcessZendeskPullEvent implements ShouldQueue
      * @var $triesCount
      */
     protected $triesCount;
+    /**
+     * @var $metadata
+     */
+    protected $metadata;
 
     /**
      * ProcessZendeskPullEvent constructor.
      * @param LinkedInChannel $linkedInChannel
      * @param $triesCount
+     * @param $metadata
      */
-    public function __construct(LinkedInChannel $linkedInChannel, $triesCount)
+    public function __construct(LinkedInChannel $linkedInChannel, $triesCount, $metadata)
     {
         $this->linkedInChannel = $linkedInChannel;
         $this->triesCount = $triesCount;
+        $this->metadata=$metadata;
     }
 
     /**
-     * @param $metadata
      * @return mixed
      * @throws \Exception
      */
-    public function handle($metadata)
+    public function handle()
     {
+
         Log::debug('Starting Job:');
         try {
             Log::debug('Log Worker');
@@ -66,14 +73,14 @@ class ProcessZendeskPullEvent implements ShouldQueue
 
             $linkedInService = App::make(LinkedinService::class);
 
-            $comments = $linkedInService->getUpdates($metadata);
+            $comments = $linkedInService->getUpdates($this->metadata);
             if ((array_key_exists('_total', $comments) && (int)$comments['_total'] == 0)) {
                 Log::debug('The media does not exist or it has not comments');
                 return;
             } else {
                 try {
-                    $zendeskService = App::make(ZendeskChannelService::class);
-                    $transformedMessages = $zendeskService->getMessageTransform($comments, $metadata['access_token']);
+                    $zendeskTransformService = App::make(TMessageType::class);
+                    $transformedMessages = $zendeskTransformService->transformMessage($comments, $this->metadata['access_token']);
                     if (!empty($transformedMessages)) {
                         //Configure Zendesk API and Zendesk Client
                         App::when(ZendeskClient::class)
@@ -85,16 +92,15 @@ class ProcessZendeskPullEvent implements ShouldQueue
                         App::when(ZendeskAPI::class)
                             ->needs('$instance_push_id')
                             ->give($this->linkedInChannel->instance_push_id);
-                        dd($transformedMessages);
                         $channelService->sendUpdate($transformedMessages);
                     }
 
                 } catch (\Exception $exception) {
-                    Log::error('Message: ' . $exception->getMessage() . ' On Line: ' . $exception->getLine().'error to transform messages');
+                    Log::error('Message: ' . $exception->getMessage() . ' On Line: ' . $exception->getLine() . 'error to transform messages');
                 }
             }
         } catch (\Exception $exception) {
-            Log::error('Message: ' . $exception->getMessage() . ' On Line: ' . $exception->getLine().'error to instant channel services');
+            Log::error('Message: ' . $exception->getMessage() . ' On Line: ' . $exception->getLine() . 'error to instant channel services');
         }
     }
 
