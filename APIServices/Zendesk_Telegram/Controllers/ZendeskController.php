@@ -81,6 +81,7 @@ class ZendeskController extends CommonZendeskController
                 }
                 $front_end_variables['backend_variables']['settings']['has_hello_message'] = (bool)$front_end_variables['backend_variables']['settings']['has_hello_message'];
                 $front_end_variables['backend_variables']['settings']['required_user_info'] = (bool)$front_end_variables['backend_variables']['settings']['required_user_info'];
+                $front_end_variables['backend_variables']['settings']['tickets_by_group'] = (bool)$front_end_variables['backend_variables']['settings']['tickets_by_group'];
             }
             $front_end_variables['backend_variables']['ticket_types'] = $this->ticket_types;
             $front_end_variables['backend_variables']['ticket_priorities'] = $this->ticket_priorities;
