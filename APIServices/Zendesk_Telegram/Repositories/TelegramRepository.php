@@ -37,6 +37,9 @@ class TelegramRepository extends RepositoryUUID
             $model->save();
             /** @var TelegramChannelSettings $settings */
             $settings = App::make(TelegramChannelSettings::class);
+            if (empty($data['settings'])) {
+                $data['settings'] = [];
+            }
             $dataSettings = $this->getValidDataToFill($data['settings'], $settings);
             $settings->fill($dataSettings);
             $model->settings()->save($settings);
@@ -66,6 +69,9 @@ class TelegramRepository extends RepositoryUUID
                 if (!$settings) {
                     /** @var TelegramChannelSettings $settings */
                     $settings = App::make(TelegramChannelSettings::class);
+                }
+                if (empty($data['settings'])) {
+                    $data['settings'] = [];
                 }
                 $dataSettings = $this->getValidDataToFill($data['settings'], $settings);
                 $settings->fill($dataSettings);
