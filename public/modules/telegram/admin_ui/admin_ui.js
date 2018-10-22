@@ -16,6 +16,7 @@ function AdminUICtrl(windowsService, poller, $timeout, basicService, $window) {
     vm.processing = false;
     vm.timeout = false;
     vm.name = windowsService.backend_variables.name;
+    vm.token = windowsService.backend_variables.token;
     vm.metadata = windowsService.backend_variables.metadata;
     vm.return_URL = windowsService.backend_variables.return_URL;
     vm.settings = {};

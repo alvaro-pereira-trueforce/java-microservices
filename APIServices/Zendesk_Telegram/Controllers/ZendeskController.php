@@ -55,10 +55,11 @@ class ZendeskController extends CommonZendeskController
                     ]
                 ]);
             }
+            $telegramAccessToken = '';
             if (!empty($this->zendeskInfo['metadata']) && !empty($this->zendeskInfo['metadata']['token'])) {
                 $savedAccount = $this->telegram_service->getById($this->zendeskInfo['metadata']['token']);
                 $settings = $savedAccount->settings()->first();
-                if (empty($settings)) {
+                if (empty($settings) || empty($savedAccount)) {
                     JavaScript::put([
                         'backend_variables' => [
                             'pull_mode' => true
@@ -66,13 +67,20 @@ class ZendeskController extends CommonZendeskController
                     ]);
                     return view('telegramV2.admin_ui');
                 }
-                $this->zendeskInfo['metadata']['account_id'] = $this->zendeskInfo['metadata']['token'];
+                $this->zendeskInfo['metadata']['account_id'] = $savedAccount->uuid;
                 unset($this->zendeskInfo['metadata']['token']);
+                $telegramAccessToken = $savedAccount->token;
             }
 
             $front_end_variables = $this->getAdminUIVariables($request);
+            $front_end_variables['backend_variables']['token'] = $telegramAccessToken;
             if (!empty($settings)) {
-                $front_end_variables['backend_variables']['settings'] = $settings;
+                $front_end_variables['backend_variables']['settings'] = $settings->toArray();
+                if (!empty($settings['tags'])) {
+                    $front_end_variables['backend_variables']['settings']['tags'] = implode(' ', json_decode($settings['tags'], true));
+                }
+                $front_end_variables['backend_variables']['settings']['has_hello_message'] = (bool)$front_end_variables['backend_variables']['settings']['has_hello_message'];
+                $front_end_variables['backend_variables']['settings']['required_user_info'] = (bool)$front_end_variables['backend_variables']['settings']['required_user_info'];
             }
             $front_end_variables['backend_variables']['ticket_types'] = $this->ticket_types;
             $front_end_variables['backend_variables']['ticket_priorities'] = $this->ticket_priorities;
@@ -113,15 +121,20 @@ class ZendeskController extends CommonZendeskController
                 $errors = 'Invalid token, use Telegram Bot Father to create one.';
                 return response()->json(['message' => $errors], 404);
             }
-//            if ($this->telegram_service->isTokenRegistered($token)) {
-//                $errors = 'That telegram token is already registered.';
-//                return response()->json(['message' => $errors], 404);
-//            }
-//
-//            if ($this->telegram_service->isNameRegistered($account['subdomain'], $name)) {
-//                $errors = 'That integration name is already registered.';
-//                return response()->json(['message' => $errors], 404);
-//            }
+
+            try {
+                $savedAccount = $this->telegram_service->getById($account_id);
+            } catch (\Exception $exception) {
+                if ($this->telegram_service->isTokenRegistered($token)) {
+                    $errors = 'That telegram token is already registered.';
+                    return response()->json(['message' => $errors], 404);
+                }
+
+                if ($this->telegram_service->isNameRegistered($account['subdomain'], $name)) {
+                    $errors = 'That integration name is already registered.';
+                    return response()->json(['message' => $errors], 404);
+                }
+            }
 
             $telegramResponse = $this->telegram_service->setWebhook($token);
 
