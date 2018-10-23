@@ -170,19 +170,34 @@ class ChannelService
             $parent_uuid = $params[0];
             $bot_id = $params[1];
             $chat_id = $params[2];
-            $user_id = $params[3];
-            $message_id = $params[4];
 
             $result = $this->telegram_service->sendTelegramMessage($chat_id, $message);
 
-            return $this->zendeskUtils->getExternalID([
-                $parent_uuid,
-                $bot_id,
-                $chat_id,
-                $user_id,
-                $result['message_id']
-            ]);
+            if (count($params) == 5) {
+                $user_id = $params[3];
+                //$message_id = $params[4];
+                return $this->zendeskUtils->getExternalID([
+                    $parent_uuid,
+                    $bot_id,
+                    $chat_id,
+                    $user_id,
+                    $result['message_id']
+                ]);
+            }
+
+            if (count($params) == 4) {
+                //$message_id = $params[3];
+                return $this->zendeskUtils->getExternalID([
+                    $parent_uuid,
+                    $bot_id,
+                    $chat_id,
+                    $result['message_id']
+                ]);
+            }
+
+            throw new \Exception('The parent id does not have the correct format');
         } catch (\Exception $exception) {
+            Log::error($exception->getMessage());
             throw $exception;
         }
     }

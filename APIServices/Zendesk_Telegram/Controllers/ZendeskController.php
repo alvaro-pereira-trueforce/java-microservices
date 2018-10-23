@@ -207,6 +207,8 @@ class ZendeskController extends CommonZendeskController
     public function channel_back(Request $request)
     {
         try {
+            Log::debug('Channel Back:');
+            Log::debug($request->all());
             $external_id = $this->channel_service->channelBackRequest($request->parent_id, $request->message);
 
             $response = [
