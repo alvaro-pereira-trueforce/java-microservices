@@ -38,8 +38,8 @@ class ChannelService
             $message = $updateType->getTransformedMessage();
             if ($message) {
                 Log::debug($message);
-                $pushService = $this->getZendeskAPIServiceInstance($telegram_token);
-                $pushService->pushNewMessage($message);
+                //$pushService = $this->getZendeskAPIServiceInstance($telegram_token);
+                //$pushService->pushNewMessage($message);
             }
         } catch (\Exception $exception) {
             throw $exception;
