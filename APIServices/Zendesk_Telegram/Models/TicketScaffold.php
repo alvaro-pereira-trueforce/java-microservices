@@ -6,6 +6,7 @@ namespace APIServices\Zendesk_Telegram\Models;
 use APIServices\Zendesk\Utility;
 use APIServices\Zendesk_Telegram\Services\TicketService;
 use Illuminate\Support\Facades\App;
+use Illuminate\Support\Facades\Log;
 use Telegram\Bot\Api;
 use Telegram\Bot\Objects\Message;
 
@@ -13,11 +14,13 @@ class TicketScaffold
 {
     protected $zendeskUtils;
     protected $ticketService;
+    protected $ticketSettings;
 
-    public function __construct(Utility $zendeskUtils, TicketService $ticketService)
+    public function __construct(Utility $zendeskUtils, TicketService $ticketService, $ticketSettings)
     {
         $this->zendeskUtils = $zendeskUtils;
         $this->ticketService = $ticketService;
+        $this->ticketSettings = $ticketSettings;
     }
 
     public function getAuthorExternalID($user_id, $user_username)
@@ -62,11 +65,27 @@ class TicketScaffold
         } catch (\Exception $exception) {
             $bot_id = $message->getChat()->getId();
         }
-        $parent_id = $this->zendeskUtils->getExternalID([
-            $bot_id,
-            $message->getChat()->getId(),
-            $message->getFrom()->getId()
-        ]);
+
+        if (
+            array_key_exists('tickets_by_group', $this->ticketSettings) &&
+            (bool)$this->ticketSettings['tickets_by_group'] == true &&
+            ($message->getChat()->getType() == 'group' || $message->getChat()->getType() == 'supergroup')) {
+
+            $parent_id = $this->zendeskUtils->getExternalID([
+                $bot_id,
+                $message->getChat()->getId()
+            ]);
+        } else {
+            $parent_id = $this->zendeskUtils->getExternalID([
+                $bot_id,
+                $message->getChat()->getId(),
+                $message->getFrom()->getId()
+            ]);
+        }
+
+        Log::debug('Settings en scaffold.............................');
+        Log::debug($message->getChat()->getType());
+        Log::debug($this->ticketSettings);
         //}
         $parent_uuid = $this->ticketService->getValidParentID($parent_id);
         return $this->zendeskUtils->getExternalID([$parent_uuid, $parent_id]);
