@@ -82,10 +82,6 @@ class TicketScaffold
                 $message->getFrom()->getId()
             ]);
         }
-
-        Log::debug('Settings en scaffold.............................');
-        Log::debug($message->getChat()->getType());
-        Log::debug($this->ticketSettings);
         //}
         $parent_uuid = $this->ticketService->getValidParentID($parent_id);
         return $this->zendeskUtils->getExternalID([$parent_uuid, $parent_id]);
