@@ -10,9 +10,8 @@ use Illuminate\Support\Facades\Log;
  */
 class ImageType extends MessageType
 {
-
-
     /**
+     * return all the Images posts with their corresponding comments already transformed into a zendesk format
      * @param $messages
      * @param $access_token
      * @return array|mixed
@@ -44,6 +43,7 @@ class ImageType extends MessageType
     }
 
     /**
+     * return a Image post transformed into the corresponding zendesk format
      * @param $message
      * @return mixed
      * @throws \Throwable

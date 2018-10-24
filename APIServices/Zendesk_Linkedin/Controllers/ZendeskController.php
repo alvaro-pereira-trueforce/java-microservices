@@ -6,9 +6,12 @@ use APIServices\Zendesk_Linkedin\Jobs\ProcessZendeskPullEvent;
 use APIServices\Zendesk_Linkedin\Models\LinkedInChannel;
 use APIServices\LinkedIn\Services\LinkedinService;
 use APIServices\Zendesk\Controllers\CommonZendeskController;
+use APIServices\Zendesk_Linkedin\Models\MessageTypes\EventTypes\TEventType;
 use APIServices\Zendesk_Linkedin\Services\ZendeskChannelService;
 use App\Repositories\ManifestRepository;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Log;
 use JavaScript;
 use Ramsey\Uuid\Uuid;
@@ -245,11 +248,15 @@ class ZendeskController extends CommonZendeskController
     {
         $metadata = json_decode($request->metadata, true);
         $state = json_decode($request->state, true);
-        //Log::debug($metadata);
         try {
             $integrationChannel = $this->channelService->getChannelIntegration($metadata);
             if (!empty($integrationChannel)) {
-                ProcessZendeskPullEvent::dispatch($integrationChannel, 1, $metadata);
+                if (Carbon::now()->diffInSeconds($this->channelService->getCreatedTimeZendeskIntegration($metadata['account_id'])) < 864000) {
+                   /* here start the worker process */
+                    ProcessZendeskPullEvent::dispatch($integrationChannel, 1, $metadata);
+                } else {
+                    Log::notice("time of expiration reach");
+                }
             } else {
                 throw new \Exception("there is no account");
             }
@@ -279,6 +286,14 @@ class ZendeskController extends CommonZendeskController
     public function event_callback(Request $request)
     {
         Log::debug($request->all());
+        try {
+            Log::debug("Zendesk Event:");
+            $event = App::make(TEventType::class);
+            $event->EventBuilder('linkedin_' . $request->events[0]['type_id'], $request->all());
+
+        } catch (\Exception $exception) {
+            Log::error($exception->getMessage() . ' Line: ' . $exception->getLine());
+        }
         return $this->successReturn();
     }
 }

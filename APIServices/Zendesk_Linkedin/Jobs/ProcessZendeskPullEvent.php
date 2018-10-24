@@ -53,7 +53,7 @@ class ProcessZendeskPullEvent implements ShouldQueue
     {
         $this->linkedInChannel = $linkedInChannel;
         $this->triesCount = $triesCount;
-        $this->metadata=$metadata;
+        $this->metadata = $metadata;
     }
 
     /**

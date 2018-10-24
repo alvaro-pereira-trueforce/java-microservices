@@ -1,13 +1,10 @@
 <?php
 
 namespace APIServices\Zendesk_Linkedin\Services;
-
-
 use APIServices\Zendesk\Repositories\ChannelRepository;
 use APIServices\Zendesk\Services\IChannelService;
 use APIServices\Zendesk_Linkedin\Models\MessageTypes\Comment;
 use APIServices\Zendesk_Linkedin\Models\MessageTypes\CommentUpdate;
-use APIServices\Zendesk_Linkedin\Models\MessageTypes\TMessageType;
 use APIServices\Zendesk\Services\ZendeskAPI;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Log;
@@ -39,7 +36,7 @@ class ZendeskChannelService implements IChannelService
     }
 
     /**
-     * Check if the instagram id has already registered in the database.
+     * Check if the Linkedin id has already registered in the database.
      * @param $company_id
      * @throws \Exception
      */
@@ -55,6 +52,7 @@ class ZendeskChannelService implements IChannelService
     }
 
     /**
+     *
      * @param array $transformedMessage
      * @throws \Exception
      */
@@ -98,4 +96,51 @@ class ZendeskChannelService implements IChannelService
             throw $exception;
         }
     }
+
+    /**
+     * @param $subdomain
+     * @throws \Exception
+     */
+    public function deleteByZendeskSubdomain($subdomain)
+    {
+        try {
+            return $this->channelRepository->deleteAllByDomain($subdomain);
+        } catch (\Exception $exception) {
+            Log::error("Database Error: " . $exception->getMessage() . " Line:" . $exception->getLine());
+            throw $exception;
+        }
+    }
+
+    /**
+     * @param $account_id
+     * @throws \Exception
+     */
+    public function deleteByZendeskIdIntegration($account_id)
+    {
+        try {
+            return $this->channelRepository->delete($account_id);
+        } catch (\Exception $exception) {
+            Log::error("Database Error: " . $exception->getMessage() . " Line:" . $exception->getLine());
+            throw $exception;
+        }
+    }
+
+
+    /**
+     * @param $account_id
+     * @return mixed
+     * @throws \Exception
+     */
+    public function getCreatedTimeZendeskIntegration($account_id)
+    {
+        try {
+            $zendeskCreateDate = $this->channelRepository->getModelByColumnName('uuid', $account_id);
+            return $response = $zendeskCreateDate['created_at'];
+        } catch (\Exception $exception) {
+            Log::error("Database Error: " . $exception->getMessage() . " Line:" . $exception->getLine());
+            throw $exception;
+        }
+
+    }
+
 }

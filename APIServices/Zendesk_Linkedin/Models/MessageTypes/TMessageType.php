@@ -49,6 +49,8 @@ class TMessageType extends MessageType
     }
 
     /**
+     * tracking and return an array already transformed all the Comments,
+     * Images and Videos into a zendesk format
      * @param $messages
      * @param $access_token
      * @return mixed|null
@@ -76,6 +78,8 @@ class TMessageType extends MessageType
     }
 
     /**
+     * This method assure the correct format to send the array to zendesk by sorted the
+     * array obtained in the  getTransformedMessage.
      * @param array $messages
      * @param $access_token
      * @return array
@@ -84,20 +88,40 @@ class TMessageType extends MessageType
     public function transformMessage(array $messages, $access_token)
     {
         try {
-            $loopHep = [];
-            $indexNewMessage = [];
-            $messageLoopTransformed = [];
-            $response = $this->getTransformedMessage($messages['values'], $access_token);
-            $array = collect($response)->sortBy('count')->reverse()->toArray();
-            foreach ($array as $key => $indexNewMessage) {
-                $messageLoopTransformed[] = $indexNewMessage;
-                $indexNewMessage = array_merge($messageLoopTransformed, $loopHep);
-            }
-            return $indexNewMessage;
+            $messagesTransformed = $this->getTransformedMessage($messages['values'], $access_token);
+            $newMessagesTransformed = $this->sortMessages($messagesTransformed);
+            return $response = $this->trackingMessage($newMessagesTransformed);
         } catch (\Exception $exception) {
             Log::error("Transformed Error: " . $exception->getMessage() . " Line:" . $exception->getLine() . 'problems to sorted message');
         }
     }
 
+    /**
+     * This method tracking the previous arrays to convert it
+     *  into a zendesk array format
+     * @param $newMessages
+     * @return array
+     */
+    public function trackingMessage($newMessages)
+    {
+        $loopHep = [];
+        $indexNewMessage = [];
+        $messageLoopTransformed = [];
+        foreach ($newMessages as $key => $indexNewMessage) {
+            $messageLoopTransformed[] = $indexNewMessage;
+            $indexNewMessage = array_merge($messageLoopTransformed, $loopHep);
+        }
+        return $indexNewMessage;
+    }
+
+    /**
+     * sort the array to replace and arrange the array as the first element a post
+     * @param $messagesTransformed
+     * @return array
+     */
+    public function sortMessages($messagesTransformed)
+    {
+        return collect($messagesTransformed)->sortBy('count')->reverse()->toArray();
+    }
 
 }

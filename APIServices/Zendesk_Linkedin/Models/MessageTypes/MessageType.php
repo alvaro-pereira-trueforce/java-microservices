@@ -4,7 +4,6 @@ namespace APIServices\Zendesk_Linkedin\Models\MessageTypes;
 
 use APIServices\Zendesk\Utility;
 use Illuminate\Support\Facades\Log;
-use APIServices\LinkedIn\Services;
 
 /**
  * Class MessageType
@@ -31,6 +30,7 @@ abstract class MessageType implements IMessageType
     }
 
     /**
+     * tracking,linked and return the company_id/product_id with the LinkedIn profile who post a comment
      * @param $message
      * @return mixed
      */
@@ -40,6 +40,8 @@ abstract class MessageType implements IMessageType
     }
 
     /**
+     * tracking and return the comment content post by a LinkedIn profile,
+     * in case that the comment is not found return a comment by default
      * @param $message
      * @return mixed
      */
@@ -48,11 +50,12 @@ abstract class MessageType implements IMessageType
         if (!empty($message['updateContent']['companyStatusUpdate']['share']['comment'])) {
             return $message['updateContent']['companyStatusUpdate']['share']['comment'];
         } else {
-            return 'Image was posted by '.$message['updateContent']['company']['name'].'"';
+            return 'Image was posted by ' . $message['updateContent']['company']['name'] . '"';
         }
     }
 
     /**
+     * tracking, transform and return the creation date of one company's post
      * @param $message
      * @return mixed
      */
@@ -63,6 +66,7 @@ abstract class MessageType implements IMessageType
     }
 
     /**
+     * tracking and return the id and name of the post's author
      * @param $message
      * @return array
      */
@@ -75,6 +79,7 @@ abstract class MessageType implements IMessageType
     }
 
     /**
+     * return the Image section to attach the HTML features
      * @param $message
      * @return mixed
      */
@@ -85,6 +90,7 @@ abstract class MessageType implements IMessageType
     }
 
     /**
+     * tracking and return the ImageURL
      * @param $media
      * @return mixed
      */
@@ -95,6 +101,7 @@ abstract class MessageType implements IMessageType
     }
 
     /**
+     * Attach a message by default into the HTML features
      * @param $media
      * @return string
      */
@@ -137,6 +144,7 @@ abstract class MessageType implements IMessageType
     }
 
     /**
+     * return a comment posted by a LinkedIn profile into a zendesk format
      * @param $message
      * @param $thead_id
      * @return array
@@ -154,6 +162,7 @@ abstract class MessageType implements IMessageType
     }
 
     /**
+     * tracking and return the LinkedIn profile_id who posted a comment
      * @param $message
      * @return mixed
      */
@@ -163,6 +172,7 @@ abstract class MessageType implements IMessageType
     }
 
     /**
+     * tracking and return the LinkedIn profile_comment  who posted a comment
      * @param $message
      * @return mixed
      */
@@ -172,6 +182,7 @@ abstract class MessageType implements IMessageType
     }
 
     /**
+     * tracking, transform  and return the LinkedIn profile creation date who posted a comment
      * @param $message
      * @return mixed
      */
@@ -181,6 +192,7 @@ abstract class MessageType implements IMessageType
     }
 
     /**
+     * tracking a return the LinkedIn profile personal information who posted a comment
      * @param $message
      * @return array
      */

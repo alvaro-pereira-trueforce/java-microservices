@@ -1,17 +1,19 @@
 <?php
 
-
 namespace APIServices\Zendesk_Linkedin\Models;
 use APIServices\Zendesk\Models\BasicChannelModel;
 
-
+/**
+ * Class LinkedInChannel
+ * @package APIServices\Zendesk_Linkedin\Models
+ */
 class LinkedInChannel extends BasicChannelModel
 {
-    protected $table = 'linkedin_channels';
-
     /**
-     * The attributes that are mass assignable.
-     *
+     * @var string
+     */
+    protected $table = 'linkedin_channels';
+    /**
      * @var array
      */
     protected $fillable = [
@@ -26,6 +28,9 @@ class LinkedInChannel extends BasicChannelModel
 
     ];
 
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\HasOne
+     */
     function settings()
     {
         return $this->hasOne(LinkedInChannelSetting::class, 'channel_uuid', 'uuid');

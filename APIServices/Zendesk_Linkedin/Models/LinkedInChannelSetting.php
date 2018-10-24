@@ -1,10 +1,12 @@
 <?php
 
 namespace APIServices\Zendesk_Linkedin\Models;
-
-
 use APIServices\Zendesk\Models\ChannelSettings;
 
+/**
+ * Class LinkedInChannelSetting
+ * @package APIServices\Zendesk_Linkedin\Models
+ */
 class LinkedInChannelSetting extends ChannelSettings
 {
     /**
@@ -15,7 +17,7 @@ class LinkedInChannelSetting extends ChannelSettings
     protected $touches = ['LinkedInChannel'];
 
     /**
-     * Get the channel that owns the Urls.
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
      */
     public function LinkedInChannel() {
         return $this->belongsTo(LinkedInChannel::class, 'channel_uuid', 'uuid')->withDefault();

@@ -1,15 +1,18 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: alvaro.pereira
- * Date: 10/16/18
- * Time: 3:24 PM
- */
-
 namespace APIServices\Zendesk_Linkedin\Models\MessageTypes\EventTypes;
 
-
-class IEventType
+/**
+ * This is an interface to handle the DestroyIntegrationEvent and UninstallIntegrationEvent
+ * finally UnknownEven for default
+ * Interface IEventType
+ * @package APIServices\Zendesk_Linkedin\Models\MessageTypes\EventTypes
+ */
+interface IEventType
 {
+    /**
+     * @param $data
+     * @return mixed
+     */
+    function handleEvent($data);
 
 }

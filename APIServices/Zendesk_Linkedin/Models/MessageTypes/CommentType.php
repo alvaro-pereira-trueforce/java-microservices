@@ -2,7 +2,6 @@
 
 namespace APIServices\Zendesk_Linkedin\Models\MessageTypes;
 
-
 /**
  * Class CommentType
  * @package APIServices\Zendesk_Linkedin\Models\MessageTypes
@@ -10,6 +9,7 @@ namespace APIServices\Zendesk_Linkedin\Models\MessageTypes;
 class CommentType extends MessageType
 {
     /**
+     * return all the Comments posts with their corresponding comments already transformed into a zendesk format
      * @param $messages
      * @param $access_token
      * @return array|mixed
@@ -40,6 +40,7 @@ class CommentType extends MessageType
     }
 
     /**
+     * return a Comment post transformed into the corresponding zendesk format
      * @param $messages
      * @return array
      */
