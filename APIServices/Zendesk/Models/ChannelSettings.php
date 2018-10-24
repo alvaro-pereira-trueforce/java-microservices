@@ -20,7 +20,8 @@ class ChannelSettings extends ModelUUID
         'required_user_info',
         'ticket_type',
         'ticket_priority',
-        'tags'
+        'tags',
+        'tickets_by_group'
     ];
 
     /**
