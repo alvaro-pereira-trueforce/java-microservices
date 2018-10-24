@@ -49,7 +49,7 @@ class ProcessTelegramMessage implements ShouldQueue
             }
             if (!$channelService->isCommand($this->update) && !$commandData) {
 
-                $channelService->sendUpdate($this->update);
+                $channelService->sendUpdate($this->update, $this->token);
             }
         } catch (\Exception $exception) {
             Log::error($exception->getMessage());
