@@ -2,13 +2,14 @@
 
 namespace APIServices\Zendesk_Linkedin\Controllers;
 
+use APIServices\Zendesk\Models\EventsTypes\EventFactory;
+use APIServices\Zendesk\Models\EventsTypes\IEventType;
 use APIServices\Zendesk_Linkedin\Jobs\ProcessZendeskPullEvent;
 use APIServices\Zendesk_Linkedin\Models\LinkedInChannel;
 use APIServices\LinkedIn\Services\LinkedinService;
 use APIServices\Zendesk\Controllers\CommonZendeskController;
-use APIServices\Zendesk_Linkedin\Models\MessageTypes\EventTypes\TEventType;
+use APIServices\Zendesk_Linkedin\Models\EventTypes\TEventType;
 use APIServices\Zendesk_Linkedin\Services\ZendeskChannelService;
-use App\Repositories\ManifestRepository;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\App;
@@ -288,9 +289,9 @@ class ZendeskController extends CommonZendeskController
         Log::debug($request->all());
         try {
             Log::debug("Zendesk Event:");
-            $event = App::make(TEventType::class);
-            $event->EventBuilder('linkedin_' . $request->events[0]['type_id'], $request->all());
-
+            /** @var IEventType $event */
+            $event = EventFactory::getEventHandler('linkedin_' . $request->events[0]['type_id'], $request->all());
+            $event->handleEvent();
         } catch (\Exception $exception) {
             Log::error($exception->getMessage() . ' Line: ' . $exception->getLine());
         }
