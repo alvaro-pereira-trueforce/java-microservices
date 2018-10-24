@@ -252,7 +252,7 @@ class ZendeskController extends CommonZendeskController
         try {
             $integrationChannel = $this->channelService->getChannelIntegration($metadata);
             if (!empty($integrationChannel)) {
-                if (Carbon::now()->diffInSeconds($this->channelService->getCreatedTimeZendeskIntegration($metadata['account_id'])) < 864000) {
+                if (Carbon::now()->diffInSeconds($this->channelService->getCreatedTimeZendeskIntegration($metadata['account_id'])) < env('LINKEDIN_TRACKING_EXPIRATION_TIME')) {
                    /* here start the worker process */
                     ProcessZendeskPullEvent::dispatch($integrationChannel, 1, $metadata);
                 } else {

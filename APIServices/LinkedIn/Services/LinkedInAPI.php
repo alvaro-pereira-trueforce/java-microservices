@@ -87,8 +87,7 @@ class LinkedInAPI
     }
 
     /**
-     * @param string
-     * @param string
+     * @param $params_token
      * @return array
      * @throws \Exception
      */
@@ -103,7 +102,7 @@ class LinkedInAPI
 
     /**
      * @param $params_token
-     * @return mixed
+     * @return array
      * @throws \Exception
      */
     public function getAllFromPost($params_token)
@@ -118,7 +117,7 @@ class LinkedInAPI
     /**
      * @param $id_company
      * @param $id_update
-     * @return mixed
+     * @return array
      * @throws \Exception
      */
     public function getLikesFromCompany($id_company, $id_update)
@@ -128,7 +127,8 @@ class LinkedInAPI
     }
 
     /**
-     * @param array
+     * @param $id_company
+     * @param $code
      * @return array
      * @throws \Exception
      */

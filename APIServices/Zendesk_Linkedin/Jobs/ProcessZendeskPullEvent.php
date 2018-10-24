@@ -78,9 +78,9 @@ class ProcessZendeskPullEvent implements ShouldQueue
                 Log::debug('The media does not exist or it has not comments');
                 return;
             } else {
-                try {
                     $zendeskTransformService = App::make(TMessageType::class);
                     $transformedMessages = $zendeskTransformService->transformMessage($comments, $this->metadata['access_token']);
+
                     if (!empty($transformedMessages)) {
                         //Configure Zendesk API and Zendesk Client
                         App::when(ZendeskClient::class)
@@ -94,10 +94,6 @@ class ProcessZendeskPullEvent implements ShouldQueue
                             ->give($this->linkedInChannel->instance_push_id);
                         $channelService->sendUpdate($transformedMessages);
                     }
-
-                } catch (\Exception $exception) {
-                    Log::error('Message: ' . $exception->getMessage() . ' On Line: ' . $exception->getLine() . 'error to transform messages');
-                }
             }
         } catch (\Exception $exception) {
             Log::error('Message: ' . $exception->getMessage() . ' On Line: ' . $exception->getLine() . 'error to instant channel services');

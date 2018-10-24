@@ -12,6 +12,11 @@ use Illuminate\Support\Facades\Log;
  */
 class DestroyIntegrationEvent extends EventType
 {
+    /**
+     * DestroyIntegrationEvent constructor.
+     * @param $data
+     * @param ZendeskChannelService $facebookService
+     */
     public function __construct($data, ZendeskChannelService $facebookService)
     {
         $this->service = $facebookService;
@@ -22,6 +27,9 @@ class DestroyIntegrationEvent extends EventType
         }
     }
 
+    /**
+     * Delete Integration Account
+     */
     function handleEvent()
     {
         Log::notice("Delete Integration Account...");

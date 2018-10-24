@@ -17,7 +17,7 @@ class LinkedInChannelSetting extends ChannelSettings
     protected $touches = ['LinkedInChannel'];
 
     /**
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     * Get the channel that owns the Urls.
      */
     public function LinkedInChannel() {
         return $this->belongsTo(LinkedInChannel::class, 'channel_uuid', 'uuid')->withDefault();

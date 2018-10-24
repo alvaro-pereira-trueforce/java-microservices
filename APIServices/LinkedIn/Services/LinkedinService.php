@@ -2,8 +2,6 @@
 
 namespace APIServices\LinkedIn\Services;
 
-use Illuminate\Support\Facades\Log;
-
 /**
  * Class LinkedinService
  * @package APIServices\LinkedIn\Services
@@ -35,7 +33,7 @@ class LinkedinService
         try {
             return $this->linkedinAPIClient->getAuthorizationToken($code);
         } catch (\Exception $exception) {
-            Log::error('Message: ' . $exception->getMessage() . ' On Line: ' . $exception->getLine() . 'Authorization failed');
+            throw new \Exception('Message: ' . $exception->getMessage() . ' On Line: ' . $exception->getLine() . 'Authorization failed');
         }
     }
 
@@ -49,7 +47,7 @@ class LinkedinService
         try {
             return $this->linkedinAPIClient->getCompanies($token_access);
         } catch (\Exception $exception) {
-            Log::error('Message: ' . $exception->getMessage() . ' On Line: ' . $exception->getLine() . 'Get companies List failed');
+            throw new \Exception('Message: ' . $exception->getMessage() . ' On Line: ' . $exception->getLine() . 'Get companies List failed');
         }
     }
 
@@ -64,29 +62,28 @@ class LinkedinService
             return $this->linkedinAPIClient->getAllUpdates($params);
 
         } catch (\Exception $exception) {
-            Log::error('Message: ' . $exception->getMessage() . ' On Line: ' . $exception->getLine() . 'Get All the updated failed');
+            throw new \Exception('Message: ' . $exception->getMessage() . ' On Line: ' . $exception->getLine() . 'Get All the updated failed');
 
         }
     }
-
     /**
      * @param $message
      * @param $access_token
-     * @return mixed
+     * @return array
+     * @throws \Exception
      */
     public function getAllCommentPost($message, $access_token)
     {
         try {
-           // Log::debug($message);
-            $response = [
+            $request_body = [
                 'idCompany' => $message['updateContent']['company']['id'],
                 'updateKey' => $updateKey = $message['updateKey'],
                 'access_token' => $access_token
             ];
-            return $this->linkedinAPIClient->getAllFromPost($response);
+            return $this->linkedinAPIClient->getAllFromPost($request_body);
 
         } catch (\Exception $exception) {
-            Log::error('Message: ' . $exception->getMessage() . ' On Line: ' . $exception->getLine() . 'Get especific post comments failed');
+            throw new \Exception('Message: ' . $exception->getMessage() . ' On Line: ' . $exception->getLine() . 'Get especific post comments failed');
 
         }
     }

@@ -1,16 +1,21 @@
 <?php
 
 namespace APIServices\LinkedIn\Services;
-
-
 use GuzzleHttp\Client as HttpClient;
 
-
+/**
+ * Class LinkedInClient
+ * @package APIServices\LinkedIn\Services
+ */
 class LinkedInClient
 {
     /** @var HttpClient $httpClient */
     protected $httpClient;
 
+    /**
+     * LinkedInClient constructor.
+     * @param HttpClient $httpClient
+     */
     public function __construct(HttpClient $httpClient)
     {
         $this->httpClient = $httpClient;
@@ -20,7 +25,7 @@ class LinkedInClient
      * @param $endpoint
      * @param array $body
      * @param array $headers
-     * @return mixed
+     * @return array
      * @throws \Exception
      */
     public function postFormRequest($endpoint, array $body, $headers = [])
@@ -44,6 +49,12 @@ class LinkedInClient
 
     }
 
+    /**
+     * @param $token_address
+     * @param array $token_access
+     * @return array
+     * @throws \Exception
+     */
     public function getFormRequest($token_address, $token_access = [])
     {
         try {

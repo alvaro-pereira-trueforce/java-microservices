@@ -12,6 +12,11 @@ use Illuminate\Support\Facades\Log;
  */
 class UninstallIntegrationEvent extends EventType
 {
+    /**
+     * UninstallIntegrationEvent constructor.
+     * @param $data
+     * @param ZendeskChannelService $channelService
+     */
     public function __construct($data, ZendeskChannelService $channelService)
     {
         $this->service = $channelService;
@@ -19,8 +24,7 @@ class UninstallIntegrationEvent extends EventType
     }
 
     /**
-     * Delete all the Integrations accounts that belows a certain Subdomain
-     * @return mixed|void
+     * Delete All Integration Account for the Domain
      */
     function handleEvent()
     {
