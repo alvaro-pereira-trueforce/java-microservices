@@ -98,7 +98,7 @@ class StartCommand extends Command
                                 'text' => "Telegram Bot: New user info: Email: " . $content['email'] . " Phone Number: " . $content['phone_number']
                             ]
                         ]);
-                        $channel_service->sendUpdate($update, $this->telegram->getAccessToken());
+                        $channel_service->sendUpdate($update);
                         $service->cancelStartedCommand($this->update);
                         break;
                 }

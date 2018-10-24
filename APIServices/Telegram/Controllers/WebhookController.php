@@ -2,10 +2,8 @@
 
 namespace APIServices\Telegram\Controllers;
 
-use APIServices\Telegram\Services\TelegramService;
-use APIServices\Zendesk_Telegram\Services\ChannelService;
+use APIServices\Zendesk_Telegram\Jobs\ProcessTelegramMessage;
 use App\Http\Controllers\Controller;
-use Illuminate\Support\Facades\Log;
 use Telegram\Bot\Api;
 
 class WebhookController extends Controller
@@ -14,41 +12,23 @@ class WebhookController extends Controller
      * @var Api
      */
     protected $telegram;
-    protected $channelService;
+
     /**
      * BotController constructor.
      *
      * @param Api $telegram
-     * @param ChannelService $channelService
      */
-    public function __construct(Api $telegram, ChannelService $channelService)
+    public function __construct(Api $telegram)
     {
         $this->telegram = $telegram;
-        $this->channelService = $channelService;
     }
 
     public function webhookHandler($token)
     {
         $this->telegram->setAccessToken($token);
         $this->telegram->setAsyncRequest(false);
-
-        // This fetchs webhook update + processes the update through the commands system.
         $update = $this->telegram->commandsHandler(true);
-        Log::debug($update);
-
-        try
-        {
-            $commandData = $this->channelService->getStartedCommand($update);
-            if (!$this->channelService->isCommand($update) && $commandData) {
-                $this->channelService->triggerCommand($commandData['command'], $commandData['state'], $update);
-            }
-            if (!$this->channelService->isCommand($update) && !$commandData) {
-                $this->channelService->sendUpdate($update, $token);
-            }
-        }catch (\Exception $exception)
-        {
-            Log::error($exception->getMessage());
-        }
+        ProcessTelegramMessage::dispatch($update, $token);
 
         return response()->json('ok', 200);
     }

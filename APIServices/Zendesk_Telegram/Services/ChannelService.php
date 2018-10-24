@@ -28,10 +28,9 @@ class ChannelService
     /**
      * Send Channel Service Update Messages To Zendesk Support Push Endpoint
      * @param  Update $update
-     * @param  $telegram_token
      * @throws \Exception
      */
-    public function sendUpdate($update, $telegram_token)
+    public function sendUpdate($update)
     {
         try {
             $updateType = $this->getMessageTypeInstance($update);
