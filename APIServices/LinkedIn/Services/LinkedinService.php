@@ -33,7 +33,7 @@ class LinkedinService
         try {
             return $this->linkedinAPIClient->getAuthorizationToken($code);
         } catch (\Exception $exception) {
-            throw new \Exception('Message: ' . $exception->getMessage() . ' On Line: ' . $exception->getLine() . 'Authorization failed');
+            throw $exception;
         }
     }
 
@@ -47,7 +47,7 @@ class LinkedinService
         try {
             return $this->linkedinAPIClient->getCompanies($token_access);
         } catch (\Exception $exception) {
-            throw new \Exception('Message: ' . $exception->getMessage() . ' On Line: ' . $exception->getLine() . 'Get companies List failed');
+            throw $exception;
         }
     }
 
@@ -62,10 +62,11 @@ class LinkedinService
             return $this->linkedinAPIClient->getAllUpdates($params);
 
         } catch (\Exception $exception) {
-            throw new \Exception('Message: ' . $exception->getMessage() . ' On Line: ' . $exception->getLine() . 'Get All the updated failed');
+            throw $exception;
 
         }
     }
+
     /**
      * @param $message
      * @param $access_token
@@ -83,7 +84,7 @@ class LinkedinService
             return $this->linkedinAPIClient->getAllFromPost($request_body);
 
         } catch (\Exception $exception) {
-            throw new \Exception('Message: ' . $exception->getMessage() . ' On Line: ' . $exception->getLine() . 'Get especific post comments failed');
+            throw $exception;
 
         }
     }
