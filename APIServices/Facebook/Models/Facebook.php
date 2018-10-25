@@ -269,7 +269,7 @@ class Facebook extends FB
     }
 
     /**
-     * Get instagram CommentType
+     * Get instagram CommentTransform
      * @param $media_id
      * @return array
      * @throws \Exception
@@ -285,7 +285,7 @@ class Facebook extends FB
     }
 
     /**
-     * Get instagram CommentType
+     * Get instagram CommentTransform
      * @param $comment_id
      * @return array
      * @throws \Exception

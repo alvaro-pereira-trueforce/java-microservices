@@ -47,7 +47,7 @@ abstract class MessageType implements IMessageType
     protected $ticketSettings;
 
     /**
-     * MessageType constructor.
+     * MessageTransform constructor.
      * @param Utility $zendeskUtils
      * @param Update $update
      * @param array $state

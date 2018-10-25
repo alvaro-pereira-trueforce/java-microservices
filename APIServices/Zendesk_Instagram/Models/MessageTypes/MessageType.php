@@ -10,7 +10,7 @@ abstract class MessageType implements IMessageType
     protected $payload;
 
     /**
-     * MessageType constructor.
+     * MessageTransform constructor.
      * @param $payload
      */
     public function __construct($payload)

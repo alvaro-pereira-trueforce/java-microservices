@@ -1,15 +1,19 @@
 <?php
 
-namespace APIServices\Zendesk_Linkedin\Models\MessageTypes;
+namespace APIServices\Zendesk_Linkedin\MessagesBuilder;
 
+
+use APIServices\LinkedIn\Services\LinkedinService;
+use APIServices\Zendesk_Linkedin\Models\MessageTypes\CommentTransform;
+use APIServices\Zendesk_Linkedin\Models\MessageTypes\ImageTransform;
+use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Log;
-use APIServices\LinkedIn\Services;
 
 /**
- * Class TMessageType
- * This class will retrieve a TMessageType Model class
+ * Class TransformMessageBuilder
+ * @package APIServices\Zendesk_Linkedin\MessagesBuilder
  */
-class TMessageType extends MessageType
+class TransformMessageBuilder
 {
     /**
      * @var $linkedinService
@@ -34,40 +38,43 @@ class TMessageType extends MessageType
      */
     protected $messageComment = [];
 
+    /**
+     * @var $metadata
+     */
+    protected $metadata;
+
 
     /**
-     * TMessageType constructor.
-     * @param CommentType $commentType
-     * @param ImageType $imageType
-     * @param Services\LinkedinService $linkedinService
+     * TransformMessageBuilder constructor.
+     * @param $metadata
+     * @param LinkedinService $linkedinService
      */
-    public function __construct(CommentType $commentType, ImageType $imageType, Services\LinkedinService $linkedinService)
+    public function __construct($metadata, LinkedinService $linkedinService)
     {
-        $this->commentType = $commentType;
-        $this->imageType = $imageType;
         $this->linkedinService = $linkedinService;
+        $this->metadata = $metadata;
     }
-
     /**
      * tracking and return an array already transformed all the Comments,
      * Images and Videos into a zendesk format
      * @param $messages
-     * @param $access_token
-     * @return mixed|null
+     * @return array
      * @throws \Throwable
      */
-    function getTransformedMessage($messages, $access_token)
+    function getTransformedMessage($messages)
     {
         try {
             foreach ($messages as $message) {
-                $newArray = $this->linkedinService->getAllCommentPost($message, $access_token);
+                $newArray = $this->linkedinService->getAllCommentPost($message, $this->metadata['access_token']);
                 if (array_key_exists('content', $newArray['updateContent']['companyStatusUpdate']['share'])) {
-                    $this->messageImage = array_merge($this->imageType->getTransformedMessage($newArray, $access_token), $this->messageImage);
+                    $this->imageType = App::makeWith(ImageTransform::class, ['messages' => $newArray]);
+                    $this->messageImage = array_merge($this->imageType->getTransformedMessage(), $this->messageImage);
                 } else
                     if (array_key_exists('comment', $newArray['updateContent']['companyStatusUpdate']['share'])) {
-                        $this->messageComment = array_merge($this->messageComment, $this->commentType->getTransformedMessage($newArray, $access_token));
+                        $this->commentType = App::makeWith(CommentTransform::class, ['messages' => $newArray]);
+                        $this->messageComment = array_merge($this->messageComment, $this->commentType->getTransformedMessage());
                     } else {
-                        Log::debug('here appeared video section');
+                        Log::debug("video goes here");
                     }
             }
             $response = array_merge($this->messageComment, $this->messageImage);
@@ -81,14 +88,13 @@ class TMessageType extends MessageType
      * This method assure the correct format to send the array to zendesk by sorted the
      * array obtained in the  getTransformedMessage.
      * @param array $messages
-     * @param $access_token
      * @return array
      * @throws \Throwable
      */
-    public function transformMessage(array $messages, $access_token)
+    public function transformMessage($messages)
     {
         try {
-            $messagesTransformed = $this->getTransformedMessage($messages['values'], $access_token);
+            $messagesTransformed = $this->getTransformedMessage($messages['values']);
             $newMessagesTransformed = $this->sortMessages($messagesTransformed);
             return $response = $this->trackingMessage($newMessagesTransformed);
         } catch (\Exception $exception) {
@@ -123,5 +129,4 @@ class TMessageType extends MessageType
     {
         return collect($messagesTransformed)->sortBy('count')->reverse()->toArray();
     }
-
 }

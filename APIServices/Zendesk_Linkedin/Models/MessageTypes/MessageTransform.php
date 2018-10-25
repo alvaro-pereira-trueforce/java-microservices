@@ -6,10 +6,10 @@ use APIServices\Zendesk\Utility;
 use Illuminate\Support\Facades\Log;
 
 /**
- * Class MessageType
+ * Class MessageTransform
  * @package APIServices\Zendesk_Linkedin\Models\MessageTypes
  */
-abstract class MessageType implements IMessageType
+abstract class MessageTransform implements IMessageTransform
 {
     /**
      * @var $media
@@ -19,14 +19,20 @@ abstract class MessageType implements IMessageType
      * @var Utility
      */
     protected $zendeskUtils;
+    /**
+     * @var $messages
+     */
+    protected $messages;
 
     /**
-     * MessageType constructor.
+     * MessageTransform constructor.
+     * @param $messages
      * @param Utility $zendeskUtils
      */
-    public function __construct(Utility $zendeskUtils)
+    public function __construct(Utility $zendeskUtils, $messages)
     {
         $this->zendeskUtils = $zendeskUtils;
+        $this->messages = $messages;
     }
 
     /**
@@ -50,7 +56,7 @@ abstract class MessageType implements IMessageType
         if (!empty($message['updateContent']['companyStatusUpdate']['share']['comment'])) {
             return $message['updateContent']['companyStatusUpdate']['share']['comment'];
         } else {
-            return 'Image was posted by ' . $message['updateContent']['company']['name'] . '"';
+            return '"' . 'Image was posted by ' . $message['updateContent']['company']['name'] . '"';
         }
     }
 
@@ -140,6 +146,7 @@ abstract class MessageType implements IMessageType
 
         } catch (\Exception $exception) {
             Log::error('Message: ' . $exception->getMessage() . ' On Line: ' . $exception->getLine() . ' search image format error');
+
         }
     }
 
