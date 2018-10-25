@@ -27,10 +27,11 @@ function AdminUICtrl(windowsService, poller, $timeout, basicService, $window) {
     vm.ticket_types = [];
     vm.ticket_priorities = [];
     vm.waitLogin = waitLogin;
-    vm.ValidateIntegration=ValidateIntegration;
+    vm.ValidateIntegration = ValidateIntegration;
 
     vm.company = undefined;
     vm.selected_company = undefined;
+    vm.company_page_selected = undefined;
 
     function waitLogin(e) {
         if (vm.form.name.$error.required) {
@@ -42,7 +43,6 @@ function AdminUICtrl(windowsService, poller, $timeout, basicService, $window) {
         vm.timeout_counter = 0;
         $timeout(polling, 1000);
     }
-
     function polling() {
         poller.poll('admin_UI_waiting', {
             account_id: windowsService.backend_variables.account_id,
@@ -55,11 +55,28 @@ function AdminUICtrl(windowsService, poller, $timeout, basicService, $window) {
             vm.selected_ticket_type = response.data.ticket_type;
             vm.selected_ticket_priority = response.data.ticket_priority;
             vm.tags = response.data.tags;
-            vm.company=response.data.company;
+            vm.company = response.data.company;
+            vm.company.forEach(function (value) {
+                if (value.id === response.data.selected_company) {
+
+                    vm.selected_company = value;
+                    vm.company_page_selected= value.name;
+                    vm.isASavedIntegration = true;
+                }
+            });
+
             stopProgress();
         }).catch(function (response) {
+            if (!response || response.status === -1 || !response.data) {
+                linkedinFailConnection();
+                return;
+            }
             if (response.data.linkedin_canceled) {
                 linkedinCanceledReset();
+                return;
+            }
+            if (response.data.linkedIn_no_companies) {
+                linkedinNoCompaniesReset();
                 return;
             }
             vm.timeout_counter++;
@@ -70,7 +87,8 @@ function AdminUICtrl(windowsService, poller, $timeout, basicService, $window) {
             timeoutReset();
         });
     }
-    function ValidateIntegration(){
+
+    function ValidateIntegration() {
 
         basicService.postRequest('admin_ui_validate_company', {
             company_information: vm.selected_company,
@@ -99,5 +117,15 @@ function AdminUICtrl(windowsService, poller, $timeout, basicService, $window) {
     function linkedinCanceledReset() {
         stopProgress();
         vm.linkedin_canceled = true;
+    }
+
+    function linkedinNoCompaniesReset() {
+        stopProgress();
+        vm.linkedIn_no_companies = true;
+    }
+
+    function linkedinFailConnection() {
+        stopProgress();
+        vm.linkedin_fail_connection = true;
     }
 }

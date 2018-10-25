@@ -2,15 +2,21 @@
 
 namespace APIServices\Zendesk_Linkedin\Controllers;
 
+use APIServices\Zendesk\Models\EventsTypes\EventFactory;
+use APIServices\Zendesk\Models\EventsTypes\IEventType;
+use APIServices\Zendesk_Linkedin\Jobs\ProcessZendeskPullEvent;
 use APIServices\Zendesk_Linkedin\Models\LinkedInChannel;
-use APIServices\Services\LinkedIn\LinkedinService;
+use APIServices\LinkedIn\Services\LinkedinService;
 use APIServices\Zendesk\Controllers\CommonZendeskController;
+use APIServices\Zendesk_Linkedin\Models\EventTypes\TEventType;
 use APIServices\Zendesk_Linkedin\Services\ZendeskChannelService;
-use App\Repositories\ManifestRepository;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Log;
 use JavaScript;
 use Ramsey\Uuid\Uuid;
+use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
 
 class ZendeskController extends CommonZendeskController
 {
@@ -18,18 +24,16 @@ class ZendeskController extends CommonZendeskController
     protected $channel_name = "LinkedIn Channel";
     /** @var LinkedinService $linkedinService */
     protected $linkedinService;
-
     /** @var ZendeskChannelService $channelService */
     protected $channelService;
 
-    public function __construct(ManifestRepository $manifestRepository, LinkedinService $linkedinService)
+    public function __construct(LinkedinService $linkedinService)
     {
         try {
             $this->linkedinService = $linkedinService;
-            parent::__construct($manifestRepository, ZendeskChannelService::class, LinkedInChannel::class);
+            parent::__construct(ZendeskChannelService::class, LinkedInChannel::class);
         } catch (\Exception $exception) {
-            Log::error('Zendesk Controller Constructor Error:'.$exception->getMessage().$exception->getLine());
-
+            Log::error('Zendesk Controller Constructor Error:' . $exception->getMessage() . $exception->getLine());
         }
     }
 
@@ -136,7 +140,12 @@ class ZendeskController extends CommonZendeskController
                 $LinkedToken = $this->linkedinService->getAuthorizationToken($newAccount['linkedin_code']);
                 Log::debug('Access_token');
                 unset($newAccount['linkedin_code']);
-                $pagesData = $linkedinService->getCompanies($LinkedToken);;
+                $pagesData = $linkedinService->getCompanies($LinkedToken);
+                Log::debug($pagesData);
+                if (empty($pagesData) || (array_key_exists('_total', $pagesData) && (int)$pagesData['_total'] == 0) ||
+                    !array_key_exists('values', $pagesData)) {
+                    return response()->json(['linkedIn_no_companies' => true], 404);
+                }
                 $newAccount = array_merge($newAccount, $LinkedToken);
 
                 $this->saveNewAccountInformation($request->account_id, $newAccount);
@@ -238,17 +247,36 @@ class ZendeskController extends CommonZendeskController
 
     public function pull(Request $request)
     {
-        return $this->successReturn();
+        $metadata = json_decode($request->metadata, true);
+        $state = json_decode($request->state, true);
+        try {
+            $integrationChannel = $this->channelService->getChannelIntegration($metadata);
+            if (!empty($integrationChannel)) {
+                if (Carbon::now()->diffInSeconds($this->channelService->getCreatedTimeZendeskIntegration($metadata['account_id'])) < env('LINKEDIN_TRACKING_EXPIRATION_TIME')) {
+                   /* here start the worker process */
+                    ProcessZendeskPullEvent::dispatch($integrationChannel, 1, $metadata);
+                } else {
+                    Log::notice("time of expiration reach");
+                }
+            } else {
+                throw new \Exception("there is no account");
+            }
+            return $this->successReturn();
+        } catch (\Exception $exception) {
+            Log::error($exception->getMessage());
+            throw new UnauthorizedHttpException('We can not process the request, Account does not exits.');
+        }
     }
 
     public function channel_back(Request $request)
     {
-
+        return $this->successReturn();
     }
 
     public function click_through(Request $request)
     {
         Log::info($request->all());
+        return $this->successReturn();
     }
 
     public function health_check(Request $request)
@@ -258,6 +286,15 @@ class ZendeskController extends CommonZendeskController
 
     public function event_callback(Request $request)
     {
-
+        Log::debug($request->all());
+        try {
+            Log::debug("Zendesk Event:");
+            /** @var IEventType $event */
+            $event = EventFactory::getEventHandler('linkedin_' . $request->events[0]['type_id'], $request->all());
+            $event->handleEvent();
+        } catch (\Exception $exception) {
+            Log::error($exception->getMessage() . ' Line: ' . $exception->getLine());
+        }
+        return $this->successReturn();
     }
 }

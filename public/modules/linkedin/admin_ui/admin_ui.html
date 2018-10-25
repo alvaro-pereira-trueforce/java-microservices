@@ -1,14 +1,13 @@
 <div class="panel panel-default center" style="max-width: 800px">
     <div class="panel-heading">
-        <h3 class="panel-title">Linked In configuration</h3>
+        <h3 class="panel-title">LinkedIn Configuration</h3>
     </div>
     <div class="panel-body">
-        <p ng-if="!vm.metadata">Welcome, please authenticate first with your Linked In Account in order to start working
-            with the Linkedin
-            Channel service.</p>
+        <p ng-if="!vm.metadata">Welcome, please authenticate first with your LinkedIn Account in order to start working
+            with the LinkedIn Channel service.</p>
 
-        <p ng-if="!!vm.metadata">Welcome back. In order to update your order authentication please use the
-            following button to log in with your Linked In Account.</p>
+        <p ng-if="!!vm.metadata">Welcome back, in order to update your order authentication please use the
+            following button to Log In with your LinkedIn Account.</p>
 
         <div id="spinner" class="loader center" ng-if="vm.processing"></div>
 
@@ -18,108 +17,118 @@
                     <label for="name">Integration Name:</label>
                     <input type="text" id="name" name="name" class="form-control" ng-model="vm.name"
                            ng-disabled="vm.processing" ng-required="true">
+                    <div class="alert alert-danger"
+                         ng-if="vm.form.name.$invalid && vm.form.name.$touched || vm.form.$submitted && vm.form.name.$invalid">
+                        The integration name field is required.
+                    </div>
                 </div>
                 <div class="form-group">
                     <div ng-if="vm.timeout" class="alert alert-danger">
-                        Linked In authentication timeout was reached. Please, Try again.
+                        LinkedIn authentication process was reached. Please, Try again.
                     </div>
                 </div>
                 <div class="form-group">
                     <div ng-if="vm.linkedin_canceled" class="alert alert-danger">
-                        The Linked In user does not approve the authentication, in order to connect with Linked In you
+                        The LinkedIn user does not approve the authentication, in order to connect with LinkedIn you
                         must to accept the required permissions.
+                    </div>
+                    <div ng-if="vm.linkedIn_no_companies" class="alert alert-danger">
+                        The LinkedIn account you are trying to connect is not admin of any Company page, please use a
+                        LinkedIn account that is admin of at least one Company Page.
+                    </div>
+                    <div ng-if="vm.linkedin_fail_connection" class="alert alert-danger">
+                        Oh, it seems that you don't have internet connection or access to LinkedIn, please check your connection or permissions and try again.
                     </div>
                 </div>
             </form>
-            <a class="btn btn-block btn-social btn-linkedin center" style="max-width: 200px" ng-disabled="vm.form.name.$error.required"
+            <a class="btn btn-block btn-social btn-linkedin center" style="max-width: 200px"
+               ng-disabled="vm.form.name.$error.required"
                target="_blank" ng-click="vm.waitLogin($event)"
                ng-href="https://www.linkedin.com/oauth/v2/authorization?response_type=code&client_id={{vm.client_ID}}&redirect_uri={{vm.linkedin_return_URL}}&state={{vm.account_id}}&scope=r_basicprofile,rw_company_admin">
-                <span class="fa fa-linkedin"></span>Connect To Linked In
+                <span class="fa fa-linkedin"></span>Connect To LinkedIn
             </a>
         </div>
-    </div>
 
 
-
-
-    <div ng-if="!vm.processing && !!vm.company">
-        <form id="form_setup_data" name="vm.form">
-            <div class="form-group">
-                <div class="alert alert-warning">
-                    This Linkedin Authentication will expire in 60 days. After saving this integration
-                    please refresh this Linkedin authentication until this message disappears in order to get a long
-                    term Linkedin Authentication Access.
-                </div>
-            </div>
-
-            <div class="form-group">
-                <div ng-if="!!vm.error" class="alert alert-danger">
-                    {{vm.error}}
-                </div>
-            </div>
-
-            <div class="form-group">
-                <label for="name">Integration Name:</label>
-                <input type="text" id="name" name="name" class="form-control" ng-model="vm.name"
-                       ng-disabled="true" ng-required="true">
-            </div>
-            <div class="form-group">
-                <label for="company_id">Select a Linked company account:</label>
-                <select class="form-control" name="company_id" id="company_id" ng-required="true"
-                        ng-options="company.name for company in vm.company track by company.id"
-                        ng-model="vm.selected_company" ng-disabled="vm.isASavedIntegration">
-                </select>
-                <div class="alert alert-danger"
-                     ng-if="vm.form.page_id.$invalid && vm.form.page_id.$touched || vm.form.$submitted && vm.form.page_id.$invalid">
-                    A Linked Page is required.
-                </div>
-            </div>
-            <hr/>
-            <div class="form-group">
-                <h4>Optional Settings</h4>
-                <p>Choose optional ticket values, all the fields are optional. Please consider that all your new
-                    Linked tickets will be created with the optional setting you choose.</p>
-            </div>
-
-            <div class="row">
-                <div class="col-sm-6">
-                    <div class="form-group">
-                        <label>Ticket Type:</label>
-                        <select class="form-control" name="ticket_type" id="ticket_type"
-                                ng-model="vm.selected_ticket_type">
-                            <option value="">-</option>
-                            <option ng-repeat="type in vm.ticket_types" ng-value="type.id">{{type.name}}</option>
-                        </select>
+        <div ng-if="!vm.processing && !!vm.company">
+            <form id="form_setup_data" name="vm.form">
+                <div class="form-group">
+                    <div class="alert alert-warning">
+                        This LinkedIn Authentication will expire in 60 days. After saving this integration
+                        please refresh this LinkedIn authentication until this message disappears in order to get a long
+                        term LinkedIn Authentication Access.
                     </div>
                 </div>
-                <div class="col-sm-6">
-                    <div class="form-group">
-                        <label>Ticket Priority:</label>
-                        <select class="form-control" name="ticket_priority" id="ticket_priority"
-                                ng-model="vm.selected_ticket_priority">
-                            <option value="">-</option>
-                            <option ng-repeat="priority in vm.ticket_priorities" ng-value="priority.id">
-                                {{priority.name}}
-                            </option>
-                        </select>
+
+                <div class="form-group">
+                    <div ng-if="!!vm.error" class="alert alert-danger">
+                        {{vm.error}}
                     </div>
                 </div>
-            </div>
 
-            <div class="form-group">
-                <label>Tags:</label>
-                <input type="text" name="tags" class="form-control" ng-model="vm.tags">
-                <div class="text-muted">Please separate tags with spaces.</div>
-            </div>
+                <div class="form-group">
+                    <label for="name">Integration Name:</label>
+                    <input type="text" id="name" name="name" class="form-control" ng-model="vm.name"
+                           ng-disabled="true" ng-required="true">
+                </div>
+                <div class="form-group">
+                    <label for="company_id">Select a LinkedIn Company page:</label>
+                    <select class="form-control" name="company_id" id="company_id" ng-required="true"
+                            ng-options="company.name for company in vm.company track by company.id"
+                            ng-model="vm.selected_company" ng-if="!vm.isASavedIntegration" >
+                    </select>
+                     <div ng-if="vm.isASavedIntegration">
+                         <input type="text" id="company_page_selected" name="company_page_selected" class="form-control" ng-model="vm.company_page_selected"
+                                ng-disabled="vm.isASavedIntegration">
+                     </div>
+                    <div class="alert alert-danger"
+                         ng-if="vm.form.page_id.$invalid && vm.form.page_id.$touched || vm.form.$submitted && vm.form.page_id.$invalid">
+                        A Linked Page is required.
+                    </div>
+                </div>
+                <hr/>
+                <div class="form-group">
+                    <h4>Optional Settings</h4>
+                    <p>Choose optional ticket values, all the fields are optional. Please consider that all your new
+                        LinkedIn tickets will be created with the optional settings you choose.</p>
+                </div>
 
-            <div class="form-group">
-                <button id="send_request" class="btn btn-primary" ng-click="vm.ValidateIntegration()">Submit</button>
-            </div>
-        </form>
+                <div class="row">
+                    <div class="col-sm-6">
+                        <div class="form-group">
+                            <label>Ticket Type:</label>
+                            <select class="form-control" name="ticket_type" id="ticket_type"
+                                    ng-model="vm.selected_ticket_type">
+                                <option value="">-</option>
+                                <option ng-repeat="type in vm.ticket_types" ng-value="type.id">{{type.name}}</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-sm-6">
+                        <div class="form-group">
+                            <label>Ticket Priority:</label>
+                            <select class="form-control" name="ticket_priority" id="ticket_priority"
+                                    ng-model="vm.selected_ticket_priority">
+                                <option value="">-</option>
+                                <option ng-repeat="priority in vm.ticket_priorities" ng-value="priority.id">
+                                    {{priority.name}}
+                                </option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Tags:</label>
+                    <input type="text" name="tags" class="form-control" ng-model="vm.tags">
+                    <div class="text-muted">Please separate tags with spaces.</div>
+                </div>
+
+                <div class="form-group">
+                    <button id="send_request" class="btn btn-primary" ng-click="vm.ValidateIntegration()">Submit
+                    </button>
+                </div>
+            </form>
+        </div>
     </div>
-
-
-
-
-
 </div>

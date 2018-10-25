@@ -1,14 +1,22 @@
 <?php
 
-namespace APIServices\Services\LinkedIn;
+namespace APIServices\LinkedIn\Services;
 
-
-use APIServices\LinkedIn\Services\LinkedInAPI;
-
+/**
+ * Class LinkedinService
+ * @package APIServices\LinkedIn\Services
+ */
 class LinkedinService
 {
+    /**
+     * @var LinkedInAPI
+     */
     protected $linkedinAPIClient;
 
+    /**
+     * LinkedinService constructor.
+     * @param LinkedInAPI $linkedinAPIClient
+     */
     public function __construct(LinkedInAPI $linkedinAPIClient)
     {
         $this->linkedinAPIClient = $linkedinAPIClient;
@@ -38,6 +46,42 @@ class LinkedinService
     {
         try {
             return $this->linkedinAPIClient->getCompanies($token_access);
+        } catch (\Exception $exception) {
+            throw $exception;
+        }
+    }
+
+    /**
+     * @param array
+     * @return array
+     * @throws \Exception
+     */
+    public function getUpdates($params)
+    {
+        try {
+            return $this->linkedinAPIClient->getAllUpdates($params);
+
+        } catch (\Exception $exception) {
+            throw $exception;
+
+        }
+    }
+
+    /**
+     * @param $message
+     * @param $access_token
+     * @return array
+     * @throws \Exception
+     */
+    public function getAllCommentPost($message, $access_token)
+    {
+        try {
+            $request_body = [
+                'idCompany' => $message['updateContent']['company']['id'],
+                'updateKey' => $updateKey = $message['updateKey'],
+                'access_token' => $access_token
+            ];
+            return $this->linkedinAPIClient->getAllFromPost($request_body);
 
         } catch (\Exception $exception) {
             throw $exception;

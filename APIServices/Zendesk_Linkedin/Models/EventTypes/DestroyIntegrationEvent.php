@@ -1,0 +1,44 @@
+<?php
+
+namespace APIServices\Zendesk_Linkedin\Models\EventTypes;
+
+use APIServices\Zendesk\Models\EventsTypes\EventType;
+use APIServices\Zendesk_Linkedin\Services\ZendeskChannelService;
+use Illuminate\Support\Facades\Log;
+
+/**
+ * Class DestroyIntegrationEvent
+ * @package APIServices\Zendesk_Linkedin\Models\EventTypes
+ */
+class DestroyIntegrationEvent extends EventType
+{
+    /**
+     * DestroyIntegrationEvent constructor.
+     * @param $data
+     * @param ZendeskChannelService $facebookService
+     */
+    public function __construct($data, ZendeskChannelService $facebookService)
+    {
+        $this->service = $facebookService;
+        parent::__construct($data);
+
+        if (array_key_exists('metadata', $this->data['data'])) {
+            $this->data['metadata'] = json_decode($this->data['data']['metadata'], true);
+        }
+    }
+
+    /**
+     * Delete Integration Account
+     */
+    function handleEvent()
+    {
+        Log::notice("Delete Integration Account...");
+        try {
+            $account_id = $this->data['metadata']['account_id'];
+            $this->service->deleteByZendeskIdIntegration($account_id);
+            Log::notice("Delete Integration Success.");
+        } catch (\Exception $exception) {
+            Log::error($exception->getMessage());
+        }
+    }
+}

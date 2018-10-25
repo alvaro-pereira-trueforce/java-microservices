@@ -19,9 +19,10 @@ class EventFactory
                 'data' => $event_data
             ]);
         } catch (\Exception $exception) {
-            return App::makeWith(UnknownEvent::class, [
+            return new UnknownEvent($event_data);
+            /*return App::makeWith(UnknownEvent::class, [
                 'data' => $event_data
-            ]);
+            ]);*/
         }
     }
 }

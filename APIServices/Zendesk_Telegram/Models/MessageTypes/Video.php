@@ -13,14 +13,14 @@ class Video extends FilesMessageType {
             {
                 $this->telegramService->sendTelegramMessage(
                     $this->chat_id,
-                    'Our support size limit was reached (20MB), please try to send the Video in short parts'
+                    'Our support size limit was reached (20MB), please try to send the VideoUpdate in short parts'
                 );
                 return null;
             }
 
             $videoURL = $this->telegramService->getDocumentURL($video->getFileId());
 
-            $basic_document_response = $this->getBasicDocumentResponse('Video', $videoURL,
+            $basic_document_response = $this->getBasicDocumentResponse('VideoUpdate', $videoURL,
                 $video->getFileId());
 
             $thumbURL = $this->telegramService->getDocumentURL($video->getThumb()->getFileId());

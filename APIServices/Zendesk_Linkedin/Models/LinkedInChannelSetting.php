@@ -1,10 +1,12 @@
 <?php
 
 namespace APIServices\Zendesk_Linkedin\Models;
-
-
 use APIServices\Zendesk\Models\ChannelSettings;
 
+/**
+ * Class LinkedInChannelSetting
+ * @package APIServices\Zendesk_Linkedin\Models
+ */
 class LinkedInChannelSetting extends ChannelSettings
 {
     /**
