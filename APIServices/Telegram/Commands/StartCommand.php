@@ -7,6 +7,9 @@ use APIServices\Utilities\StringUtilities;
 use APIServices\Zendesk\Utility;
 use APIServices\Zendesk_Telegram\Services\ChannelService;
 use Illuminate\Support\Facades\App;
+use Illuminate\Support\Facades\Lang;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Translation\Translator;
 use Telegram\Bot\Actions;
 use Telegram\Bot\Commands\Command;
 use Telegram\Bot\Objects\Update;
@@ -40,8 +43,13 @@ class StartCommand extends Command
             // the user/chat id who triggered this command.
             // `replyWith<Message|Photo|Audio|VideoUpdate|Voice|Document|Sticker|Location|ChatAction>()` all the available methods are dynamically
             // handled when you replace `send<Method>` with `replyWith` and use the same parameters - except chat_id does NOT need to be included in the array.
+
             $channelSettings = $service->getChannelSettings();
 //            dd($channelSettings);
+
+            if (!empty($channelSettings) && !empty($channelSettings['locale'])) {
+                App::setLocale($channelSettings['locale']);
+            }
 
             if (array_key_exists('has_hello_message', $channelSettings) && (boolean)$channelSettings['has_hello_message'] == true && array_key_exists('hello_message', $channelSettings)) {
                 $this->replyWithMessage([
@@ -55,11 +63,13 @@ class StartCommand extends Command
                 $this->update->getMessage()->getChat()->getType() == 'private'
             ) {
                 $this->replyWithMessage([
-                    'text' => 'In order to help you please provide us your email, phone number. You can cancel this step at any time sending the command /cancel'
+                    'text' => trans('telegram.request_user_info_init_message')
                 ]);
+
                 $this->replyWithMessage([
-                    'text' => 'Enter your email:'
+                    'text' => trans('telegram.request_user_info_get_email_message')
                 ]);
+
                 $service->setCommandProcess($this->update, $this->name, 'email');
             }
         } else {
@@ -68,23 +78,23 @@ class StartCommand extends Command
                 switch ($commandData['state']) {
                     case 'email':
                         if (!$message || !StringUtilities::isValidEmail($message))
-                            throw new \Exception('Please enter a valid email address.');
+                            throw new \Exception(trans('telegram.request_user_info_error_email_message'));
                         $content = serialize(['email' => $message]);
                         $service->setCommandProcess($this->update, $this->name, 'phone_number', $content);
                         $this->replyWithMessage([
-                            'text' => 'Great!, Enter your phone now:'
+                            'text' => trans('telegram.request_user_info_get_phone_message')
                         ]);
                         break;
                     case 'phone_number':
                         if (!$message || !StringUtilities::isValidPhoneNumber($message)) {
-                            throw new \Exception('Please enter a valid phone number, your phone number must have 8 or more digits.');
+                            throw new \Exception(trans('telegram.request_user_info_error_phone_message'));
                         }
 
                         $content = unserialize($commandData['content']);
                         $content['phone_number'] = $message;
 
                         $this->replyWithMessage([
-                            'text' => 'Great! thank you, please send your request.'
+                            'text' => trans('telegram.request_user_info_success_message')
                         ]);
                         /** @var ChannelService $channel_service */
                         $channel_service = App::make(ChannelService::class);
@@ -95,7 +105,7 @@ class StartCommand extends Command
                                 'from' => $this->update->getMessage()->getFrom(),
                                 'chat' => $this->update->getMessage()->getChat(),
                                 'date' => $this->update->getMessage()->getDate(),
-                                'text' => "Telegram Bot: New user info: Email: " . $content['email'] . " Phone Number: " . $content['phone_number']
+                                'text' => trans('telegram.request_user_info_message_for_zendesk', ['email' => $content['email'], 'phone_number' => $content['phone_number']])
                             ]
                         ]);
                         $channel_service->sendUpdate($update, $this->telegram->getAccessToken());
@@ -108,7 +118,7 @@ class StartCommand extends Command
                     'reply_to_message_id' => $this->getUpdate()->getMessage()->getMessageId()
                 ]);
                 $this->replyWithMessage([
-                    'text' => 'Try Again:'
+                    'text' => trans('telegram.request_user_info_try_again')
                 ]);
             }
         }
