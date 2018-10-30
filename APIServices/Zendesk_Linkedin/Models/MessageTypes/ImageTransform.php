@@ -1,9 +1,7 @@
 <?php
 
 namespace APIServices\Zendesk_Linkedin\Models\MessageTypes;
-
-use APIServices\Zendesk\Utility;
-
+use Illuminate\Support\Facades\Log;
 /**
  * Class ImageTransform
  * @package APIServices\Zendesk_Linkedin\Models\MessageTypes
@@ -18,21 +16,26 @@ class ImageTransform extends MessageTransform
     function getTransformedMessage()
     {
         try {
+            $groupCommentsSorted=[];
             $groupComment = [];
             $groupPost = [];
             $thead_id = $this->getExternalIdPost($this->messages);
+            $timeExpirationPost=$this->getExpirationTimePost($this->messages);
             if (array_key_exists('_total', $this->messages['updateComments']) && (int)$this->messages['updateComments']['_total'] !== 0) {
                 foreach ($this->messages['updateComments']['values'] as $message) {
-                    $responseComment = $this->getUpdateMediaType($message, $thead_id);
+                    $responseComment = $this->getUpdateMediaType($message, $thead_id,$timeExpirationPost);
                     $responseUpdate = $this->getUpdatesImages($this->messages);
-                    $groupComment[$responseComment['created_at']] = $responseComment;
+                    if(!empty($responseComment)){
+                        $groupComment[$responseComment['created_at']] = $responseComment;
+                    }
                     $groupPost[$responseUpdate['created_at']] = $responseUpdate;
+                    $groupCommentsSorted=$this->sortedComments($groupComment);
                 }
             } else {
                 $responseUpdate = $this->getUpdatesImages($this->messages);
                 $groupPost[$responseUpdate['created_at']] = $responseUpdate;
             }
-            $response = array_merge($groupComment, $groupPost);
+            $response = array_merge($groupCommentsSorted, $groupPost);
             return $response;
         } catch (\Exception $exception) {
             Log::error('Message: ' . $exception->getMessage() . ' On Line: ' . $exception->getLine() . 'transformed ImageMessage error');
@@ -59,7 +62,7 @@ class ImageTransform extends MessageTransform
             return $this->zendeskUtils->addHtmlMessageToBasicResponse($newUpdate,
                 view('instagram.multimedia.photo_viewer', [
                     'photoURL' => $this->getMediaImageUrl($this->media),
-                    'message' => $this->getFooterPage($this->media)
+                    'message' => $this->getMessagePost($message)
                 ])->render());
         } catch (\Exception $exception) {
             Log::error($exception);
