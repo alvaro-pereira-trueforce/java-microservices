@@ -254,7 +254,9 @@ class ZendeskController extends CommonZendeskController
             } else {
                 Log::notice("there is no account");
             }
-            return $this->successReturn();
+            return response()->json([
+                'external_resources' => []
+            ]);
         } catch (\Exception $exception) {
             Log::error($exception->getMessage());
             throw new UnauthorizedHttpException('We can not process the request, Account does not exits.');
