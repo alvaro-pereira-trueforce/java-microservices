@@ -127,6 +127,6 @@ class TransformMessageBuilder
      */
     public function sortMessages($messagesTransformed)
     {
-        return collect($messagesTransformed)->sortBy('count')->reverse()->toArray();
+        return collect($messagesTransformed)->sortByDesc('created_at')->reverse()->toArray();
     }
 }

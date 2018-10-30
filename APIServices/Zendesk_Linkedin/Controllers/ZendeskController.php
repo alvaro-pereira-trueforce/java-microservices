@@ -10,9 +10,7 @@ use APIServices\LinkedIn\Services\LinkedinService;
 use APIServices\Zendesk\Controllers\CommonZendeskController;
 use APIServices\Zendesk_Linkedin\Models\EventTypes\TEventType;
 use APIServices\Zendesk_Linkedin\Services\ZendeskChannelService;
-use Carbon\Carbon;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Log;
 use JavaScript;
 use Ramsey\Uuid\Uuid;
@@ -252,16 +250,13 @@ class ZendeskController extends CommonZendeskController
         try {
             $integrationChannel = $this->channelService->getChannelIntegration($metadata);
             if (!empty($integrationChannel)) {
-                if (Carbon::now()->diffInSeconds($this->channelService->getCreatedTimeZendeskIntegration($metadata['account_id'])) < env('LINKEDIN_TRACKING_EXPIRATION_TIME')) {
-                   /* here start the worker process */
-                    ProcessZendeskPullEvent::dispatch($integrationChannel, 1, $metadata);
-                } else {
-                    Log::notice("time of expiration reach");
-                }
+                ProcessZendeskPullEvent::dispatch($integrationChannel, 1, $metadata);
             } else {
-                throw new \Exception("there is no account");
+                Log::notice("there is no account");
             }
-            return $this->successReturn();
+            return response()->json([
+                'external_resources' => []
+            ]);
         } catch (\Exception $exception) {
             Log::error($exception->getMessage());
             throw new UnauthorizedHttpException('We can not process the request, Account does not exits.');

@@ -2,6 +2,7 @@
 
 namespace APIServices\Zendesk_Linkedin\Models\MessageTypes;
 
+use Carbon\Carbon;
 use APIServices\Zendesk\Utility;
 use Illuminate\Support\Facades\Log;
 
@@ -56,7 +57,7 @@ abstract class MessageTransform implements IMessageTransform
         if (!empty($message['updateContent']['companyStatusUpdate']['share']['comment'])) {
             return $message['updateContent']['companyStatusUpdate']['share']['comment'];
         } else {
-            return '"' . 'Image was posted by ' . $message['updateContent']['company']['name'] . '"';
+            return 'Image was posted by ' . $message['updateContent']['company']['name'];
         }
     }
 
@@ -107,41 +108,34 @@ abstract class MessageTransform implements IMessageTransform
     }
 
     /**
-     * Attach a message by default into the HTML features
-     * @param $media
-     * @return string
-     */
-    function getFooterPage($media)
-    {
-
-        $media_type = ' This Image';
-        return $media_type . ' was posted by ' . $media['company']['name'];
-    }
-
-    /**
      * @param $messages
      * @param $thead_id
+     * @param $timeExpirationPost
      * @return array
      */
-    public function getUpdateMediaType($messages, $thead_id)
+    public function getUpdateMediaType($messages, $thead_id, $timeExpirationPost)
     {
         try {
-            if (array_key_exists('company', $messages)) {
-                return [
-                    'external_id' => strval($messages['id']),
-                    'message' => $messages['comment'],
-                    'thread_id' => $thead_id,
-                    'created_at' => gmdate('Y-m-d\TH:i:s\Z', $messages['timestamp'] / 1000),
-                    'author' => [
-                        'external_id' => strval($messages['company']['id']),
-                        'name' => $messages['company']['name']
-                    ]
-                ];
-            } else if (array_key_exists('person', $messages)) {
-                $clientPost = $this->getUpdateMediaClientPost($messages, $thead_id);
-                return $clientPost;
+            if ((Carbon::createFromFormat('Y-m-d\TH:i:s\Z', $timeExpirationPost)->diffInSeconds($this->getExpirationTimePost($messages))) < env('LINKEDIN_TRACKING_EXPIRATION_TIME')) {
+                if (array_key_exists('company', $messages)) {
+                    return [
+                        'external_id' => strval($messages['id']),
+                        'message' => $messages['comment'],
+                        'thread_id' => $thead_id,
+                        'created_at' => gmdate('Y-m-d\TH:i:s\Z', $messages['timestamp'] / 1000),
+                        'author' => [
+                            'external_id' => strval($messages['company']['id']),
+                            'name' => $messages['company']['name']
+                        ]
+                    ];
+                } else if (array_key_exists('person', $messages)) {
+                    $clientPost = $this->getUpdateMediaClientPost($messages, $thead_id);
+                    return $clientPost;
+                } else {
+                    Log::debug('ImagePost');
+                }
             } else {
-                Log::debug('ImagePost');
+                return [];
             }
 
         } catch (\Exception $exception) {
@@ -210,5 +204,28 @@ abstract class MessageTransform implements IMessageTransform
             'name' => $message['person']['firstName'],
             'image_url' => $message['person']['pictureUrl']
         ];
+    }
+
+    /**
+     * resolve a timestamp to be handle by the differSeconds carbon's method
+     * @param $message
+     * @return string
+     */
+    public function getExpirationTimePost($message)
+    {
+
+        return gmdate('Y-m-d\TH:i:s\Z', $message['timestamp'] / 1000);
+    }
+
+    /**
+     * arrange all the comments according their timestamp
+     * @param $messages
+     * @return mixed
+     */
+    public function sortedComments($messages)
+    {
+
+        return collect($messages)->sortBy('created_at')->reverse()->toArray();
+
     }
 }
