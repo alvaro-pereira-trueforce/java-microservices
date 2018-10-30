@@ -46,6 +46,17 @@ abstract class CommonZendeskController extends Controller implements IZendeskCon
             'name' => 'Low'],
     ];
 
+    protected $ticket_locales = [
+        [
+            'id' => 'en',
+            'name' => 'English'
+        ],
+        [
+            'id' => 'es',
+            'name' => 'Español'
+        ]
+    ];
+
     /**
      * This is the name of the integration in the database must be equal than the database record
      * @var string $channel_name

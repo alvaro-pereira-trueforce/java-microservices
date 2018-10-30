@@ -21,7 +21,8 @@ class ChannelSettings extends ModelUUID
         'ticket_type',
         'ticket_priority',
         'tags',
-        'tickets_by_group'
+        'tickets_by_group',
+        'locale'
     ];
 
     /**

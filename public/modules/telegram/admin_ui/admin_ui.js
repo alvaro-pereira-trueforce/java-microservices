@@ -25,6 +25,8 @@ function AdminUICtrl(windowsService, poller, $timeout, basicService, $window) {
     vm.ticket_types = windowsService.backend_variables.ticket_types;
     vm.ticket_priorities = windowsService.backend_variables.ticket_priorities;
     vm.pull_mode = windowsService.backend_variables.pull_mode;
+    vm.locales = windowsService.backend_variables.locales;
+
     vm.saveIntegration = saveIntegration;
 
     function saveIntegration() {
