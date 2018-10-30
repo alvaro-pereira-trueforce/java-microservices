@@ -85,6 +85,7 @@ class ZendeskController extends CommonZendeskController
             }
             $front_end_variables['backend_variables']['ticket_types'] = $this->ticket_types;
             $front_end_variables['backend_variables']['ticket_priorities'] = $this->ticket_priorities;
+            $front_end_variables['backend_variables']['locales'] = $this->ticket_locales;
             JavaScript::put($front_end_variables);
             return view('telegramV2.admin_ui');
         } catch (\Exception $exception) {

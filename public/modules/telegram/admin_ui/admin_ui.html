@@ -76,11 +76,21 @@
                         <label><input id="tickets_by_group" type="checkbox"
                                       ng-model="vm.settings.tickets_by_group">Ticket by Group?</label>
                     </div>
-                    <div class="text-muted">If this option is selected, all the messages on a chat group will be added to
+                    <div class="text-muted">If this option is selected, all the messages on a chat group will be added
+                        to
                         the same ticket.
                     </div>
                 </div>
 
+                <div class="form-group">
+                    <label>Telegram Command Language:</label>
+                    <select class="form-control" name="locale" id="locale"
+                            ng-model="vm.settings.locale">
+                        <option ng-repeat="locale in vm.locales" ng-value="locale.id">
+                            {{locale.name}}
+                        </option>
+                    </select>
+                </div>
                 <hr/>
                 <div>
                     <div class="form-group">
