@@ -58,6 +58,7 @@ return [
     'commands' => [
         \APIServices\Telegram\Commands\StartCommand::class,
         \APIServices\Telegram\Commands\CancelCommand::class,
+        \APIServices\Telegram\Commands\NewRequestCommand::class,
         //Telegram\Bot\Commands\HelpCommand::class,
     ],
 ];

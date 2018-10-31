@@ -49,6 +49,13 @@ class TicketScaffold
      */
     public function getParentID($message)
     {
+        $parent_id = $this->generateBasicParentID($message);
+        $parent_uuid = $this->ticketService->getValidParentID($parent_id);
+        return $this->zendeskUtils->getExternalID([$parent_uuid, $parent_id]);
+    }
+
+    public function generateBasicParentID($message)
+    {
         //This commented code create new tickets on reply
         //$reply = $message->getReplyToMessage();
 
@@ -83,7 +90,7 @@ class TicketScaffold
             ]);
         }
         //}
-        $parent_uuid = $this->ticketService->getValidParentID($parent_id);
-        return $this->zendeskUtils->getExternalID([$parent_uuid, $parent_id]);
+
+        return $parent_id;
     }
 }
