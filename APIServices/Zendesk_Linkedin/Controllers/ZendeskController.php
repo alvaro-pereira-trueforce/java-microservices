@@ -299,7 +299,7 @@ class ZendeskController extends CommonZendeskController
             }
         } catch (\Exception $exception) {
             Log::error($exception->getMessage());
-            return $this->successReturn();
+            throw new ServiceUnavailableHttpException('something wrong happened');
         }
         return response()->json([
             'external_resources' => []

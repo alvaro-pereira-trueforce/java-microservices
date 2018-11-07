@@ -2,10 +2,8 @@
 
 namespace APIServices\Zendesk_Linkedin\Jobs;
 
-use APIServices\LinkedIn\Services\LinkedinService;
 use APIServices\Zendesk_Linkedin\MessagesBuilder\TransformMessageBuilder;
 use APIServices\Zendesk_Linkedin\Models\LinkedInChannel;
-use APIServices\Zendesk_Linkedin\Models\MessageTypes\TMessageType;
 use APIServices\Zendesk_Linkedin\Services\ZendeskChannelService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Queue\SerializesModels;
