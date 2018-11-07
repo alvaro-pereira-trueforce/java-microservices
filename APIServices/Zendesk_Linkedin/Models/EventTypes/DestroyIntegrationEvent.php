@@ -19,7 +19,6 @@ class DestroyIntegrationEvent extends EventType
      */
     public function __construct($data, ZendeskChannelService $facebookService)
     {
-        $this->service = $facebookService;
         parent::__construct($data);
 
         if (array_key_exists('metadata', $this->data['data'])) {
@@ -34,6 +33,7 @@ class DestroyIntegrationEvent extends EventType
     {
         Log::notice("Delete Integration Account...");
         try {
+            Log::debug($this->data);
             $account_id = $this->data['metadata']['account_id'];
             $this->service->deleteByZendeskIdIntegration($account_id);
             Log::notice("Delete Integration Success.");

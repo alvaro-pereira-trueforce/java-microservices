@@ -1,0 +1,9 @@
+{
+  "app": {
+    "package": "linkedin_channel_bot_dev",
+    "name": {
+      "value": "Linkedin Channel Integration",
+      "title": "Linkedin Channel Integration"
+    }
+  }
+}

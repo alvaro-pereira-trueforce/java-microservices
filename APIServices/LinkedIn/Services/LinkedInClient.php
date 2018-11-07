@@ -28,7 +28,7 @@ class LinkedInClient
      * @return array
      * @throws \Exception
      */
-    public function postFormRequest($endpoint, array $body, $headers = [])
+    public function postAuthorizedRequest($endpoint, array $body, $headers = [])
     {
         try {
 
@@ -50,15 +50,43 @@ class LinkedInClient
     }
 
     /**
-     * @param $token_address
+     * @param $endpoint
+     * @param $body
+     * @param array $headers
+     * @return mixed
+     * @throws \Exception
+     */
+    public function postFormRequest($endpoint, $body, $headers = [])
+    {
+        try {
+
+            $response = $this->httpClient->request('POST', $endpoint, [
+                'body' => json_encode($body),
+                'headers' => $headers
+            ]);
+            if ($response->getStatusCode() != '201') {
+                throw new \Exception(json_decode($response->getBody()->getContents(), true), $response->getStatusCode());
+            }
+
+            return json_decode($response->getBody()->getContents(), true);
+        } catch (\GuzzleHttp\Exception\GuzzleException $exception) {
+            throw new \Exception($exception->getMessage(), $exception->getCode(), $exception);
+        } catch (\Exception $exception) {
+            throw $exception;
+        }
+
+    }
+
+    /**
+     * @param $endpoint
      * @param array $token_access
      * @return array
      * @throws \Exception
      */
-    public function getFormRequest($token_address, $token_access = [])
+    public function getFormRequest($endpoint, $token_access = [])
     {
         try {
-            $response = $this->httpClient->request('GET', $token_address, [
+            $response = $this->httpClient->request('GET', $endpoint, [
                 'headers' => $token_access
             ]);
             if ($response->getStatusCode() != '200') {

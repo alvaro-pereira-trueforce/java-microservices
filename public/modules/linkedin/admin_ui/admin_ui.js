@@ -43,6 +43,7 @@ function AdminUICtrl(windowsService, poller, $timeout, basicService, $window) {
         vm.timeout_counter = 0;
         $timeout(polling, 1000);
     }
+
     function polling() {
         poller.poll('admin_UI_waiting', {
             account_id: windowsService.backend_variables.account_id,
@@ -60,7 +61,7 @@ function AdminUICtrl(windowsService, poller, $timeout, basicService, $window) {
                 if (value.id === response.data.selected_company) {
 
                     vm.selected_company = value;
-                    vm.company_page_selected= value.name;
+                    vm.company_page_selected = value.name;
                     vm.isASavedIntegration = true;
                 }
             });
@@ -89,19 +90,25 @@ function AdminUICtrl(windowsService, poller, $timeout, basicService, $window) {
     }
 
     function ValidateIntegration() {
-
-        basicService.postRequest('admin_ui_validate_company', {
-            company_information: vm.selected_company,
-            account_id: windowsService.backend_variables.account_id,
-            tags: vm.tags,
-            ticket_type: vm.selected_ticket_type,
-            ticket_priority: vm.selected_ticket_priority,
-        }).then(function (response) {
-            $window.location.href = response.data.redirect_url;
-        }).catch(function (error) {
-            vm.error = error.data.message;
-            $window.scrollTo(0, 0);
-        })
+        vm.error = undefined;
+        if (vm.form.$valid) {
+            if (vm.receiveOldPost === false) {
+                vm.old_post_number = undefined;
+            }
+            basicService.postRequest('admin_ui_validate_company', {
+                company_information: vm.selected_company,
+                account_id: windowsService.backend_variables.account_id,
+                tags: vm.tags,
+                ticket_type: vm.selected_ticket_type,
+                ticket_priority: vm.selected_ticket_priority,
+                old_post_number: vm.old_post_number
+            }).then(function (response) {
+                $window.location.href = response.data.redirect_url;
+            }).catch(function (error) {
+                vm.error = error.data.message;
+                $window.scrollTo(0, 0);
+            })
+        }
     }
 
     function stopProgress() {

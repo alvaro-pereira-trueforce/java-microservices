@@ -123,10 +123,38 @@
                     <input type="text" name="tags" class="form-control" ng-model="vm.tags">
                     <div class="text-muted">Please separate tags with spaces.</div>
                 </div>
+                <div ng-if="!vm.isASavedIntegration">
+                    <div class="form-group">
+                        <label>Receive Old Posts?</label>
+                        <input type="checkbox" ng-model="vm.receiveOldPost">
+                    </div>
+                    <div class="form-group" ng-if="vm.receiveOldPost">
+                        <label>How many post do you want to receive?</label>
+                        <select class="form-control" name="old_post_number" id="old_post_number" ng-required="true"
+                                ng-model="vm.old_post_number" ng-init="vm.old_post_number = '1'">
+                            <option value="1">1</option>
+                            <option value="5">5</option>
+                            <option value="10">10</option>
+                            <option value="15">15</option>
+                            <option value="20">20</option>
+                            <option value="25">25</option>
+                            <option value="30">30</option>
+                            <option value="35">35</option>
+                            <option value="40">40</option>
+                            <option value="45">45</option>
+                            <option value="50">50</option>
+                        </select>
+                        <div class="text-muted">The same amount of comments per post will be added.</div>
+                        <div class="alert alert-danger"
+                             ng-if="vm.form.old_post_number.$invalid && vm.form.old_post_number.$touched || vm.form.$submitted && vm.form.old_post_number.$invalid">
+                            Please, select the amount of posts you want to receive.
+                        </div>
+                    </div>
+                </div>
 
                 <div class="form-group">
-                    <button id="send_request" class="btn btn-primary" ng-click="vm.ValidateIntegration()">Submit
-                    </button>
+                    <button id="send_request" class="btn btn-primary" ng-click="vm.ValidateIntegration()">Submit</button>
+
                 </div>
             </form>
         </div>
