@@ -5,16 +5,20 @@ namespace APIServices\Zendesk_Linkedin\Controllers;
 use APIServices\Zendesk\Models\EventsTypes\EventFactory;
 use APIServices\Zendesk\Models\EventsTypes\IEventType;
 use APIServices\Zendesk_Linkedin\Jobs\ProcessZendeskPullEvent;
+use APIServices\Zendesk_Linkedin\MessagesBuilder\TransformMessagePullEvent;
+use APIServices\Zendesk_Linkedin\MessagesBuilder\TransformMessageSearcher;
 use APIServices\Zendesk_Linkedin\Models\LinkedInChannel;
 use APIServices\LinkedIn\Services\LinkedinService;
 use APIServices\Zendesk\Controllers\CommonZendeskController;
-use APIServices\Zendesk_Linkedin\Models\EventTypes\TEventType;
 use APIServices\Zendesk_Linkedin\Services\ZendeskChannelService;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
+use APIServices\Utilities\StringUtilities;
 use Illuminate\Support\Facades\Log;
 use JavaScript;
 use Ramsey\Uuid\Uuid;
-use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
+use Illuminate\Support\Facades\App;
+use Symfony\Component\HttpKernel\Exception\ServiceUnavailableHttpException;
 
 class ZendeskController extends CommonZendeskController
 {
@@ -214,6 +218,8 @@ class ZendeskController extends CommonZendeskController
 
             $this->saveNewAccountInformation($request->account_id, $newAccount);
 
+            $this->sendOldPosts($request->old_post_number, $newAccountDBModel);
+
             return response()->json([
                 'redirect_url' => env('APP_URL') . '/linkedin/admin_ui_save/' . $request->account_id
             ], 200);
@@ -235,6 +241,7 @@ class ZendeskController extends CommonZendeskController
             unset($newAccount['return_url']);
             unset($newAccount['name']);
             $newAccount = $this->cleanArray($newAccount);
+            $newAccount['integration_timestamp'] = Carbon::now()->format('Y-m-d\TH:i:s\Z');
             Log::debug($newAccount);
             return view('post_metadata', ['return_url' => $return_url, 'name' => $name, 'metadata' => json_encode($newAccount)]);
         } catch (\Exception $exception) {
@@ -243,27 +250,100 @@ class ZendeskController extends CommonZendeskController
         }
     }
 
+    protected function sendOldPosts($postsAmount, $linkedInChannel)
+    {
+        try {
+            if (!empty($postsAmount)) {
+                Log::notice('Getting old posts to send...' . $postsAmount);
+                $linkedInModel = json_decode($linkedInChannel, true);
+                $ListPosts = $this->linkedinService->getUpdates($linkedInModel);
+                if (array_key_exists('values', $ListPosts)) {
+                    $oldPost = [];
+                    $count = 1;
+                    foreach ($ListPosts['values'] as $posts) {
+                        if ($count <= $postsAmount) {
+                            $oldPost[] = $posts;
+                            $count++;
+                        }
+                    }
+                    Log::debug($oldPost);
+                    $metadata['account_id'] = $linkedInChannel['uuid'];
+                    $integrationChannel = $this->channelService->getChannelIntegration($metadata);
+                    ProcessZendeskPullEvent::dispatch($integrationChannel, 1, 'Pull old Posts', $linkedInModel, $oldPost)->delay(15);
+
+                } else {
+                    Log::debug('there is not media or comments');
+                }
+            }
+        } catch (\Exception $exception) {
+            Log::error($exception->getMessage() . ' Line: ' . $exception->getLine() . 'error to tracking old posts');
+        }
+    }
+
     public function pull(Request $request)
     {
         $metadata = json_decode($request->metadata, true);
         $state = json_decode($request->state, true);
         try {
-            $integrationChannel = $this->channelService->getChannelIntegration($metadata);
-            if (!empty($integrationChannel)) {
-                ProcessZendeskPullEvent::dispatch($integrationChannel, 1, $metadata);
+            $validatedPost = App::make(TransformMessagePullEvent::class, ['metadata' => $metadata]);
+            $comments = $validatedPost->getValidatePosts($metadata['integration_timestamp']);
+            if (!empty($comments)) {
+                $integrationChannel = $this->channelService->getChannelIntegration($metadata);
+                if (!empty($integrationChannel)) {
+                    ProcessZendeskPullEvent::dispatch($integrationChannel, 1, 'Pull Posts', $metadata, $comments);
+                } else {
+                    Log::notice("there is no account");
+                }
             } else {
-                Log::notice("there is no account");
+                Log::debug('There is not available posts');
             }
-            return $this->successReturn();
         } catch (\Exception $exception) {
             Log::error($exception->getMessage());
-            throw new UnauthorizedHttpException('We can not process the request, Account does not exits.');
+            return $this->successReturn();
         }
+        return response()->json([
+            'external_resources' => []
+        ]);
     }
 
     public function channel_back(Request $request)
     {
-        return $this->successReturn();
+        Log::debug($request);
+        try {
+            $thread_id = explode(':', $request->thread_id);
+            $newPostLinkedIn = $this->linkedinService->postLinkedInComment($request, $thread_id['2']);
+            if (!empty($newPostLinkedIn)) {
+                Log::debug('Error detected or the API format has changed');
+            }
+            $channelBackComment = App::makeWith(TransformMessageSearcher::class, ['params' => $request]);
+            $channelBackId = $channelBackComment->searchCommentByMessage($request->message);
+
+            $response = [
+                'external_id' => $channelBackId
+            ];
+            return response()->json($response);
+
+        } catch (\Exception $exception) {
+            Log::error($exception->getMessage() . ' Line: ' . $exception->getLine());
+            $metadata = json_decode($request->metadata, true);
+            $this->channelService->configureZendeskAPI($metadata['zendesk_access_token'], $metadata['subdomain'], $metadata['instance_push_id']);
+            $this->channelService->sendUpdate([
+                    [
+                        'external_id' => $request->thread_id . ':' . StringUtilities::RandomString(),
+                        'message' => 'The following message couldn\'t be posted on your LinkedIn Company/Product Account. 
+                             LinkedIn denied the action because of security reasons, please wait 30 seconds and try again.',
+                        'thread_id' => $request->thread_id,
+                        'created_at' => date('Y-m-d\TH:i:s\Z'),
+                        'author' => [
+                            'external_id' => $request->recipient_id,
+                            'name' => 'administration'
+                        ]
+                    ]
+                ]
+            );
+            Log::error($exception->getMessage());
+            throw new ServiceUnavailableHttpException($exception->getMessage());
+        }
     }
 
     public function click_through(Request $request)

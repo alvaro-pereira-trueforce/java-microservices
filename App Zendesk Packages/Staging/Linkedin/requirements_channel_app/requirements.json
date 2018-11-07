@@ -1,0 +1,8 @@
+{
+  "channel_integrations": {
+    "Instagram Channel Developer": {
+      "manifest_url":
+      "https://zendesk-channel-server-staging.herokuapp.com/linkedin/manifest"
+    }
+  }
+}

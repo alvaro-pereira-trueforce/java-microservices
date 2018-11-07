@@ -54,6 +54,7 @@ class TransformMessageBuilder
         $this->linkedinService = $linkedinService;
         $this->metadata = $metadata;
     }
+
     /**
      * tracking and return an array already transformed all the Comments,
      * Images and Videos into a zendesk format
@@ -81,7 +82,9 @@ class TransformMessageBuilder
             return $response;
         } catch (\Exception $exception) {
             Log::error('Message: ' . $exception->getMessage() . ' On Line: ' . $exception->getLine() . 'redirect a messageType');
+            throw $exception;
         }
+
     }
 
     /**
@@ -94,11 +97,12 @@ class TransformMessageBuilder
     public function transformMessage($messages)
     {
         try {
-            $messagesTransformed = $this->getTransformedMessage($messages['values']);
+            $messagesTransformed = $this->getTransformedMessage($messages);
             $newMessagesTransformed = $this->sortMessages($messagesTransformed);
             return $response = $this->trackingMessage($newMessagesTransformed);
         } catch (\Exception $exception) {
-            Log::error("Transformed Error: " . $exception->getMessage() . " Line:" . $exception->getLine() . 'problems to sorted message');
+            Log::error("Transformed Error: " . $exception->getMessage() . " Line:" . $exception->getLine());
+            throw $exception;
         }
     }
 

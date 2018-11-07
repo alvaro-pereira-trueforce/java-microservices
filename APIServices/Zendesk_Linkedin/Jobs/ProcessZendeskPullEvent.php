@@ -45,16 +45,29 @@ class ProcessZendeskPullEvent implements ShouldQueue
     protected $metadata;
 
     /**
+     * @var $comments
+     */
+    protected $comments;
+    /**
+     * @var $nameJob
+     */
+    protected $nameJob;
+
+    /**
      * ProcessZendeskPullEvent constructor.
      * @param LinkedInChannel $linkedInChannel
      * @param $triesCount
+     * @param $nameJob
      * @param $metadata
+     * @param $comments
      */
-    public function __construct(LinkedInChannel $linkedInChannel, $triesCount, $metadata)
+    public function __construct(LinkedInChannel $linkedInChannel, $triesCount, $nameJob, $metadata, $comments)
     {
         $this->linkedInChannel = $linkedInChannel;
         $this->triesCount = $triesCount;
         $this->metadata = $metadata;
+        $this->comments = $comments;
+        $this->nameJob = $nameJob;
     }
 
     /**
@@ -63,7 +76,7 @@ class ProcessZendeskPullEvent implements ShouldQueue
     public function handle()
     {
 
-        Log::debug('Starting Job:');
+        Log::debug('Starting Job: '.$this->nameJob);
         try {
             Log::debug('Log Worker');
 
@@ -71,39 +84,32 @@ class ProcessZendeskPullEvent implements ShouldQueue
             /** @var ZendeskChannelService $channelService */
             $channelService = App::make(ZendeskChannelService::class);
 
-            $linkedInService = App::make(LinkedinService::class);
-
-            $comments = $linkedInService->getUpdates($this->metadata);
-            if ((array_key_exists('_total', $comments) && (int)$comments['_total'] == 0)) {
-                Log::debug('The media does not exist or it has not comments');
-                return;
-            } else {
-                try {
-                    $zendeskTransformService = App::makeWith(TransformMessageBuilder::class, ['metadata' => $this->metadata]);
-                    $transformedMessages = $zendeskTransformService->transformMessage($comments);
-                } catch (\Exception $exception) {
-                    Log::error('LinkedIn says: ' . $exception->getMessage() . 'this is the try number: ' . $this->triesCount);
-                    if ($this->triesCount > 10) {
-                        Log::error('Tries limit reached.');
-                        return;
-                    }
-                    static:: dispatch($this->linkedInChannel, $this->triesCount + 1, $this->metadata)->delay($this->triesCount * 60);
+            try {
+                $zendeskTransformService = App::makeWith(TransformMessageBuilder::class, ['metadata' => $this->metadata]);
+                $transformedMessages = $zendeskTransformService->transformMessage($this->comments);
+            } catch (\Exception $exception) {
+                Log::error('LinkedIn says: ' . $exception->getMessage() . 'this is the try number: ' . $this->triesCount);
+                if ($this->triesCount > 10) {
+                    Log::error('Tries limit reached.');
+                    return;
                 }
-                Log::debug("communication with LinkedIn successful");
-                if (!empty($transformedMessages)) {
-                    //Configure Zendesk API and Zendesk Client
-                    App::when(ZendeskClient::class)
-                        ->needs('$access_token')
-                        ->give($this->linkedInChannel->zendesk_access_token);
-                    App::when(ZendeskAPI::class)
-                        ->needs('$subDomain')
-                        ->give($this->linkedInChannel->subdomain);
-                    App::when(ZendeskAPI::class)
-                        ->needs('$instance_push_id')
-                        ->give($this->linkedInChannel->instance_push_id);
-                    $channelService->sendUpdate($transformedMessages);
-                }
+                static:: dispatch($this->linkedInChannel, $this->triesCount + 1, $this->metadata)->delay($this->triesCount * 60);
             }
+            Log::debug("communication with LinkedIn successful");
+            if (!empty($transformedMessages)) {
+                //Configure Zendesk API and Zendesk Client
+                App::when(ZendeskClient::class)
+                    ->needs('$access_token')
+                    ->give($this->linkedInChannel->zendesk_access_token);
+                App::when(ZendeskAPI::class)
+                    ->needs('$subDomain')
+                    ->give($this->linkedInChannel->subdomain);
+                App::when(ZendeskAPI::class)
+                    ->needs('$instance_push_id')
+                    ->give($this->linkedInChannel->instance_push_id);
+                $channelService->sendUpdate($transformedMessages);
+            }
+
         } catch (\Exception $exception) {
             Log::error('Message: ' . $exception->getMessage() . ' On Line: ' . $exception->getLine() . 'error to instant channel services');
         }

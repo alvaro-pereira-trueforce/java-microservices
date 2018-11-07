@@ -43,7 +43,7 @@ abstract class MessageTransform implements IMessageTransform
      */
     public function getExternalIdPost($message)
     {
-        return $newExternalId = $message['updateContent']['companyStatusUpdate']['share']['id'] . ':' . $message['updateContent']['company']['id'];
+        return $newExternalId = $message['updateContent']['companyStatusUpdate']['share']['id'] . ':' . $message['updateContent']['company']['id'] . ':' . $message['updateKey'];
     }
 
     /**

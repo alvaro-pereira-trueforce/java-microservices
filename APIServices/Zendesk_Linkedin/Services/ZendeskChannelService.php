@@ -8,7 +8,7 @@ use APIServices\Zendesk_Linkedin\Models\MessageTypes\CommentUpdate;
 use APIServices\Zendesk\Services\ZendeskAPI;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Log;
-
+use APIServices\Zendesk\Services\ZendeskClient;
 /**
  * Class ZendeskChannelService
  * @package APIServices\Zendesk_Linkedin\Services
@@ -127,20 +127,42 @@ class ZendeskChannelService implements IChannelService
 
 
     /**
-     * @param $account_id
+     * @param $company_id
      * @return mixed
      * @throws \Exception
      */
-    public function getCreatedTimeZendeskIntegration($account_id)
+    public function getModelFromLinkedInIntegration($company_id)
     {
         try {
-            $zendeskCreateDate = $this->channelRepository->getModelByColumnName('uuid', $account_id);
-            return $response = $zendeskCreateDate['created_at'];
+            $zendeskCreateDate = $this->channelRepository->getModelByColumnName('company_id', $company_id);
+            return $response = $zendeskCreateDate;
         } catch (\Exception $exception) {
             Log::error("Database Error: " . $exception->getMessage() . " Line:" . $exception->getLine());
             throw $exception;
         }
 
+    }
+    /**
+     * Configure Dependency Container to use the Zendesk Access Token Domain and Instance Push ID
+     * @param $zendesk_access_token
+     * @param $subdomain
+     * @param $instance_push_id
+     */
+    public function configureZendeskAPI($zendesk_access_token, $subdomain, $instance_push_id)
+    {
+        try {
+            App::when(ZendeskClient::class)
+                ->needs('$access_token')
+                ->give($zendesk_access_token);
+            App::when(ZendeskAPI::class)
+                ->needs('$subDomain')
+                ->give($subdomain);
+            App::when(ZendeskAPI::class)
+                ->needs('$instance_push_id')
+                ->give($instance_push_id);
+        } catch (\Exception $exception) {
+            Log::error($exception->getMessage());
+        }
     }
 
 }
