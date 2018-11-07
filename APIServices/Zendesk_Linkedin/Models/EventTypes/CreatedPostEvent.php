@@ -48,7 +48,7 @@ class CreatedPostEvent extends EventType
                 $modelDatabase = $this->zendeskChannelService->getModelFromLinkedInIntegration($validator_ticket['1']);
                 $params = json_decode($modelDatabase, true);
                 Log::debug($params);
-                ProcessZendeskCreatePostEvent::dispatch(1, $thead_id, $params,'Pull Likes/Followers')->delay(env('LINKEDIN_FOLLOWER_LIKES_RESPONSE'));
+                ProcessZendeskCreatePostEvent::dispatch(1, $thead_id, $params,'Pull Likes/Followers')->delay(env('LINKEDIN_FOLLOWER_LIKES_TRACKING_TIME'));
                 Log::notice("Job process to track likes and followers Success.");
 
         } catch (\Exception $exception) {
