@@ -10,21 +10,22 @@ class ImageTransform extends MessageTransform
 {
     /**
      * return all the Images posts with their corresponding comments already transformed into a zendesk format
+     * @param $messages
      * @return array
      * @throws \Throwable
      */
-    function getTransformedMessage()
+    function getTransformedMessage($messages)
     {
         try {
             $groupCommentsSorted=[];
             $groupComment = [];
             $groupPost = [];
-            $thead_id = $this->getExternalIdPost($this->messages);
-            $timeExpirationPost=$this->getExpirationTimePost($this->messages);
-            if (array_key_exists('_total', $this->messages['updateComments']) && (int)$this->messages['updateComments']['_total'] !== 0) {
-                foreach ($this->messages['updateComments']['values'] as $message) {
+            $thead_id = $this->getExternalIdPost($messages);
+            $timeExpirationPost=$this->getExpirationTimePost($messages);
+            if (array_key_exists('_total', $messages['updateComments']) && (int)$messages['updateComments']['_total'] !== 0) {
+                foreach ($messages['updateComments']['values'] as $message) {
                     $responseComment = $this->getUpdateMediaType($message, $thead_id,$timeExpirationPost);
-                    $responseUpdate = $this->getUpdatesImages($this->messages);
+                    $responseUpdate = $this->getUpdatesImages($messages);
                     if(!empty($responseComment)){
                         $groupComment[$responseComment['created_at']] = $responseComment;
                     }
@@ -32,7 +33,7 @@ class ImageTransform extends MessageTransform
                     $groupCommentsSorted=$this->sortedComments($groupComment);
                 }
             } else {
-                $responseUpdate = $this->getUpdatesImages($this->messages);
+                $responseUpdate = $this->getUpdatesImages($messages);
                 $groupPost[$responseUpdate['created_at']] = $responseUpdate;
             }
             $response = array_merge($groupCommentsSorted, $groupPost);

@@ -168,7 +168,7 @@ class LinkedInAPI
      * @return array
      * @throws \Exception
      */
-    public function getLikesCompany($request_body){
+    public function getLikesLinkedInPost($request_body){
         try {
             $paramsRequest = [
                 'Authorization' => 'Bearer ' . $request_body['access_token'],
@@ -185,7 +185,7 @@ class LinkedInAPI
      * @return array
      * @throws \Exception
      */
-    public function getFollowersCompany($request_body){
+    public function getFollowersLinkedInCompany($request_body){
         try {
             $paramsRequest = [
                 'Authorization' => 'Bearer ' . $request_body['access_token'],

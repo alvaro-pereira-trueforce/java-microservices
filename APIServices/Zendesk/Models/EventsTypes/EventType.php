@@ -14,10 +14,10 @@ abstract class EventType implements IEventType
     public function __construct($data)
     {
         try {
-            if (array_key_exists('type_id', $data['events'][0]) &&
-                array_key_exists('integration_name', $data['events'][0]) &&
-                array_key_exists('subdomain', $data['events'][0]) &&
-                array_key_exists('data', $data['events'][0])
+            if (!empty($data['events'][0]['type_id']) &&
+                !empty($data['events'][0]['integration_name']) &&
+                !empty( $data['events'][0]['subdomain']) &&
+                !empty($data['events'][0]['data'])
             ) {
                 $this->data = [
                     'type_id' => $data['events'][0]['type_id'],

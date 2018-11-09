@@ -11,9 +11,10 @@ namespace APIServices\Zendesk_Linkedin\Models\MessageTypes;
 interface IMessageTransform
 {
     /**
+     * @param $message
      * @return array
      */
-    function getTransformedMessage();
+    function getTransformedMessage($message);
 
 
 }

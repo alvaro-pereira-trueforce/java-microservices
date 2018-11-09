@@ -20,20 +20,14 @@ abstract class MessageTransform implements IMessageTransform
      * @var Utility
      */
     protected $zendeskUtils;
-    /**
-     * @var $messages
-     */
-    protected $messages;
 
     /**
      * MessageTransform constructor.
-     * @param $messages
      * @param Utility $zendeskUtils
      */
-    public function __construct(Utility $zendeskUtils, $messages)
+    public function __construct(Utility $zendeskUtils)
     {
         $this->zendeskUtils = $zendeskUtils;
-        $this->messages = $messages;
     }
 
     /**

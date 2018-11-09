@@ -21,34 +21,36 @@ class LinkedinService
     {
         $this->linkedinAPIClient = $linkedinAPIClient;
     }
+
     /**
      * Get Access Token is for your application to ask for one using the Authorization Code it just acquired.
-     * @param $code
+     * @param $params
      * @return array
      * @throws \Exception
      */
-    public function getAuthorizationToken($code)
+    public function getAuthorizationToken($params)
     {
         try {
-            return $this->linkedinAPIClient->getAuthorizationToken($code);
+            return $this->linkedinAPIClient->getAuthorizationToken($params);
         } catch (\Exception $exception) {
             throw $exception;
         }
     }
 
     /**
-     * @param array
+     * @param $params
      * @return array
      * @throws \Exception
      */
-    public function getCompanies($token_access)
+    public function getCompanies($params)
     {
         try {
-            return $this->linkedinAPIClient->getCompanies($token_access);
+            return $this->linkedinAPIClient->getCompanies($params);
         } catch (\Exception $exception) {
             throw $exception;
         }
     }
+
     /**
      * @param array
      * @return array
@@ -75,7 +77,7 @@ class LinkedinService
         try {
             $request_body = [
                 'idCompany' => $params['updateContent']['company']['id'],
-                'updateKey' => $updateKey = $params['updateKey'],
+                'updateKey' => $params['updateKey'],
                 'access_token' => $access_token
             ];
             return $this->linkedinAPIClient->getAllFromPost($request_body);
@@ -83,29 +85,6 @@ class LinkedinService
         } catch (\Exception $exception) {
             throw $exception;
         }
-    }
-
-    /**
-     * @param $params
-     * @return array
-     * @throws \Exception
-     */
-    public function getAllPostChannelBackFormat($params)
-    {
-        try {
-            $paramsMetadata = json_decode($params->metadata, true);
-            $paramsGetPost = explode(':', $params->thread_id);
-            $request_body = [
-                'idCompany' => $paramsGetPost['1'],
-                'updateKey' => $paramsGetPost['2'],
-                'access_token' => $paramsMetadata['access_token']
-            ];
-            return $this->linkedinAPIClient->getAllFromPost($request_body);
-
-        } catch (\Exception $exception) {
-            throw $exception;
-        }
-
     }
 
     /**
@@ -132,66 +111,60 @@ class LinkedinService
 
     /**
      * @param $params
-     * @param $metadata
      * @return array
      * @throws \Exception
      */
-    public function getLinkedInLikes($metadata, $params)
+    public function getLinkedInLikes($params)
     {
         try {
-            $paramsGetLikes = explode(':', $params);
+            $paramsGetLikes = explode(':', $params['thread_id']);
             $request_body = [
                 'company_id' => $paramsGetLikes['1'],
                 'update_Key' => $paramsGetLikes['2'],
-                'access_token' => $metadata['access_token']
+                'access_token' => $params['access_token']
             ];
-            return $this->linkedinAPIClient->getLikesCompany($request_body);
+            return $this->linkedinAPIClient->getLikesLinkedInPost($request_body);
         } catch (\Exception $exception) {
             throw $exception;
         }
-
     }
 
     /**
      * @param $params
-     * @param $metadata
      * @return array
      * @throws \Exception
      */
-    public function getLinkedInFollowers($metadata, $params)
+    public function getLinkedInFollowers($params)
     {
         try {
-            $paramsGetFollowers = explode(':', $params);
+            $paramsGetFollowers = explode(':', $params['thread_id']);
             $request_body = [
                 'company_id' => $paramsGetFollowers['1'],
-                'access_token' => $metadata['access_token']
+                'access_token' => $params['access_token']
             ];
-            return $this->linkedinAPIClient->getFollowersCompany($request_body);
+            return $this->linkedinAPIClient->getFollowersLinkedInCompany($request_body);
         } catch (\Exception $exception) {
             throw $exception;
         }
-
     }
 
     /**
-     * @param $metadata
      * @param $params
      * @return array
      * @throws \Exception
      */
-    public function getPostLinkedIn($metadata, $params)
+    public function getPostLinkedIn($params)
     {
         try {
-            $paramsGetFollowers = explode(':', $params);
+            $paramsGetFollowers = explode(':', $params['thread_id']);
             $request_body = [
                 'idCompany' => $paramsGetFollowers['1'],
-                'updateKey'=>$paramsGetFollowers['2'],
-                'access_token' => $metadata['access_token']
+                'updateKey' => $paramsGetFollowers['2'],
+                'access_token' => $params['access_token']
             ];
             return $this->linkedinAPIClient->getAllFromPost($request_body);
         } catch (\Exception $exception) {
             throw $exception;
         }
-
     }
 }
