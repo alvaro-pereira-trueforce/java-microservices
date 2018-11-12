@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Log;
  * Class SubEventsFactory
  * @package APIServices\Zendesk_Linkedin\Factories
  */
-class SubEventsFactory extends EventType
+class ResourceEventTypeFactory extends EventType
 {
     /**
      * SubEventsFactory constructor.

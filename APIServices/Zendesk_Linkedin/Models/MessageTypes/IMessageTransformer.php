@@ -8,7 +8,7 @@ namespace APIServices\Zendesk_Linkedin\Models\MessageTypes;
  * Interface IMessageTransform
  * @package APIServices\Zendesk_Linkedin\Models\MessageTypes
  */
-interface IMessageTransform
+interface IMessageTransformer
 {
     /**
      * @param $message

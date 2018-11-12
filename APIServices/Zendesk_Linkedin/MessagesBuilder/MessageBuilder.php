@@ -4,17 +4,17 @@
 namespace APIServices\Zendesk_Linkedin\MessagesBuilder;
 
 use APIServices\LinkedIn\Services\LinkedinService;
-use APIServices\Zendesk_Linkedin\Models\MessageTypes\IMessageTransform;
+use APIServices\Zendesk_Linkedin\Models\MessageTypes\IMessageTransformer;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\App;
-use APIServices\Zendesk_Linkedin\Models\MessageTypes\CommentTransform;
-use APIServices\Zendesk_Linkedin\Models\MessageTypes\ImageTransform;
+use APIServices\Zendesk_Linkedin\Models\MessageTypes\CommentTransformer;
+use APIServices\Zendesk_Linkedin\Models\MessageTypes\ImageTransformer;
 
 /**
  * Class MessageBuilder
  * @package APIServices\Zendesk_Linkedin\MessagesBuilder
  */
-abstract class MessageBuilder implements IMessageTransform
+abstract class MessageBuilder implements IMessageTransformer
 {
     /**
      * @var $commentType
@@ -75,11 +75,11 @@ abstract class MessageBuilder implements IMessageTransform
             foreach ($messages as $message) {
                 $newArray = $this->linkedinService->getAllCommentPost($message, $this->metadata['access_token']);
                 if (array_key_exists('content', $newArray['updateContent']['companyStatusUpdate']['share'])) {
-                    $this->imageType = App::make(ImageTransform::class);
+                    $this->imageType = App::make(ImageTransformer::class);
                     $this->messageImage = array_merge($this->imageType->getTransformedMessage($newArray), $this->messageImage);
                 } else
                     if (array_key_exists('comment', $newArray['updateContent']['companyStatusUpdate']['share'])) {
-                        $this->commentType = App::make(CommentTransform::class);
+                        $this->commentType = App::make(CommentTransformer::class);
                         $this->messageComment = array_merge($this->messageComment, $this->commentType->getTransformedMessage($newArray));
                     } else {
                         Log::debug("video goes here");

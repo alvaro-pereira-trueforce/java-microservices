@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Log;
  * Class CommentTransform
  * @package APIServices\Zendesk_Linkedin\Models\MessageTypes
  */
-class CommentTransform extends MessageTransform
+class CommentTransformer extends MessageTransformer
 {
     /**
      * return all the Comments posts with their corresponding comments already transformed into a zendesk format

@@ -6,7 +6,7 @@ use Illuminate\Support\Facades\Log;
  * Class ImageTransform
  * @package APIServices\Zendesk_Linkedin\Models\MessageTypes
  */
-class ImageTransform extends MessageTransform
+class ImageTransformer extends MessageTransformer
 {
     /**
      * return all the Images posts with their corresponding comments already transformed into a zendesk format

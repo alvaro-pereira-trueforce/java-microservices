@@ -6,7 +6,7 @@ use APIServices\Zendesk\Models\EventsTypes\EventFactory;
 use APIServices\Zendesk\Models\EventsTypes\IEventType;
 use APIServices\Zendesk_Linkedin\Jobs\ProcessZendeskPullEvent;
 use APIServices\Zendesk_Linkedin\MessagesBuilder\MessageFilter\Comment;
-use APIServices\Zendesk_Linkedin\MessagesBuilder\Validated;
+use APIServices\Zendesk_Linkedin\MessagesBuilder\Validator;
 use APIServices\Zendesk_Linkedin\Models\LinkedInChannel;
 use APIServices\LinkedIn\Services\LinkedinService;
 use APIServices\Zendesk\Controllers\CommonZendeskController;
@@ -285,7 +285,7 @@ class ZendeskController extends CommonZendeskController
         $metadata = json_decode($request->metadata, true);
         $state = json_decode($request->state, true);
         try {
-            $validatedPost = App::makeWith(Validated::class, ['metadata' => $metadata]);
+            $validatedPost = App::makeWith(Validator::class, ['metadata' => $metadata]);
             $comments = $validatedPost->getTransformedMessage($metadata['integration_timestamp']);
             if (!empty($comments)) {
                 $integrationChannel = $this->channelService->getChannelIntegration($metadata);

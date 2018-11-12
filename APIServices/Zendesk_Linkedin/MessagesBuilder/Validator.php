@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Log;
  * Class Validated
  * @package APIServices\Zendesk_Linkedin\MessagesBuilder
  */
-class Validated extends MessageBuilder
+class Validator extends MessageBuilder
 {
     /**
      * @param $limitTracking

@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Log;
  * Class Transformed
  * @package APIServices\Zendesk_Linkedin\MessagesBuilder
  */
-class Transformed extends MessageBuilder
+class Transformer extends MessageBuilder
 {
     /**
      * @param $messages

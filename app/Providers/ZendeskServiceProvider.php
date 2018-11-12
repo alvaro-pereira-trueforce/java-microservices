@@ -10,7 +10,7 @@ use APIServices\Zendesk_Instagram\Models\EventTypes\UninstallIntegrationEvent as
 use APIServices\Zendesk_Linkedin\Models\EventTypes\DestroyIntegrationEvent as LinkedInDestroyIntegrationEvent;
 use APIServices\Zendesk_Linkedin\Models\EventTypes\UninstallIntegrationEvent as LinkedInUninstallIntegrationEvent;
 
-use APIServices\Zendesk_Linkedin\Factories\SubEventsFactory as SubEventsFactory;
+use APIServices\Zendesk_Linkedin\Factories\ResourceEventTypeFactory as ResourceEventTypeFactory;
 use APIServices\Zendesk_Linkedin\Models\EventTypes\CreatedPostEvent as CreatedPostEvent;
 
 use Illuminate\Http\Request;
@@ -47,7 +47,7 @@ class ZendeskServiceProvider extends ServiceProvider
         $this->app->bind('linkedin_destroy_integration', LinkedInUninstallIntegrationEvent::class);
 
         //This is a test for LinkedIn.
-        $this->app->bind('linkedin_resources_created_from_external_ids',SubEventsFactory::class);
+        $this->app->bind('linkedin_resources_created_from_external_ids',ResourceEventTypeFactory::class);
         $this->app->bind('linkedin_comment_on_new_ticket',CreatedPostEvent::class);
     }
 }

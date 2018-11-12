@@ -117,7 +117,7 @@ class ProcessZendeskCreatePostEvent implements ShouldQueue
                     Log::error('Tries limit reached.');
                     return;
                 }
-                static:: dispatch($this->triesCount + 1, $this->thead_id, $this->metadata, $this->nameJob)->delay(env('LINKEDIN_FOLLOWER_LIKES_RESPONSE') * $this->triesCount);
+                static:: dispatch($this->triesCount + 1, $this->thead_id, $this->metadata, $this->nameJob)->delay(3600 * $this->triesCount);
             }
             $channelService->configureZendeskAPI($this->metadata['zendesk_access_token'], $this->metadata['subdomain'], $this->metadata['instance_push_id']);
             $channelService->sendUpdate([
