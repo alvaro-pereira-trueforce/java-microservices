@@ -113,7 +113,7 @@ class ProcessZendeskCreatePostEvent implements ShouldQueue
                 }
             } catch (\Exception $exception) {
                 Log::error('LinkedIn says: ' . $exception->getMessage() . ' this is the try number: ' . $this->triesCount);
-                if ($this->triesCount > 5) {
+                if ($this->triesCount > 3) {
                     Log::error('Tries limit reached.');
                     return;
                 }

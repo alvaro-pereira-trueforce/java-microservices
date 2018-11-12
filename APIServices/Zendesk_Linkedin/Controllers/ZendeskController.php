@@ -321,10 +321,11 @@ class ZendeskController extends CommonZendeskController
             }
             $channelBackComment = App::makeWith(Comment::class, ['metadata' => $requestParameter]);
             $channelBackId = $channelBackComment->getTransformedMessage($request->message);
-            Log::debug('channel back success');
             $response = [
                 'external_id' => $channelBackId
             ];
+            Log::debug($channelBackId);
+            Log::debug('channel back success');
             return response()->json($response);
 
         } catch (\Exception $exception) {

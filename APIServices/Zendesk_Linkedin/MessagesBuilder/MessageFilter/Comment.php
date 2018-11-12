@@ -19,7 +19,7 @@ class Comment extends MessageFilter
     {
         try {
             foreach ($this->comment['updateComments']['values'] as $message) {
-                if ($message['comment'] == $channelBackMessage) {
+                if ($message['comment'] === $channelBackMessage) {
                     $response = strval($message['id']);
                     return $response;
                 }
