@@ -97,7 +97,7 @@ class LinkedInAPI
             'Authorization' => 'Bearer ' . $params_token['access_token']
         ];
 
-        return $this->client->getFormRequest('https://api.linkedin.com/v1/companies/' . $params_token['company_id'] . '/updates?format=json', $paramsCompanyToken);
+        return $this->client->getFormRequest('https://api.linkedin.com/v1/companies/' . $params_token['company_id'] . '/updates?format=json&count=50', $paramsCompanyToken);
     }
 
     /**
