@@ -5,8 +5,8 @@ namespace APIServices\Zendesk_Linkedin\Controllers;
 use APIServices\Zendesk\Models\EventsTypes\EventFactory;
 use APIServices\Zendesk\Models\EventsTypes\IEventType;
 use APIServices\Zendesk_Linkedin\Jobs\ProcessZendeskPullEvent;
-use APIServices\Zendesk_Linkedin\MessagesBuilder\TransformMessagePullEvent;
-use APIServices\Zendesk_Linkedin\MessagesBuilder\TransformMessageSearcher;
+use APIServices\Zendesk_Linkedin\MessagesBuilder\MessageFilter\Comment;
+use APIServices\Zendesk_Linkedin\MessagesBuilder\Validator;
 use APIServices\Zendesk_Linkedin\Models\LinkedInChannel;
 use APIServices\LinkedIn\Services\LinkedinService;
 use APIServices\Zendesk\Controllers\CommonZendeskController;
@@ -285,8 +285,8 @@ class ZendeskController extends CommonZendeskController
         $metadata = json_decode($request->metadata, true);
         $state = json_decode($request->state, true);
         try {
-            $validatedPost = App::make(TransformMessagePullEvent::class, ['metadata' => $metadata]);
-            $comments = $validatedPost->getValidatePosts($metadata['integration_timestamp']);
+            $validatedPost = App::makeWith(Validator::class, ['metadata' => $metadata]);
+            $comments = $validatedPost->getTransformedMessage($metadata['integration_timestamp']);
             if (!empty($comments)) {
                 $integrationChannel = $this->channelService->getChannelIntegration($metadata);
                 if (!empty($integrationChannel)) {
@@ -310,17 +310,22 @@ class ZendeskController extends CommonZendeskController
     {
         Log::debug($request);
         try {
+            $metadata = json_decode($request->metadata, true);
             $thread_id = explode(':', $request->thread_id);
+            $requestParameter['thread_id'] = $request->thread_id;
+            $requestParameter['access_token'] = $metadata['access_token'];
             $newPostLinkedIn = $this->linkedinService->postLinkedInComment($request, $thread_id['2']);
+            Log::debug(' post in LinkedIn success');
             if (!empty($newPostLinkedIn)) {
                 Log::debug('Error detected or the API format has changed');
             }
-            $channelBackComment = App::makeWith(TransformMessageSearcher::class, ['params' => $request]);
-            $channelBackId = $channelBackComment->searchCommentByMessage($request->message);
-
+            $channelBackComment = App::makeWith(Comment::class, ['metadata' => $requestParameter]);
+            $channelBackId = $channelBackComment->getTransformedMessage($request->message);
             $response = [
                 'external_id' => $channelBackId
             ];
+            Log::debug($channelBackId);
+            Log::debug('channel back success');
             return response()->json($response);
 
         } catch (\Exception $exception) {
@@ -342,7 +347,7 @@ class ZendeskController extends CommonZendeskController
                 ]
             );
             Log::error($exception->getMessage());
-            throw new ServiceUnavailableHttpException($exception->getMessage());
+            throw new ServiceUnavailableHttpException('something wrong happened');
         }
     }
 

@@ -15,11 +15,12 @@ class DestroyIntegrationEvent extends EventType
     /**
      * DestroyIntegrationEvent constructor.
      * @param $data
-     * @param ZendeskChannelService $facebookService
+     * @param ZendeskChannelService $linkedInChannelService
      */
-    public function __construct($data, ZendeskChannelService $facebookService)
+    public function __construct($data, ZendeskChannelService $linkedInChannelService)
     {
         parent::__construct($data);
+        $this->service = $linkedInChannelService;
 
         if (array_key_exists('metadata', $this->data['data'])) {
             $this->data['metadata'] = json_decode($this->data['data']['metadata'], true);

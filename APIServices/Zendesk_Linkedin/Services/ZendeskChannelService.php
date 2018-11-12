@@ -1,14 +1,14 @@
 <?php
 
 namespace APIServices\Zendesk_Linkedin\Services;
+
 use APIServices\Zendesk\Repositories\ChannelRepository;
 use APIServices\Zendesk\Services\IChannelService;
-use APIServices\Zendesk_Linkedin\Models\MessageTypes\Comment;
-use APIServices\Zendesk_Linkedin\Models\MessageTypes\CommentUpdate;
 use APIServices\Zendesk\Services\ZendeskAPI;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Log;
 use APIServices\Zendesk\Services\ZendeskClient;
+
 /**
  * Class ZendeskChannelService
  * @package APIServices\Zendesk_Linkedin\Services
@@ -104,7 +104,7 @@ class ZendeskChannelService implements IChannelService
     public function deleteByZendeskSubdomain($subdomain)
     {
         try {
-            return $this->channelRepository->deleteAllByDomain($subdomain);
+            $this->channelRepository->deleteAllByDomain($subdomain);
         } catch (\Exception $exception) {
             Log::error("Database Error: " . $exception->getMessage() . " Line:" . $exception->getLine());
             throw $exception;
@@ -118,7 +118,7 @@ class ZendeskChannelService implements IChannelService
     public function deleteByZendeskIdIntegration($account_id)
     {
         try {
-            return $this->channelRepository->delete($account_id);
+            $this->channelRepository->delete($account_id);
         } catch (\Exception $exception) {
             Log::error("Database Error: " . $exception->getMessage() . " Line:" . $exception->getLine());
             throw $exception;
@@ -142,6 +142,7 @@ class ZendeskChannelService implements IChannelService
         }
 
     }
+
     /**
      * Configure Dependency Container to use the Zendesk Access Token Domain and Instance Push ID
      * @param $zendesk_access_token

@@ -2,7 +2,7 @@
 
 namespace APIServices\Zendesk_Linkedin\Jobs;
 
-use APIServices\Zendesk_Linkedin\MessagesBuilder\TransformMessageBuilder;
+use APIServices\Zendesk_Linkedin\MessagesBuilder\Transformer;
 use APIServices\Zendesk_Linkedin\Models\LinkedInChannel;
 use APIServices\Zendesk_Linkedin\Services\ZendeskChannelService;
 use Illuminate\Bus\Queueable;
@@ -83,8 +83,8 @@ class ProcessZendeskPullEvent implements ShouldQueue
             $channelService = App::make(ZendeskChannelService::class);
 
             try {
-                $zendeskTransformService = App::makeWith(TransformMessageBuilder::class, ['metadata' => $this->metadata]);
-                $transformedMessages = $zendeskTransformService->transformMessage($this->comments);
+                $zendeskTransformService = App::makeWith(Transformer::class, ['metadata' => $this->metadata]);
+                $transformedMessages = $zendeskTransformService->getTransformedMessage($this->comments);
             } catch (\Exception $exception) {
                 Log::error('LinkedIn says: ' . $exception->getMessage() . 'this is the try number: ' . $this->triesCount);
                 if ($this->triesCount > 10) {

@@ -1,24 +1,21 @@
 <?php
 
+
 namespace APIServices\Zendesk_Linkedin\MessagesBuilder;
 
-
 use APIServices\LinkedIn\Services\LinkedinService;
-use APIServices\Zendesk_Linkedin\Models\MessageTypes\CommentTransform;
-use APIServices\Zendesk_Linkedin\Models\MessageTypes\ImageTransform;
-use Illuminate\Support\Facades\App;
+use APIServices\Zendesk_Linkedin\Models\MessageTypes\IMessageTransformer;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\App;
+use APIServices\Zendesk_Linkedin\Models\MessageTypes\CommentTransformer;
+use APIServices\Zendesk_Linkedin\Models\MessageTypes\ImageTransformer;
 
 /**
- * Class TransformMessageBuilder
+ * Class MessageBuilder
  * @package APIServices\Zendesk_Linkedin\MessagesBuilder
  */
-class TransformMessageBuilder
+abstract class MessageBuilder implements IMessageTransformer
 {
-    /**
-     * @var $linkedinService
-     */
-    protected $linkedinService;
     /**
      * @var $commentType
      */
@@ -39,20 +36,30 @@ class TransformMessageBuilder
     protected $messageComment = [];
 
     /**
+     * @var array $ListPosts
+     */
+    protected $ListPosts;
+    /**
+     * @var $linkedinService
+     */
+    protected $linkedinService;
+    /**
      * @var $metadata
      */
     protected $metadata;
 
-
     /**
-     * TransformMessageBuilder constructor.
+     * MessageBuilder constructor.
      * @param $metadata
      * @param LinkedinService $linkedinService
+     * @throws \Exception
      */
     public function __construct($metadata, LinkedinService $linkedinService)
     {
         $this->linkedinService = $linkedinService;
         $this->metadata = $metadata;
+        $this->ListPosts = $this->linkedinService->getUpdates($metadata);
+
     }
 
     /**
@@ -62,18 +69,18 @@ class TransformMessageBuilder
      * @return array
      * @throws \Throwable
      */
-    function getTransformedMessage($messages)
+    function getFactoryMessage($messages)
     {
         try {
             foreach ($messages as $message) {
                 $newArray = $this->linkedinService->getAllCommentPost($message, $this->metadata['access_token']);
                 if (array_key_exists('content', $newArray['updateContent']['companyStatusUpdate']['share'])) {
-                    $this->imageType = App::makeWith(ImageTransform::class, ['messages' => $newArray]);
-                    $this->messageImage = array_merge($this->imageType->getTransformedMessage(), $this->messageImage);
+                    $this->imageType = App::make(ImageTransformer::class);
+                    $this->messageImage = array_merge($this->imageType->getTransformedMessage($newArray), $this->messageImage);
                 } else
                     if (array_key_exists('comment', $newArray['updateContent']['companyStatusUpdate']['share'])) {
-                        $this->commentType = App::makeWith(CommentTransform::class, ['messages' => $newArray]);
-                        $this->messageComment = array_merge($this->messageComment, $this->commentType->getTransformedMessage());
+                        $this->commentType = App::make(CommentTransformer::class);
+                        $this->messageComment = array_merge($this->messageComment, $this->commentType->getTransformedMessage($newArray));
                     } else {
                         Log::debug("video goes here");
                     }
@@ -82,26 +89,6 @@ class TransformMessageBuilder
             return $response;
         } catch (\Exception $exception) {
             Log::error('Message: ' . $exception->getMessage() . ' On Line: ' . $exception->getLine() . 'redirect a messageType');
-            throw $exception;
-        }
-
-    }
-
-    /**
-     * This method assure the correct format to send the array to zendesk by sorted the
-     * array obtained in the  getTransformedMessage.
-     * @param array $messages
-     * @return array
-     * @throws \Throwable
-     */
-    public function transformMessage($messages)
-    {
-        try {
-            $messagesTransformed = $this->getTransformedMessage($messages);
-            $newMessagesTransformed = $this->sortMessages($messagesTransformed);
-            return $response = $this->trackingMessage($newMessagesTransformed);
-        } catch (\Exception $exception) {
-            Log::error("Transformed Error: " . $exception->getMessage() . " Line:" . $exception->getLine());
             throw $exception;
         }
     }
@@ -133,4 +120,15 @@ class TransformMessageBuilder
     {
         return collect($messagesTransformed)->sortByDesc('created_at')->reverse()->toArray();
     }
+
+    /**
+     * @param $message
+     * @return string
+     */
+    public function transformLinkedInTimestamp($message)
+    {
+        return gmdate('Y-m-d\TH:i:s\Z', $message / 1000);
+
+    }
+
 }

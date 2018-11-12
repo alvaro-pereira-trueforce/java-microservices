@@ -3,7 +3,7 @@
 namespace APIServices\Zendesk_Linkedin\Jobs;
 
 use APIServices\LinkedIn\Services\LinkedinService;
-use APIServices\Zendesk_Linkedin\MessagesBuilder\TransformTimestampSearcher;
+use APIServices\Zendesk_Linkedin\MessagesBuilder\MessageFilter\Timestamp;
 use APIServices\Zendesk_Linkedin\Models\LinkedInChannel;
 use APIServices\Zendesk_Linkedin\Services\ZendeskChannelService;
 use APIServices\Zendesk\Repositories\ChannelRepository;
@@ -67,6 +67,10 @@ class ProcessZendeskCreatePostEvent implements ShouldQueue
      * @var $likesAmountValid
      */
     protected $likesAmountValid;
+    /**
+     * @var $limitParams
+     */
+    protected $filteredParams;
 
     /**
      * ProcessZendeskCreatePostEvent constructor.
@@ -96,52 +100,48 @@ class ProcessZendeskCreatePostEvent implements ShouldQueue
             $linkedInService = App::make(LinkedinService::class);
             $this->zendeskChannelService = App::make(ZendeskChannelService::class);
             try {
-                $likesAmount = $linkedInService->getLinkedInLikes($this->metadata, $this->thead_id);
-                $this->followersAmount = $linkedInService->getLinkedInFollowers($this->metadata, $this->thead_id);
+                $requestParameter['thread_id'] = $this->thead_id;
+                $requestParameter['access_token'] = $this->metadata['access_token'];
+                $likesAmount = $linkedInService->getLinkedInLikes($requestParameter);
+                $this->followersAmount = $linkedInService->getLinkedInFollowers($requestParameter);
+                $serviceParams = App::makeWith(Timestamp::class, ['metadata' => $requestParameter]);
+                $this->filteredParams = $serviceParams->getTransformedMessage($this->thead_id);
                 if ($likesAmount == null) {
                     $this->likesAmountValid = 0;
                 } else {
                     $this->likesAmountValid = $likesAmount['_total'];
                 }
             } catch (\Exception $exception) {
-                Log::error('LinkedIn says: ' . $exception->getMessage() . 'this is the try number: ' . $this->triesCount);
-                if ($this->triesCount > 2) {
+                Log::error('LinkedIn says: ' . $exception->getMessage() . ' this is the try number: ' . $this->triesCount);
+                if ($this->triesCount > 3) {
                     Log::error('Tries limit reached.');
                     return;
                 }
-                static:: dispatch($this->triesCount + 1, $this->thead_id, $this->metadata)->delay(env('LINKEDIN_FOLLOWER_LIKES_RESPONSE') * $this->triesCount);
+                static:: dispatch($this->triesCount + 1, $this->thead_id, $this->metadata, $this->nameJob)->delay(3600 * $this->triesCount);
             }
             $channelService->configureZendeskAPI($this->metadata['zendesk_access_token'], $this->metadata['subdomain'], $this->metadata['instance_push_id']);
             $channelService->sendUpdate([
                     [
-                        'external_id' => StringUtilities::RandomString(),
-                        'message' => 'The following  LinkedIn Account has ' . $this->likesAmountValid . ' likes.
+                        'external_id' => $this->thead_id . ':' . StringUtilities::RandomString(),
+                        'message' => 'This Post has ' . $this->likesAmountValid . ' likes.
                           The company page has ' . $this->followersAmount . ' followers',
                         'thread_id' => $this->thead_id,
                         'created_at' => date('Y-m-d\TH:i:s\Z'),
                         'author' => [
-                            'external_id' => StringUtilities::RandomString(),
-                            'name' => 'LinkedInAdministration'
+                            'external_id' => $this->filteredParams['idAuthor'],
+                            'name' => $this->filteredParams['nameAuthor']
                         ]
                     ]
                 ]
             );
+            Log::debug('send to zendesk success');
         } catch (\Exception $exception) {
             Log::error('Message: ' . $exception->getMessage() . ' On Line: ' . $exception->getLine() . 'error to instant channel services');
         }
-        try {
-            $limitTracking = App::makeWith(TransformTimestampSearcher::class, ['params' => $this->metadata, 'treads' => $this->thead_id]);
-            if ((Carbon::now()->diffInSeconds($limitTracking->searchTimestampByIdComment())) < env('LINKEDIN_TRACKING_EXPIRATION_TIME')) {
-                static:: dispatch($this->triesCount, $this->thead_id, $this->metadata, $this->nameJob)->delay(env('LINKEDIN_FOLLOWER_LIKES_TRACKING_TIME'));
-            }
-        } catch (\Exception $exception) {
-            Log::error('LinkedIn says: ' . $exception->getMessage() . 'this is the try number: ' . $this->triesCount);
-            if ($this->triesCount > 2) {
-                Log::error('Tries limit reached.');
-                return;
-            }
-            static:: dispatch($this->triesCount + 1, $this->thead_id, $this->metadata)->delay(env('LINKEDIN_FOLLOWER_LIKES_TRACKING_TIME') * $this->triesCount);
+        if ((Carbon::now()->diffInSeconds($this->filteredParams['timeLimit'])) < env('LINKEDIN_TRACKING_EXPIRATION_TIME')) {
+            static:: dispatch($this->triesCount, $this->thead_id, $this->metadata, $this->nameJob)->delay(env('LINKEDIN_FOLLOWER_LIKES_TRACKING_TIME'));
         }
+
     }
 
 }

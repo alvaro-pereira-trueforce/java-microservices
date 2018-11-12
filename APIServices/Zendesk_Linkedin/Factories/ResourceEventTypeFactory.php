@@ -4,23 +4,21 @@ namespace APIServices\Zendesk_Linkedin\Factories;
 
 use APIServices\Zendesk\Models\EventsTypes\EventFactory;
 use APIServices\Zendesk\Models\EventsTypes\EventType;
-use APIServices\Zendesk_Linkedin\Services\ZendeskChannelService;
+use APIServices\Zendesk\Models\EventsTypes\IEventType;
 use Illuminate\Support\Facades\Log;
 
 /**
  * Class SubEventsFactory
  * @package APIServices\Zendesk_Linkedin\Factories
  */
-class SubEventsFactory extends EventType
+class ResourceEventTypeFactory extends EventType
 {
     /**
      * SubEventsFactory constructor.
      * @param $data
-     * @param ZendeskChannelService $facebookService
      */
-    public function __construct($data, ZendeskChannelService $facebookService)
+    public function __construct($data)
     {
-        $this->service = $facebookService;
         parent::__construct($data);
 
     }

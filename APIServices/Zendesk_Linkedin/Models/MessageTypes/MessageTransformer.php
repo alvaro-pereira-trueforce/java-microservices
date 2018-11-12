@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Log;
  * Class MessageTransform
  * @package APIServices\Zendesk_Linkedin\Models\MessageTypes
  */
-abstract class MessageTransform implements IMessageTransform
+abstract class MessageTransformer implements IMessageTransformer
 {
     /**
      * @var $media
@@ -20,20 +20,14 @@ abstract class MessageTransform implements IMessageTransform
      * @var Utility
      */
     protected $zendeskUtils;
-    /**
-     * @var $messages
-     */
-    protected $messages;
 
     /**
      * MessageTransform constructor.
-     * @param $messages
      * @param Utility $zendeskUtils
      */
-    public function __construct(Utility $zendeskUtils, $messages)
+    public function __construct(Utility $zendeskUtils)
     {
         $this->zendeskUtils = $zendeskUtils;
-        $this->messages = $messages;
     }
 
     /**

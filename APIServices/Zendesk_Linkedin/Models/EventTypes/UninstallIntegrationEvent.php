@@ -15,11 +15,11 @@ class UninstallIntegrationEvent extends EventType
     /**
      * UninstallIntegrationEvent constructor.
      * @param $data
-     * @param ZendeskChannelService $channelService
+     * @param ZendeskChannelService $linkedInChannelService
      */
-    public function __construct($data, ZendeskChannelService $channelService)
+    public function __construct($data, ZendeskChannelService $linkedInChannelService)
     {
-        $this->service = $channelService;
+        $this->service = $linkedInChannelService;
         parent::__construct($data);
     }
 
