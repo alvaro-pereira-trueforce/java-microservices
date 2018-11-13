@@ -122,7 +122,7 @@ class ChannelRepository
     {
         DB::beginTransaction();
         try {
-            /** @var Model $model */
+            /** @var Collection $models */
             $models = $this->getModelsByColumnName('subdomain', $zendeskDomainName);
             Log::debug($models);
             foreach ($models as $model) {
