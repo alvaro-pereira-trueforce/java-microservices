@@ -31,6 +31,7 @@ class UninstallIntegrationEvent extends EventType
         Log::notice("Delete All Integration Account... for the Domain");
         try {
             $identifierSubdomain = $this->data['subdomain'];
+            Log::debug($identifierSubdomain);
             $this->service->deleteByZendeskSubdomain($identifierSubdomain);
             Log::notice("Uninstall Integrations Success.");
         } catch (\Exception $exception) {

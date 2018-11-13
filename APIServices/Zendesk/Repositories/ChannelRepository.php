@@ -121,9 +121,12 @@ class ChannelRepository
     public function deleteAllByDomain($zendeskDomainName)
     {
         DB::beginTransaction();
+        Log::debug('repositorio');
+        Log::debug($zendeskDomainName);
         try {
             /** @var Model $model */
             $models = $this->getQueryByColumnName('subdomain', $zendeskDomainName);
+            Log::debug($models);
             foreach ($models as $model) {
                 if ($model)
                     $model->delete();
