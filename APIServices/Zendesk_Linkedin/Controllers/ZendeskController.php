@@ -11,6 +11,7 @@ use APIServices\Zendesk_Linkedin\Models\LinkedInChannel;
 use APIServices\LinkedIn\Services\LinkedinService;
 use APIServices\Zendesk\Controllers\CommonZendeskController;
 use APIServices\Zendesk_Linkedin\Services\ZendeskChannelService;
+use App\Storage\StorageHelper;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use APIServices\Utilities\StringUtilities;
@@ -269,7 +270,7 @@ class ZendeskController extends CommonZendeskController
                     Log::debug($oldPost);
                     $metadata['account_id'] = $linkedInChannel['uuid'];
                     $integrationChannel = $this->channelService->getChannelIntegration($metadata);
-                    ProcessZendeskPullEvent::dispatch($integrationChannel, 1, 'Pull old Posts', $linkedInModel, $oldPost)->delay(15);
+                    ProcessZendeskPullEvent::dispatch($integrationChannel, 1, 'Pull old Posts', $linkedInModel, $oldPost,[])->delay(15);
 
                 } else {
                     Log::debug('there is not media or comments');
@@ -282,15 +283,17 @@ class ZendeskController extends CommonZendeskController
 
     public function pull(Request $request)
     {
+        $newState = '';
         $metadata = json_decode($request->metadata, true);
         $state = json_decode($request->state, true);
+        Log::debug($request->all());
         try {
             $validatedPost = App::makeWith(Validator::class, ['metadata' => $metadata]);
             $comments = $validatedPost->getTransformedMessage($metadata['integration_timestamp']);
             if (!empty($comments)) {
                 $integrationChannel = $this->channelService->getChannelIntegration($metadata);
                 if (!empty($integrationChannel)) {
-                    ProcessZendeskPullEvent::dispatch($integrationChannel, 1, 'Pull Posts', $metadata, $comments);
+                    ProcessZendeskPullEvent::dispatch($integrationChannel, 1, 'Pull Posts', $metadata, $comments, $state);
                 } else {
                     Log::notice("there is no account");
                 }
@@ -301,9 +304,17 @@ class ZendeskController extends CommonZendeskController
             Log::error($exception->getMessage());
             throw new ServiceUnavailableHttpException('something wrong happened');
         }
-        return response()->json([
-            'external_resources' => []
-        ]);
+        try {
+            $newDataState['last_timestamp_id'] = StorageHelper::getDataToRedis('last_timestamp_id');
+            $newState = json_encode($newDataState);
+        } catch (\Exception $exception) {
+            Log::debug('problems to recover the last_timestamp_id');
+        }
+        $response = [
+            'external_resources' => [],
+            'state' => $newState
+        ];
+        return response()->json($response);
     }
 
     public function channel_back(Request $request)

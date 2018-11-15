@@ -2,9 +2,11 @@
 
 namespace APIServices\Zendesk_Linkedin\Jobs;
 
+use APIServices\Zendesk_Linkedin\MessagesBuilder\PullValidator;
 use APIServices\Zendesk_Linkedin\MessagesBuilder\Transformer;
 use APIServices\Zendesk_Linkedin\Models\LinkedInChannel;
 use APIServices\Zendesk_Linkedin\Services\ZendeskChannelService;
+use App\Storage\StorageHelper;
 use Illuminate\Bus\Queueable;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Queue\InteractsWithQueue;
@@ -50,6 +52,16 @@ class ProcessZendeskPullEvent implements ShouldQueue
      * @var $nameJob
      */
     protected $nameJob;
+    /**
+     * @var $zendeskMessages
+     */
+    protected $zendeskMessages;
+
+    /**
+     * @var $state
+     */
+    protected $state;
+
 
     /**
      * ProcessZendeskPullEvent constructor.
@@ -58,14 +70,16 @@ class ProcessZendeskPullEvent implements ShouldQueue
      * @param $nameJob
      * @param $metadata
      * @param $comments
+     * @param $state
      */
-    public function __construct(LinkedInChannel $linkedInChannel, $triesCount, $nameJob, $metadata, $comments)
+    public function __construct(LinkedInChannel $linkedInChannel, $triesCount, $nameJob, $metadata, $comments, $state)
     {
         $this->linkedInChannel = $linkedInChannel;
         $this->triesCount = $triesCount;
         $this->metadata = $metadata;
         $this->comments = $comments;
         $this->nameJob = $nameJob;
+        $this->state = $state;
     }
 
     /**
@@ -74,7 +88,7 @@ class ProcessZendeskPullEvent implements ShouldQueue
     public function handle()
     {
 
-        Log::debug('Starting Job: '.$this->nameJob);
+        Log::debug('Starting Job: ' . $this->nameJob);
         try {
             Log::debug('Log Worker');
 
@@ -85,16 +99,44 @@ class ProcessZendeskPullEvent implements ShouldQueue
             try {
                 $zendeskTransformService = App::makeWith(Transformer::class, ['metadata' => $this->metadata]);
                 $transformedMessages = $zendeskTransformService->getTransformedMessage($this->comments);
+                if ($this->nameJob === 'Pull old Posts') {
+                    $this->zendeskMessages = $transformedMessages;
+                } else {
+                    if (empty($this->state)) {
+                        Log::debug('status empty');
+                        $lastPost = last($transformedMessages);
+                        $last_timestamp_id = $lastPost['created_at'];
+                        Log::debug($last_timestamp_id);
+                        StorageHelper::saveDataToRedis('last_timestamp_id', $last_timestamp_id);
+                        $this->zendeskMessages = $transformedMessages;
+                    } else {
+                        Log::debug('status update');
+                        Log::debug($this->state['last_timestamp_id']);
+                        $paramsStatus['transformedMessages'] = $transformedMessages;
+                        $paramsStatus['limitPull'] = $this->state['last_timestamp_id'];
+                        $postStateValidate = App::makeWith(PullValidator::class, ['metadata' => $this->metadata]);
+                        $messagesPullValidated = $postStateValidate->getTransformedMessage($paramsStatus);
+                        if (!empty($messagesPullValidated)) {
+                            $this->zendeskMessages = $messagesPullValidated;
+                            $lastPost = last($messagesPullValidated);
+                            $last_timestamp_id = $lastPost['created_at'];
+                            Log::debug($last_timestamp_id);
+                            StorageHelper::saveDataToRedis('last_timestamp_id', $last_timestamp_id);
+                        } else {
+                            Log::debug('no valid zendeskMessages to track');
+                        }
+                    }
+                }
             } catch (\Exception $exception) {
                 Log::error('LinkedIn says: ' . $exception->getMessage() . 'this is the try number: ' . $this->triesCount);
                 if ($this->triesCount > 10) {
                     Log::error('Tries limit reached.');
                     return;
                 }
-                static:: dispatch($this->linkedInChannel, $this->triesCount + 1, $this->metadata)->delay($this->triesCount * 60);
+                static:: dispatch($this->linkedInChannel, $this->triesCount + 1, $this->nameJob, $this->metadata, $this->comments, $this->state)->delay($this->triesCount * 60);
             }
-            Log::debug("communication with LinkedIn successful");
-            if (!empty($transformedMessages)) {
+            Log::debug("starting communication with zendesk");
+            if (!empty($this->zendeskMessages)) {
                 //Configure Zendesk API and Zendesk Client
                 App::when(ZendeskClient::class)
                     ->needs('$access_token')
@@ -105,7 +147,8 @@ class ProcessZendeskPullEvent implements ShouldQueue
                 App::when(ZendeskAPI::class)
                     ->needs('$instance_push_id')
                     ->give($this->linkedInChannel->instance_push_id);
-                $channelService->sendUpdate($transformedMessages);
+                Log::debug('communication successful');
+                $channelService->sendUpdate($this->zendeskMessages);
             }
 
         } catch (\Exception $exception) {
