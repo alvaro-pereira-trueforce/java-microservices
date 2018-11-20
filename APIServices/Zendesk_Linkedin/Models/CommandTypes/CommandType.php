@@ -76,7 +76,7 @@ abstract class CommandType implements ICommandType
     {
         return [
             'external_id' => $this->request_data->thread_id . ':' . StringUtilities::RandomString(),
-            'message' => 'The following message respond the Command ' . $this->nameCommand . ' ',
+            'message' => 'The following message respond the Command ' . $this->nameCommand,
             'thread_id' => $this->request_data->thread_id,
             'created_at' => date('Y-m-d\TH:i:s\Z'),
             'author' => [
