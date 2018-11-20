@@ -16,13 +16,14 @@ class StorageHelper
     /**
      * @param $keyName
      * @param $data
+     * @param $expirationTime
      */
-    static function saveDataToRedis($keyName, $data)
+    static function saveDataToRedis($keyName, $data, $expirationTime = 1800)
     {
         try {
             Redis::set($keyName, json_encode($data, true));
             //Expire in minutes
-            Redis::expire($keyName, 30 * 60);
+            Redis::expire($keyName, $expirationTime);
         } catch (\Exception $exception) {
             Log::error('Redis save error:');
             Log::error($exception->getMessage());
