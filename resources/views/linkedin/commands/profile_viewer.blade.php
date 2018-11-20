@@ -10,8 +10,7 @@
     @foreach ($listProfiles as $profiles)
         <div class="card">
             <div class="card-body">
-                <a href="{{$profiles['siteStandardProfileRequest']}}" class="card-link"><span
-                            style="color: #0f4bac">{{$profiles['firstName'].' '.$profiles['lastName'] }}</span></a>
+                <a href="{{$profiles['siteStandardProfileRequest']}}" class="card-link"><span>{{$profiles['firstName'].' '.$profiles['lastName'] }}</span></a>
                 <p class="card-text">
                     <small class="text-muted">"{{$profiles['headline']}}"</small>
                 </p>
