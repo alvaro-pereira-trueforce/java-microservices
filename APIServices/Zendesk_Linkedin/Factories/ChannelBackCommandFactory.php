@@ -6,13 +6,17 @@ use APIServices\Zendesk_Linkedin\Models\CommandTypes\ICommandType;
 use APIServices\Zendesk_Linkedin\Models\CommandTypes\UnkonwnCommand;
 use Illuminate\Support\Facades\App;
 
+/**
+ * Class ChannelBackCommandFactory
+ * @package APIServices\Zendesk_Linkedin\Factories
+ */
 class ChannelBackCommandFactory
 {
+
     /**
-     * Get the correct Event Handler or Default
      * @param $command_name
      * @param $requestBody
-     * @return
+     * @return mixed
      */
     public static function getCommandHandler($command_name, $requestBody)
     {

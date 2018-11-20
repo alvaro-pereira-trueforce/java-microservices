@@ -11,7 +11,6 @@ use Illuminate\Support\Facades\Log;
 class ProfileList extends CommandType
 {
     /**
-     * @return string|void
      * @throws \Throwable
      */
     function handleCommand()
@@ -27,13 +26,11 @@ class ProfileList extends CommandType
                 }
                 if (!empty($listProfile)) {
                     $zendeskProfiles=$this->getUniqueProfile($listProfile);
-                    Log::debug($zendeskProfiles);
                     $zendeskBody = $this->getZendeskResponseModel();
                     $zendeskResponse = $this->zendeskUtils->addHtmlMessageToBasicResponse($zendeskBody, view('linkedin.commands.profile_viewer', [
                         'listProfiles' => $zendeskProfiles,
                         'message' => 'This post profiles'
                     ])->render());
-                    Log::debug($zendeskResponse);
                     $this->getZendeskAPIServiceInstance()->pushNewMessage($zendeskResponse);
                 } else {
                     $response = $this->getZendeskDefaultModel('There is not records to show yet for this Command');

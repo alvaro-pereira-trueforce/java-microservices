@@ -12,8 +12,6 @@ use Illuminate\Support\Facades\Log;
  */
 class UnkonwnCommand extends CommandType
 {
-
-
     /**
      *
      * @throws \Exception
