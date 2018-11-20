@@ -6,8 +6,8 @@
         <p ng-if="!vm.metadata">Welcome, please authenticate first with your LinkedIn Account in order to start working
             with the LinkedIn Channel service.</p>
 
-        <p ng-if="!!vm.metadata">Welcome back, in order to update your order authentication please use the
-            following button to Log In with your LinkedIn Account.</p>
+        <p ng-if="!!vm.metadata">Welcome back, in order to update your authentication please use the
+            following button to LogIn with your LinkedIn Account.</p>
 
         <div id="spinner" class="loader center" ng-if="vm.processing"></div>
 
@@ -82,7 +82,7 @@
                                 ng-disabled="vm.isASavedIntegration">
                      </div>
                     <div class="alert alert-danger"
-                         ng-if="vm.form.page_id.$invalid && vm.form.page_id.$touched || vm.form.$submitted && vm.form.page_id.$invalid">
+                         ng-if="vm.form.company_id.$invalid && vm.form.company_id.$touched || vm.form.$submitted && vm.form.company_id.$invalid">
                         A Linked Page is required.
                     </div>
                 </div>

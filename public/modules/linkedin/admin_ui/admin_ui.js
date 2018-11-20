@@ -59,7 +59,6 @@ function AdminUICtrl(windowsService, poller, $timeout, basicService, $window) {
             vm.company = response.data.company;
             vm.company.forEach(function (value) {
                 if (value.id === response.data.selected_company) {
-
                     vm.selected_company = value;
                     vm.company_page_selected = value.name;
                     vm.isASavedIntegration = true;

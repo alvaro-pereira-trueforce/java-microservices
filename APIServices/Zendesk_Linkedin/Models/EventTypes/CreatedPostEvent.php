@@ -2,6 +2,7 @@
 
 namespace APIServices\Zendesk_Linkedin\Models\EventTypes;
 
+use APIServices\Zendesk\Models\EventsTypes\EventType;
 use APIServices\Zendesk_Linkedin\Jobs\ProcessZendeskCreatePostEvent;
 use APIServices\Zendesk_Linkedin\Services\ZendeskChannelService;
 use Illuminate\Support\Facades\Log;
@@ -10,7 +11,7 @@ use Illuminate\Support\Facades\Log;
  * Class CreatedPostEvent
  * @package APIServices\Zendesk_Linkedin\Models\EventTypes
  */
-class CreatedPostEvent
+class CreatedPostEvent extends EventType
 {
     /**
      * @var $data

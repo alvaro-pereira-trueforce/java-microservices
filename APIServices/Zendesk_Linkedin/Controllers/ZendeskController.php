@@ -5,12 +5,13 @@ namespace APIServices\Zendesk_Linkedin\Controllers;
 use APIServices\Zendesk\Models\EventsTypes\EventFactory;
 use APIServices\Zendesk\Models\EventsTypes\IEventType;
 use APIServices\Zendesk_Linkedin\Jobs\ProcessZendeskPullEvent;
-use APIServices\Zendesk_Linkedin\MessagesBuilder\MessageFilter\Comment;
 use APIServices\Zendesk_Linkedin\MessagesBuilder\Validator;
 use APIServices\Zendesk_Linkedin\Models\LinkedInChannel;
 use APIServices\LinkedIn\Services\LinkedinService;
 use APIServices\Zendesk\Controllers\CommonZendeskController;
+use APIServices\Zendesk_Linkedin\Services\ChannelBackServices;
 use APIServices\Zendesk_Linkedin\Services\ZendeskChannelService;
+use App\Storage\StorageHelper;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use APIServices\Utilities\StringUtilities;
@@ -183,12 +184,9 @@ class ZendeskController extends CommonZendeskController
 
     public function admin_ui_validate_company(Request $request)
     {
-
         $company_information = $request->company_information;
-
         try {
             $newAccount = $this->getNewAccountInformation($request->account_id);
-
             if (empty($newAccount['settings'])) {
                 $this->channelService->checkIfLinkedIdIsAlreadyRegistered($company_information['id']);
             }
@@ -209,7 +207,6 @@ class ZendeskController extends CommonZendeskController
             unset($newAccountDBModel['account_id']);
             unset($newAccountDBModel['name']);
             Log::debug($newAccountDBModel);
-            //return response()->json('Not Registered', 440);
 
             $newAccountDBModel = $this->channelService->registerNewChannelIntegration($newAccountDBModel);
             $newAccount['settings'] = $newAccountDBModel['settings'] ? $newAccountDBModel['settings']->toArray() : [];
@@ -266,10 +263,9 @@ class ZendeskController extends CommonZendeskController
                             $count++;
                         }
                     }
-                    Log::debug($oldPost);
                     $metadata['account_id'] = $linkedInChannel['uuid'];
                     $integrationChannel = $this->channelService->getChannelIntegration($metadata);
-                    ProcessZendeskPullEvent::dispatch($integrationChannel, 1, 'Pull old Posts', $linkedInModel, $oldPost)->delay(15);
+                    ProcessZendeskPullEvent::dispatch($integrationChannel, 1, 'Pull old Posts', $linkedInModel, $oldPost, [])->delay(15);
 
                 } else {
                     Log::debug('there is not media or comments');
@@ -282,15 +278,17 @@ class ZendeskController extends CommonZendeskController
 
     public function pull(Request $request)
     {
+        $newState = '';
         $metadata = json_decode($request->metadata, true);
         $state = json_decode($request->state, true);
+        Log::debug($request->all());
         try {
             $validatedPost = App::makeWith(Validator::class, ['metadata' => $metadata]);
             $comments = $validatedPost->getTransformedMessage($metadata['integration_timestamp']);
             if (!empty($comments)) {
                 $integrationChannel = $this->channelService->getChannelIntegration($metadata);
                 if (!empty($integrationChannel)) {
-                    ProcessZendeskPullEvent::dispatch($integrationChannel, 1, 'Pull Posts', $metadata, $comments);
+                    ProcessZendeskPullEvent::dispatch($integrationChannel, 1, 'Pull Posts', $metadata, $comments, $state);
                 } else {
                     Log::notice("there is no account");
                 }
@@ -301,26 +299,25 @@ class ZendeskController extends CommonZendeskController
             Log::error($exception->getMessage());
             throw new ServiceUnavailableHttpException('something wrong happened');
         }
-        return response()->json([
-            'external_resources' => []
-        ]);
+        try {
+            $newDataState['last_timestamp_id'] = StorageHelper::getDataToRedis('last_timestamp_id');
+            $newState = json_encode($newDataState);
+        } catch (\Exception $exception) {
+            Log::debug('problems to recover the last_timestamp_id');
+        }
+        $response = [
+            'external_resources' => [],
+            'state' => $newState
+        ];
+        return response()->json($response);
     }
 
     public function channel_back(Request $request)
     {
         Log::debug($request);
         try {
-            $metadata = json_decode($request->metadata, true);
-            $thread_id = explode(':', $request->thread_id);
-            $requestParameter['thread_id'] = $request->thread_id;
-            $requestParameter['access_token'] = $metadata['access_token'];
-            $newPostLinkedIn = $this->linkedinService->postLinkedInComment($request, $thread_id['2']);
-            Log::debug(' post in LinkedIn success');
-            if (!empty($newPostLinkedIn)) {
-                Log::debug('Error detected or the API format has changed');
-            }
-            $channelBackComment = App::makeWith(Comment::class, ['metadata' => $requestParameter]);
-            $channelBackId = $channelBackComment->getTransformedMessage($request->message);
+            $channelBackServices = App::makeWith(ChannelBackServices::class, ['request' => $request]);
+            $channelBackId = $channelBackServices->getChannelBackRequest($request->message);
             $response = [
                 'external_id' => $channelBackId
             ];
