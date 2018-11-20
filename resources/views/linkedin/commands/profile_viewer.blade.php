@@ -1,14 +1,17 @@
 <!DOCTYPE html>
 <html dir="ltr" lang="en-US">
 <head>
-    <link href="{{ asset('custom_css/bootstrap.css') }}" rel="stylesheet">
-    <link href="{{ asset('custom_css/font-awesome.css') }}" rel="stylesheet">
+    <style>
+        .center {
+            margin: auto;
+            width: 100%;
+        }
+    </style>
 </head>
 <body>
 <h4 style=" text-align: center">{{$message}}</h4>
-<div class="card center" style="max-width: 60%">
     @foreach ($listProfiles as $profiles)
-        <div class="card">
+        <div class="card center" style="max-width: 800px">
             <div class="card-body">
                 <a href="{{$profiles['siteStandardProfileRequest']}}" class="card-link"><span>{{$profiles['firstName'].' '.$profiles['lastName'] }}</span></a>
                 <p class="card-text">
@@ -17,6 +20,5 @@
             </div>
         </div>
     @endforeach
-</div>
 </body>
 </html>

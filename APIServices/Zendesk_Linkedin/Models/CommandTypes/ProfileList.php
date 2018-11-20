@@ -36,6 +36,9 @@ class ProfileList extends CommandType
                     $response = $this->getZendeskDefaultModel('There is not records to show yet for this Command');
                     $this->getZendeskAPIServiceInstance()->pushNewMessages($response);
                 }
+            }else{
+                $response = $this->getZendeskDefaultModel('There is not records to show yet for this Command');
+                $this->getZendeskAPIServiceInstance()->pushNewMessages($response);
             }
         } catch (\Exception $exception) {
             Log::error('Message: ' . $exception->getMessage() . ' On Line: ' . $exception->getLine());
