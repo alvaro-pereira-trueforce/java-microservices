@@ -115,6 +115,19 @@ class LinkedInAPI
     }
 
     /**
+     * @param $params_token
+     * @return array
+     * @throws \Exception
+     */
+    public function getAllComment($params_token)
+    {
+        $paramsCompanyToken = [
+            'Authorization' => 'Bearer ' . $params_token['access_token']
+        ];
+        return $this->client->getFormRequest('https://api.linkedin.com/v1/companies/' . $params_token['idCompany'] . '/updates/key=' . $params_token['updateKey'] . '/update-comments?format=json', $paramsCompanyToken);
+    }
+
+    /**
      * @param $id_company
      * @param $code
      * @return array
@@ -153,8 +166,8 @@ class LinkedInAPI
                 'Content-Type' => 'application/json',
                 'x-li-format' => 'json'
             ];
-            $bodyPost=[
-                'comment'=> $request_body['linkedinMessage']
+            $bodyPost = [
+                'comment' => $request_body['linkedinMessage']
             ];
             return $this->client->postFormRequest('https://api.linkedin.com/v1/companies/' . $request_body['company_id'] . '/updates/key=' . $request_body['update_Key'] . '/update-comments-as-company/', $bodyPost, $paramsRequest);
 
@@ -163,35 +176,39 @@ class LinkedInAPI
         }
 
     }
+
     /**
      * @param $request_body
      * @return array
      * @throws \Exception
      */
-    public function getLikesLinkedInPost($request_body){
+    public function getLikesLinkedInPost($request_body)
+    {
         try {
             $paramsRequest = [
                 'Authorization' => 'Bearer ' . $request_body['access_token'],
                 'Content-Type' => 'application/json',
             ];
-            return $this->client->getFormRequest('https://api.linkedin.com/v1/companies/'.$request_body['company_id'].'/updates/key='.$request_body['update_Key'].'/likes?format=json',$paramsRequest);
+            return $this->client->getFormRequest('https://api.linkedin.com/v1/companies/' . $request_body['company_id'] . '/updates/key=' . $request_body['update_Key'] . '/likes?format=json', $paramsRequest);
         } catch (\Exception $exception) {
             throw $exception;
         }
 
     }
+
     /**
      * @param $request_body
      * @return array
      * @throws \Exception
      */
-    public function getFollowersLinkedInCompany($request_body){
+    public function getFollowersLinkedInCompany($request_body)
+    {
         try {
             $paramsRequest = [
                 'Authorization' => 'Bearer ' . $request_body['access_token'],
                 'Content-Type' => 'application/json',
             ];
-            return $this->client->getFormRequest('https://api.linkedin.com/v1/companies/'.$request_body['company_id'].'/num-followers?format=json',$paramsRequest);
+            return $this->client->getFormRequest('https://api.linkedin.com/v1/companies/' . $request_body['company_id'] . '/num-followers?format=json', $paramsRequest);
         } catch (\Exception $exception) {
             throw $exception;
         }

@@ -3,15 +3,20 @@
 namespace App\Providers;
 
 use APIServices\Zendesk_Instagram\Services\ZendeskChannelService;
+
 use APIServices\Zendesk_Telegram\Models\EventsTypes\DestroyIntegrationEvent;
 use APIServices\Zendesk_Telegram\Models\EventsTypes\UninstallIntegrationEvent;
 use APIServices\Zendesk_Instagram\Models\EventTypes\DestroyIntegrationEvent as InstagramDestroyIntegrationEvent;
 use APIServices\Zendesk_Instagram\Models\EventTypes\UninstallIntegrationEvent as InstagramUninstallIntegrationEvent;
 use APIServices\Zendesk_Linkedin\Models\EventTypes\DestroyIntegrationEvent as LinkedInDestroyIntegrationEvent;
 use APIServices\Zendesk_Linkedin\Models\EventTypes\UninstallIntegrationEvent as LinkedInUninstallIntegrationEvent;
-
+//these are the routes for linkedin create ticket
 use APIServices\Zendesk_Linkedin\Factories\ResourceEventTypeFactory as ResourceEventTypeFactory;
 use APIServices\Zendesk_Linkedin\Models\EventTypes\CreatedPostEvent as CreatedPostEvent;
+//these are the routes for linkedin commands events
+use APIServices\Zendesk_Linkedin\Models\CommandTypes\ProfileList as ProfileList;
+
+
 
 use Illuminate\Http\Request;
 use Illuminate\Support\ServiceProvider;
@@ -49,5 +54,9 @@ class ZendeskServiceProvider extends ServiceProvider
         //This is a test for LinkedIn.
         $this->app->bind('linkedin_resources_created_from_external_ids',ResourceEventTypeFactory::class);
         $this->app->bind('linkedin_comment_on_new_ticket',CreatedPostEvent::class);
+
+        //This is for CommandsLinkedin
+        $this->app->bind('linkedin_s@getlist',ProfileList::class);
+
     }
 }

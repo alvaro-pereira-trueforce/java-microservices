@@ -61,7 +61,7 @@ class ImageTransformer extends MessageTransformer
             ];
             $this->media = $this->getUpdateMedia($message);
             return $this->zendeskUtils->addHtmlMessageToBasicResponse($newUpdate,
-                view('instagram.multimedia.photo_viewer', [
+                view('linkedin.multimedia.photo_viewer', [
                     'photoURL' => $this->getMediaImageUrl($this->media),
                     'message' => $this->getMessagePost($message)
                 ])->render());

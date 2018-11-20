@@ -167,4 +167,19 @@ class LinkedinService
             throw $exception;
         }
     }
+    public function getCommentsLinkedIn($params){
+        try {
+            $paramsGetFollowers = explode(':', $params['thread_id']);
+            $request_body = [
+                'idCompany' => $paramsGetFollowers['1'],
+                'updateKey' => $paramsGetFollowers['2'],
+                'access_token' => $params['access_token']
+            ];
+            return $this->linkedinAPIClient->getAllComment($request_body);
+        } catch (\Exception $exception) {
+            throw $exception;
+        }
+
+    }
+
 }
