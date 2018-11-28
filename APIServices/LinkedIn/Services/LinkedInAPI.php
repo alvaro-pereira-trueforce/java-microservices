@@ -212,7 +212,43 @@ class LinkedInAPI
         } catch (\Exception $exception) {
             throw $exception;
         }
+    }
 
+    /**
+     * @param $request_body
+     * @return array
+     * @throws \Exception
+     */
+    public function getLinkedInCompanyInfo($request_body)
+    {
+        try {
+            $paramsRequest = [
+                'Authorization' => 'Bearer ' . $request_body['access_token'],
+                'Content-Type' => 'application/json',
+            ];
+            return $this->client->getFormRequest('https://api.linkedin.com/v1/companies/' . $request_body['idCompany'] . ':(id,name,ticker,description,company-type,email-domains,website-url,industries,status,logo-url,blog-rss-url,twitter-id,employee-count-range,specialties,locations:(address),founded-year,num-followers)?format=json', $paramsRequest);
+        } catch (\Exception $exception) {
+            throw $exception;
+        }
+
+    }
+
+    /**
+     * @param $request_body
+     * @return array
+     * @throws \Exception
+     */
+    public function getLinkedInStatistics($request_body)
+    {
+        try {
+            $paramsRequest = [
+                'Authorization' => 'Bearer ' . $request_body['access_token'],
+                'Content-Type' => 'application/json',
+            ];
+            return $this->client->getFormRequest('https://api.linkedin.com/v1/companies/' . $request_body['idCompany'] . '/company-statistics?format=json', $paramsRequest);
+        } catch (\Exception $exception) {
+            throw $exception;
+        }
 
     }
 

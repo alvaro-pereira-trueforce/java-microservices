@@ -27,7 +27,6 @@ class ChannelBackCommandFactory
         } catch (\Exception $exception) {
             /** @var ICommandType $unknownCommand */
             return $unknownCommand = App::makeWith(UnkonwnCommand::class, ['request_body' => $requestBody]);
-
         }
     }
 

@@ -10,7 +10,9 @@ use Illuminate\Support\Facades\Log;
  */
 class ProfileList extends CommandType
 {
+
     /**
+     * @return void
      * @throws \Throwable
      */
     function handleCommand()
@@ -20,31 +22,49 @@ class ProfileList extends CommandType
             if (array_key_exists('values', $this->comment)) {
                 foreach ($this->comment['values'] as $profile) {
                     if (array_key_exists('person', $profile)) {
-                        $newProfileData=$this->getProfileFormat($profile);
+                        $newProfileData = $this->getProfileFormat($profile);
                         $listProfile[] = $newProfileData;
                     }
                 }
                 if (!empty($listProfile)) {
-                    $zendeskProfiles=$this->getUniqueProfile($listProfile);
-                    $zendeskBody = $this->getZendeskResponseModel();
+                    $zendeskProfiles = $this->getUniqueProfile($listProfile);
+                    $zendeskBody = $this->getZendeskModel('The following message respond the Command');
                     $zendeskResponse = $this->zendeskUtils->addHtmlMessageToBasicResponse($zendeskBody, view('linkedin.commands.profile_viewer', [
                         'listProfiles' => $zendeskProfiles,
                         'message' => 'This post profiles'
                     ])->render());
                     $this->getZendeskAPIServiceInstance()->pushNewMessage($zendeskResponse);
                 } else {
-                    $response = $this->getZendeskDefaultModel('There is not records to show yet for this Command');
-                    $this->getZendeskAPIServiceInstance()->pushNewMessages($response);
+                    $response = $this->getZendeskModel('There is not records to show yet for this Command');
+                    $this->getZendeskAPIServiceInstance()->pushNewMessage($response);
                 }
-            }else{
-                $response = $this->getZendeskDefaultModel('There is not records to show yet for this Command');
-                $this->getZendeskAPIServiceInstance()->pushNewMessages($response);
+            } else {
+                $response = $this->getZendeskModel('There is not records to show yet for this Command');
+                $this->getZendeskAPIServiceInstance()->pushNewMessage($response);
             }
         } catch (\Exception $exception) {
-            Log::error('Message: ' . $exception->getMessage() . ' On Line: ' . $exception->getLine());
-            $response = $this->getZendeskDefaultModel('There is not records to show yet for this Command');
-            $this->getZendeskAPIServiceInstance()->pushNewMessages($response);
+            throw $exception;
         }
+    }
+
+    /**
+     * @param $profile
+     * @return mixed
+     * @throws \Exception
+     */
+    public function getProfileFormat($profile)
+    {
+        try {
+            $newProfileData['firstName'] = $profile['person']['firstName'];
+            $newProfileData['lastName'] = $profile['person']['lastName'];
+            $newProfileData['headline'] = $profile['person']['headline'];
+            $newProfileData['siteStandardProfileRequest'] = $profile['person']['siteStandardProfileRequest']['url'];
+            $newProfileData['id'] = $profile['person']['id'];
+            return $newProfileData;
+        } catch (\Exception $exception) {
+            throw $exception;
+        }
+
     }
 }
 

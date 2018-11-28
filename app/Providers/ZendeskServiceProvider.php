@@ -15,7 +15,12 @@ use APIServices\Zendesk_Linkedin\Factories\ResourceEventTypeFactory as ResourceE
 use APIServices\Zendesk_Linkedin\Models\EventTypes\CreatedPostEvent as CreatedPostEvent;
 //these are the routes for linkedin commands events
 use APIServices\Zendesk_Linkedin\Models\CommandTypes\ProfileList as ProfileList;
-
+use APIServices\Zendesk_Linkedin\Models\CommandTypes\CompanyInformation as CompanyInformation;
+use APIServices\Zendesk_Linkedin\Models\CommandTypes\Statistics as Statistics;
+use APIServices\Zendesk_Linkedin\Models\CommandTypes\StatisticsCounts as StatisticsCounts;
+use APIServices\Zendesk_Linkedin\Models\CommandTypes\StatisticsFunctions as StatisticsFunctions;
+use APIServices\Zendesk_Linkedin\Models\CommandTypes\StatisticsSeniorities as StatisticsSeniorities;
+use APIServices\Zendesk_Linkedin\Models\CommandTypes\StatisticsCountries as StatisticsCountries;
 
 
 use Illuminate\Http\Request;
@@ -52,11 +57,18 @@ class ZendeskServiceProvider extends ServiceProvider
         $this->app->bind('linkedin_destroy_integration', LinkedInUninstallIntegrationEvent::class);
 
         //This is a test for LinkedIn.
-        $this->app->bind('linkedin_resources_created_from_external_ids',ResourceEventTypeFactory::class);
-        $this->app->bind('linkedin_comment_on_new_ticket',CreatedPostEvent::class);
+        $this->app->bind('linkedin_resources_created_from_external_ids', ResourceEventTypeFactory::class);
+        $this->app->bind('linkedin_comment_on_new_ticket', CreatedPostEvent::class);
 
         //This is for CommandsLinkedin
-        $this->app->bind('linkedin_s@getlist',ProfileList::class);
+        $this->app->bind('linkedin_s@getlist', ProfileList::class);
+        $this->app->bind('linkedin_s@getcompany', CompanyInformation::class);
+        $this->app->bind('linkedin_s@getstatistics', Statistics::class);
+        $this->app->bind('linkedin_s@getstatistics_count', StatisticsCounts::class);
+        $this->app->bind('linkedin_s@getstatistics_functions', StatisticsFunctions::class);
+        $this->app->bind('linkedin_s@getstatistics_seniorities', StatisticsSeniorities::class);
+        $this->app->bind('linkedin_s@getstatistics_countries',StatisticsCountries::class);
+
 
     }
 }

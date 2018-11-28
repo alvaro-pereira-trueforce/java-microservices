@@ -167,7 +167,14 @@ class LinkedinService
             throw $exception;
         }
     }
-    public function getCommentsLinkedIn($params){
+
+    /**
+     * @param $params
+     * @return array
+     * @throws \Exception
+     */
+    public function getCommentsLinkedIn($params)
+    {
         try {
             $paramsGetFollowers = explode(':', $params['thread_id']);
             $request_body = [
@@ -176,6 +183,45 @@ class LinkedinService
                 'access_token' => $params['access_token']
             ];
             return $this->linkedinAPIClient->getAllComment($request_body);
+        } catch (\Exception $exception) {
+            throw $exception;
+        }
+    }
+
+    /**
+     * @param $params
+     * @return array
+     * @throws \Exception
+     */
+    public function getCompanyInfo($params)
+    {
+        try {
+            $paramsGetFollowers = explode(':', $params['thread_id']);
+            $request_body = [
+                'idCompany' => $paramsGetFollowers['1'],
+                'access_token' => $params['access_token']
+            ];
+            return $this->linkedinAPIClient->getLinkedInCompanyInfo($request_body);
+        } catch (\Exception $exception) {
+            throw $exception;
+        }
+
+    }
+
+    /**
+     * @param $params
+     * @return array
+     * @throws \Exception
+     */
+    public function getStatistics($params)
+    {
+        try {
+            $paramsGetFollowers = explode(':', $params['thread_id']);
+            $request_body = [
+                'idCompany' => $paramsGetFollowers['1'],
+                'access_token' => $params['access_token']
+            ];
+            return $this->linkedinAPIClient->getLinkedInStatistics($request_body);
         } catch (\Exception $exception) {
             throw $exception;
         }
