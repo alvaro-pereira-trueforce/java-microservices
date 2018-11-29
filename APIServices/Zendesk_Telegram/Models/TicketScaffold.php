@@ -77,10 +77,11 @@ class TicketScaffold
             array_key_exists('tickets_by_group', $this->ticketSettings) &&
             (bool)$this->ticketSettings['tickets_by_group'] == true &&
             ($message->getChat()->getType() == 'group' || $message->getChat()->getType() == 'supergroup')) {
-
+            Log::debug('This is the message at the moment of generate the external ID:');
+            Log::debug($message);
             $parent_id = $this->zendeskUtils->getExternalID([
                 $bot_id,
-                $message->getChat()->getId()
+                $message->getChat()->get('id')
             ]);
         } else {
             $parent_id = $this->zendeskUtils->getExternalID([
