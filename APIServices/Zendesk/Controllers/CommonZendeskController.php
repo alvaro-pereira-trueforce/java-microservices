@@ -53,7 +53,11 @@ abstract class CommonZendeskController extends Controller implements IZendeskCon
         ],
         [
             'id' => 'es',
-            'name' => 'Español'
+            'name' => 'Spanish'
+        ],
+        [
+            'id' => 'pt',
+            'name' => 'Portuguese'
         ]
     ];
 
