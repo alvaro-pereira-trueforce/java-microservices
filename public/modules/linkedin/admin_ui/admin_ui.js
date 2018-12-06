@@ -10,7 +10,7 @@ angular.module('adminUI.linkedin').config(function ($routeProvider) {
 
 angular.module('adminUI.linkedin').controller('AdminUICtrl', AdminUICtrl);
 
-function AdminUICtrl(windowsService, poller, $timeout, $window) {
+function AdminUICtrl(windowsService, poller, $timeout, basicService, $window) {
     var vm = this;
     vm.processing = false;
     vm.timeout = false;
@@ -20,7 +20,18 @@ function AdminUICtrl(windowsService, poller, $timeout, $window) {
     vm.client_ID = windowsService.backend_variables.client_ID;
     vm.account_id = windowsService.backend_variables.account_id;
     vm.linkedin_return_URL = windowsService.backend_variables.linkedin_return_URL;
+    vm.tags = windowsService.backend_variables.tags;
+    vm.selected_ticket_type = windowsService.backend_variables.ticket_type;
+    vm.selected_ticket_priority = windowsService.backend_variables.ticket_priority;
+
+    vm.ticket_types = [];
+    vm.ticket_priorities = [];
     vm.waitLogin = waitLogin;
+    vm.ValidateIntegration = ValidateIntegration;
+
+    vm.company = undefined;
+    vm.selected_company = undefined;
+    vm.company_page_selected = undefined;
 
     function waitLogin(e) {
         if (vm.form.name.$error.required) {
@@ -38,11 +49,34 @@ function AdminUICtrl(windowsService, poller, $timeout, $window) {
             account_id: windowsService.backend_variables.account_id,
             name: vm.name
         }).then(function (response) {
-            $window.location.href = response.data.redirect_url;
+            console.log(response.data);
+            save_URL = response.data.redirect_url;
+            vm.ticket_types = response.data.ticket_types;
+            vm.ticket_priorities = response.data.ticket_priorities;
+            vm.selected_ticket_type = response.data.ticket_type;
+            vm.selected_ticket_priority = response.data.ticket_priority;
+            vm.tags = response.data.tags;
+            vm.company = response.data.company;
+            vm.company.forEach(function (value) {
+                if (value.id === response.data.selected_company) {
+                    vm.selected_company = value;
+                    vm.company_page_selected = value.name;
+                    vm.isASavedIntegration = true;
+                }
+            });
+
             stopProgress();
         }).catch(function (response) {
+            if (!response || response.status === -1 || !response.data) {
+                linkedinFailConnection();
+                return;
+            }
             if (response.data.linkedin_canceled) {
                 linkedinCanceledReset();
+                return;
+            }
+            if (response.data.linkedIn_no_companies) {
+                linkedinNoCompaniesReset();
                 return;
             }
             vm.timeout_counter++;
@@ -52,6 +86,28 @@ function AdminUICtrl(windowsService, poller, $timeout, $window) {
             }
             timeoutReset();
         });
+    }
+
+    function ValidateIntegration() {
+        vm.error = undefined;
+        if (vm.form.$valid) {
+            if (vm.receiveOldPost === false) {
+                vm.old_post_number = undefined;
+            }
+            basicService.postRequest('admin_ui_validate_company', {
+                company_information: vm.selected_company,
+                account_id: windowsService.backend_variables.account_id,
+                tags: vm.tags,
+                ticket_type: vm.selected_ticket_type,
+                ticket_priority: vm.selected_ticket_priority,
+                old_post_number: vm.old_post_number
+            }).then(function (response) {
+                $window.location.href = response.data.redirect_url;
+            }).catch(function (error) {
+                vm.error = error.data.message;
+                $window.scrollTo(0, 0);
+            })
+        }
     }
 
     function stopProgress() {
@@ -67,5 +123,15 @@ function AdminUICtrl(windowsService, poller, $timeout, $window) {
     function linkedinCanceledReset() {
         stopProgress();
         vm.linkedin_canceled = true;
+    }
+
+    function linkedinNoCompaniesReset() {
+        stopProgress();
+        vm.linkedIn_no_companies = true;
+    }
+
+    function linkedinFailConnection() {
+        stopProgress();
+        vm.linkedin_fail_connection = true;
     }
 }

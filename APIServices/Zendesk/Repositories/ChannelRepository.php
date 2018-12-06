@@ -122,8 +122,9 @@ class ChannelRepository
     {
         DB::beginTransaction();
         try {
-            /** @var Model $model */
-            $models = $this->getQueryByColumnName('subdomain', $zendeskDomainName);
+            /** @var Collection $models */
+            $models = $this->getModelsByColumnName('subdomain', $zendeskDomainName);
+            Log::debug($models);
             foreach ($models as $model) {
                 if ($model)
                     $model->delete();

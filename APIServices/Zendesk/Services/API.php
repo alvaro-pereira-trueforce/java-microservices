@@ -3,7 +3,7 @@
 namespace APIServices\Zendesk\Services;
 
 
-abstract class API
+abstract class API implements IZendeskAPI
 {
     protected $client;
     protected $instance_push_id;

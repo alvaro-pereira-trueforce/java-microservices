@@ -17,10 +17,6 @@ use Telegram\Bot\Objects\Update;
 
 class TelegramService
 {
-    protected $database;
-
-    protected $dispatcher;
-
     protected $repository;
 
     protected $telegramAPI;
@@ -30,8 +26,6 @@ class TelegramService
     protected $commandRepository;
 
     public function __construct(
-        DatabaseManager $database,
-        Dispatcher $dispatcher,
         TelegramRepository $repository,
         Api $telegramAPI,
         Utility $zendeskUtils,
@@ -39,8 +33,6 @@ class TelegramService
         $uuid
     )
     {
-        $this->database = $database;
-        $this->dispatcher = $dispatcher;
         $this->repository = $repository;
         $this->telegramAPI = $telegramAPI;
         $this->zendeskUtils = $zendeskUtils;
@@ -64,69 +56,14 @@ class TelegramService
         return $model;
     }
 
-    /**
-     * @param $data
-     * @return \APIServices\Zendesk_Telegram\Models\TelegramChannel
-     * @throws \Exception
-     */
-    public function create($data)
-    {
-        try {
-            $user = $this->repository->create($data);
-            return $user;
-        } catch (\Exception $exception) {
-            throw $exception;
-        }
-    }
-
-    /**
-     * @param $uuid
-     * @param array $data
-     * @return \App\Database\Eloquent\Model
-     * @throws \Exception
-     */
-    public function update($uuid, array $data)
-    {
-        try {
-            $model = $this->getRequestedModel($uuid);
-            $this->repository->update($model, $data);
-            return $model;
-        } catch (\Exception $exception) {
-            throw $exception;
-        }
-    }
-
-    public function delete($uuid)
-    {
-        $model = $this->getById($uuid);
-        return $model->delete();
-    }
-
     private function getRequestedModel($uuid)
     {
         $model = $this->repository->getByUUID($uuid);
 
         if (is_null($model)) {
-            throw new ModelNotFoundException();
+            throw new ModelNotFoundException('There is no account with that uuid.');
         }
         return $model;
-    }
-
-    /**
-     * @param array $data
-     * @return array
-     * @throws \Exception
-     */
-    public function setAccountRegistration(array $data)
-    {
-        try {
-            $model = $this->repository->setAccountRegistration($data);
-            if ($model)
-                return $model->toArray();
-            return [];
-        } catch (\Exception $exception) {
-            throw $exception;
-        }
     }
 
     /**
@@ -379,12 +316,7 @@ class TelegramService
     public function registerNewIntegration($data)
     {
         try {
-            $model = $this->repository->setAccountRegistration([
-                'token' => $data['token'],
-                'zendesk_app_id' => $data['subDomain'],
-                'integration_name' => $data['name'],
-                'settings' => $data['settings']
-            ]);
+            $model = $this->repository->updateOrCreateChannelWithSettings($data);
             return [
                 'token' => $model->uuid,
                 'integration_name' => $model->integration_name,
@@ -404,10 +336,9 @@ class TelegramService
      */
     public function getMetadataFromSavedIntegrationByToken($token)
     {
-        try
-        {
+        try {
             $model = $this->repository->getByToken($token)->first();
-            if(!$model)
+            if (!$model)
                 throw new \Exception("This bot is not registered.");
 
             return [
@@ -415,12 +346,12 @@ class TelegramService
                 'integration_name' => $model->integration_name,
                 'zendesk_app_id' => $model->zendesk_app_id
             ];
-        }catch (\Exception $exception)
-        {
+        } catch (\Exception $exception) {
             Log::error($exception);
             throw $exception;
         }
     }
+
     /**
      * Update new integration data with settings and return the url
      * @param $data
@@ -495,7 +426,7 @@ class TelegramService
     public function getStartedCommand($update)
     {
         try {
-            if(!$update->getMessage())
+            if (!$update->getMessage())
                 return null;
             $user_id = $update->getMessage()->getFrom()->getId();
             $chat_id = $update->getMessage()->getChat()->getId();
@@ -569,14 +500,11 @@ class TelegramService
         try {
             $token = $this->telegramAPI->getAccessToken();
             $telegramChannel = $this->repository->getByToken($token)->with('settings')->first();
-            if($telegramChannel && $telegramChannel->settings)
-            {
+            if ($telegramChannel && $telegramChannel->settings) {
                 $settings = $telegramChannel->settings->toArray();
                 $settings['tags'] = json_decode($settings['tags'], true);
                 return $settings;
-            }
-            else
-            {
+            } else {
                 return [];
             }
         } catch (\Exception $exception) {

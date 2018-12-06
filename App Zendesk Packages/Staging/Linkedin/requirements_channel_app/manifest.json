@@ -1,0 +1,11 @@
+{
+  "name": "LinkedIn Channel Develop",
+  "author": {
+    "name": "AssureSoft",
+    "email": "support@zendesk.com"
+  },
+  "defaultLocale": "en",
+  "private": true,
+  "version": "1.0.1",
+  "requirementsOnly": true
+}

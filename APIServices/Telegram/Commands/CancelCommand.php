@@ -23,17 +23,26 @@ class CancelCommand extends Command
     public function handle($arguments)
     {
         $this->replyWithChatAction(['action' => Actions::TYPING]);
-        try
-        {
+        try {
+            try {
+                /** @var TelegramService $telegramService */
+                $telegramService = App::make(TelegramService::class);
+
+                $channelSettings = $telegramService->getChannelSettings();
+                if (!empty($channelSettings) && !empty($channelSettings['locale'])) {
+                    App::setLocale($channelSettings['locale']);
+                }
+            } catch (\Exception $exception) {
+                Log::error($exception->getMessage() . 'Line: ' . $exception->getLine() . $exception->getFile());
+            }
+
             $this->replyWithMessage([
-                'text' => 'Ok '. $user_id = $this->update->getMessage()->getFrom()->getFirstName().
-                        ', cancelled.'
+                'text' => trans('telegram.cancel_message', ['user_name' => $this->update->getMessage()->getFrom()->getFirstName()])
             ]);
             /** @var TelegramService $service */
             $service = App::make(TelegramService::class);
             $service->cancelStartedCommand($this->update);
-        }catch (\Exception $exception)
-        {
+        } catch (\Exception $exception) {
             Log::error($exception->getMessage());
         }
     }

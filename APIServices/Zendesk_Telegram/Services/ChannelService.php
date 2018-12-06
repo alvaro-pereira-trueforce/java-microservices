@@ -28,7 +28,7 @@ class ChannelService
     /**
      * Send Channel Service Update Messages To Zendesk Support Push Endpoint
      * @param  Update $update
-     * @param  $telegram_token
+     * @param $telegram_token
      * @throws \Exception
      */
     public function sendUpdate($update, $telegram_token)
@@ -170,19 +170,15 @@ class ChannelService
             $parent_uuid = $params[0];
             $bot_id = $params[1];
             $chat_id = $params[2];
-            $user_id = $params[3];
-            $message_id = $params[4];
 
             $result = $this->telegram_service->sendTelegramMessage($chat_id, $message);
 
             return $this->zendeskUtils->getExternalID([
-                $parent_uuid,
-                $bot_id,
-                $chat_id,
-                $user_id,
+                $parent_id,
                 $result['message_id']
             ]);
         } catch (\Exception $exception) {
+            Log::error($exception->getMessage());
             throw $exception;
         }
     }

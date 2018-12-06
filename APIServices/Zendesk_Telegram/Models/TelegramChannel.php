@@ -10,14 +10,18 @@ class TelegramChannel extends Model
 {
     protected $table = "telegram_channels";
 
-    use UUIDTrait;
+    public function getRouteKeyName()
+    {
+        return 'uuid';
+    }
+
     /**
      * The attributes that are mass assignable.
      *
      * @var array
      */
     protected $fillable = [
-        'token', 'zendesk_app_id', 'integration_name', 'zendesk_access_token', 'instance_push_id'
+        'token', 'zendesk_app_id', 'integration_name', 'zendesk_access_token', 'instance_push_id', 'uuid'
     ];
 
     /**
@@ -32,10 +36,6 @@ class TelegramChannel extends Model
     protected static function boot()
     {
         parent::boot();
-
-        self::creating(function ($model) {
-            $model->uuid = (string) Uuid::uuid4()->toString();
-        });
 
         static::deleting(
             function ($telegram_channel) {

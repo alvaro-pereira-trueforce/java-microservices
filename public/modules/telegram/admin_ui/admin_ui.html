@@ -1,0 +1,146 @@
+<div class="panel panel-default center" style="max-width: 800px">
+    <div class="panel-heading">
+        <h3 class="panel-title">Telegram Channel Configuration</h3>
+    </div>
+    <div class="panel-body">
+        <p ng-if="!vm.metadata">We need you to provide us your Telegram token which was generated with the "Telegram Bot
+            Father" in order
+            to start working with the Telegram Channel service.</p>
+
+        <p ng-if="!!vm.metadata">Welcome back. Do you want to update the configuration?.</p>
+
+        <p>For more information about how to obtain the Telegram token use the following link <a
+                href="https://telegram.me/botfather" target="_blank"> Telegram Bot Father</a> or visit our <a
+                href="{{env('APP_URL')}}/app/#/telegram" target="_blank">Getting Started</a> Page.<br><br>
+        </p>
+
+        <div id="spinner" class="loader center" ng-if="vm.processing"></div>
+
+        <div ng-if="!vm.processing && !vm.pull_mode">
+            <form id="form_setup" name="vm.form" novalidate ng-submit="vm.saveIntegration()">
+
+                <div class="form-group">
+                    <div ng-if="!!vm.error" class="alert alert-danger">
+                        {{vm.error}}
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="name">Integration Name:</label>
+                    <input type="text" id="name" name="name" class="form-control" ng-model="vm.name" ng-required="true"
+                           ng-disabled="!!vm.metadata" ng-readonly="!!vm.metadata">
+                    <div class="alert alert-danger"
+                         ng-if="vm.form.name.$invalid && vm.form.name.$touched || vm.form.$submitted && vm.form.name.$invalid">
+                        Integration Name is required.
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="token">Telegram Token:</label>
+                    <input type="text" id="token" name="token" class="form-control" ng-model="vm.token"
+                           ng-required="true" ng-disabled="!!vm.metadata" ng-readonly="!!vm.metadata">
+                    <div class="alert alert-danger"
+                         ng-if="vm.form.token.$invalid && vm.form.token.$touched || vm.form.$submitted && vm.form.token.$invalid">
+                        Integration Token is required.
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <div class="checkbox">
+                        <label><input id="has_hello_message" type="checkbox"
+                                      ng-model="vm.settings.has_hello_message">Enable Hello Message?</label>
+                    </div>
+                </div>
+
+                <div class="form-group" ng-if="vm.settings.has_hello_message">
+                    <label for="hello_message">Custom Message:</label>
+                    <input type="text" id="hello_message" name="hello_message" class="form-control"
+                           ng-model="vm.settings.hello_message"
+                           ng-required="true">
+                    <div class="text-muted">Telegram bot will sent this message on start command.</div>
+                    <div class="alert alert-danger"
+                         ng-if="vm.form.hello_message.$invalid && vm.form.hello_message.$touched || vm.form.$submitted && vm.form.hello_message.$invalid">
+                        The Custom Message Field is required.
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <div class="checkbox">
+                        <label><input id="required_user_info" type="checkbox"
+                                      ng-model="vm.settings.required_user_info">Ask basic information?</label>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <div class="checkbox">
+                        <label><input id="tickets_by_group" type="checkbox"
+                                      ng-model="vm.settings.tickets_by_group">Ticket by Group?</label>
+                    </div>
+                    <div class="text-muted">If this option is selected, all the messages on a chat group will be added
+                        to
+                        the same ticket.
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Telegram Command Language:</label>
+                    <select class="form-control" name="locale" id="locale"
+                            ng-model="vm.settings.locale">
+                        <option ng-repeat="locale in vm.locales" ng-value="locale.id">
+                            {{locale.name}}
+                        </option>
+                    </select>
+                </div>
+                <hr/>
+                <div>
+                    <div class="form-group">
+                        <h4>Optional Settings</h4>
+                        <p>Choose optional ticket values, all the fields are optional. Please consider that all your new
+                            Telegram tickets will be created with the optional settings you choose.</p>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-sm-6">
+                            <div class="form-group">
+                                <label>Ticket Type:</label>
+                                <select class="form-control" name="ticket_type" id="ticket_type"
+                                        ng-model="vm.settings.ticket_type">
+                                    <option value="">-</option>
+                                    <option ng-repeat="type in vm.ticket_types" ng-value="type.id">{{type.name}}
+                                    </option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="form-group">
+                                <label>Ticket Priority:</label>
+                                <select class="form-control" name="ticket_priority" id="ticket_priority"
+                                        ng-model="vm.settings.ticket_priority">
+                                    <option value="">-</option>
+                                    <option ng-repeat="priority in vm.ticket_priorities" ng-value="priority.id">
+                                        {{priority.name}}
+                                    </option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Tags:</label>
+                        <input type="text" name="tags" class="form-control" ng-model="vm.settings.tags">
+                        <div class="text-muted">Please separate tags with spaces.</div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <button type="submit" id="send_request" class="btn btn-primary">Submit</button>
+                </div>
+            </form>
+        </div>
+
+        <div ng-if="!vm.processing && vm.pull_mode">
+            <p class="alert alert-danger">You are using an old version of the application. Please uninstall the app and
+                install it again in order to continue.</p>
+        </div>
+    </div>
+</div>

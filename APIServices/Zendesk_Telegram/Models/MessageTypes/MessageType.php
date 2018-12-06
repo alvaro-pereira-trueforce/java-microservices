@@ -47,7 +47,7 @@ abstract class MessageType implements IMessageType
     protected $ticketSettings;
 
     /**
-     * MessageType constructor.
+     * MessageTransform constructor.
      * @param Utility $zendeskUtils
      * @param Update $update
      * @param array $state
@@ -58,12 +58,13 @@ abstract class MessageType implements IMessageType
     public function __construct(TicketService $ticketService, Utility $zendeskUtils, $update, $state, TelegramService $telegramService)
     {
         try {
-            $this->ticketScaffold = App::makeWith(TicketScaffold::class, [
-                'zendeskUtils' => $zendeskUtils,
-                'ticketService' => $ticketService
-            ]);
             $ticketSettings = $telegramService->getChannelSettings();
             $this->ticketSettings = array_filter($ticketSettings);
+            $this->ticketScaffold = App::makeWith(TicketScaffold::class, [
+                'zendeskUtils' => $zendeskUtils,
+                'ticketService' => $ticketService,
+                'ticketSettings' => $this->ticketSettings
+            ]);
         } catch (\Exception $exception) {
             Log::error($exception->getMessage());
             throw $exception;

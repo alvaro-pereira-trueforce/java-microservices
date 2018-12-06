@@ -11,17 +11,20 @@ use App\Repositories\ManifestRepository;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Log;
+use JavaScript;
 use Symfony\Component\HttpKernel\Exception\ServiceUnavailableHttpException;
 
 class ZendeskController extends CommonZendeskController
 {
     protected $channel_service;
+    protected $telegram_service;
 
-    public function __construct(ManifestRepository $repository, TelegramService $service, ChannelService $channelService)
+    public function __construct(ManifestRepository $repository, TelegramService $service, ChannelService $channelService, Request $request)
     {
-        parent::__construct($repository);
-        $this->service = $service;
+        $this->manifest = $repository;
+        $this->telegram_service = $service;
         $this->channel_service = $channelService;
+        $this->zendeskInfo = $this->getZendeskInfoFromRequest($request);
     }
 
     public function getManifest(Request $request)
@@ -32,187 +35,141 @@ class ZendeskController extends CommonZendeskController
 
     public function admin_UI(Request $request)
     {
-        $metadata = json_decode($request->metadata, true); //will be null on empty
-        $state = json_decode($request->state, true); //will be null on empty
-        //$locale = $request->locale;
-        $instance_push_id = $request->instance_push_id;
-        $zendesk_access_token = $request->zendesk_access_token;
-        $data = [
-            'return_url' => $request->return_url,
-            'subdomain' => $request->subdomain,
-            'name' => $request->name,
-            'submitURL' => env('APP_URL') . '/telegram/admin_ui_add',
-            'token' => '',
-            'has_hello_message' => false,
-            'required_user_info' => true,
-            'hello_message' => null,
-            'ticket_type' => null,
-            'ticket_priority' => null,
-            'tags' => null
-        ];
-
-        $data['token_hide'] = false;
-
-        if (!$zendesk_access_token || !$instance_push_id) {
-            $zendesk_access_token = '';
-            $instance_push_id = '';
-            $data['pull_mode'] = true;
-        }
-
+        /* Example{
+            'name' => NULL,
+            'metadata' => NULL,
+            'state' => NULL,
+            'return_url' => 'https://d3v-assuresoft.zendesk.com/zendesk/channels/integration_service_instances/editor_finalizer',
+            'instance_push_id' => '3cd1d2a5-aaf2-41fe-a9f1-519499605854',
+            'zendesk_access_token' => '601444c6f97f74d331bdc5fb8843b245f16079511759581582227c5643771588',
+            'subdomain' => 'd3v-assuresoft',
+            'locale' => 'en-US',
+        }*/
         try {
-            if (!$metadata) {
-                //This is the code when the user add an account.
-                $newRecord = $this->service->setAccountRegistration([
-                    'zendesk_access_token' => $zendesk_access_token,
-                    'instance_push_id' => $instance_push_id,
-                    'zendesk_app_id' => $data['subdomain']
+            $instance_push_id = $request->instance_push_id;
+            $zendesk_access_token = $request->zendesk_access_token;
+            if (!$zendesk_access_token || !$instance_push_id) {
+                JavaScript::put([
+                    'backend_variables' => [
+                        'pull_mode' => true
+                    ]
                 ]);
-                if (!$newRecord || empty($newRecord))
-                    throw new \Exception('There was an error');
-            } else {
-                //This is the code when the user click to edit an integration.
-                try
-                {
-                    $data['token_hide'] = true;
-                    $data['submitURL'] = env('APP_URL') . '/telegram/admin_ui_edit';
-                    $token = $this->service->getById($metadata['token']);
-                    $data['token'] = $token->token;
-                    $settings = $this->service->getChannelSettings();
-                    if(empty($settings))
-                    {
-                        return view('telegram.admin_ui_old_users_without_settings', $data);
-                    }
-                    $data['has_hello_message'] = (boolean)$settings['has_hello_message'];
-                    $data['required_user_info'] = (boolean)$settings['required_user_info'];
-                    $data['hello_message'] = $settings['hello_message'];
-                    $data['ticket_type'] = $settings['ticket_type'];
-                    $data['ticket_priority'] = $settings['ticket_priority'];
-                    if ($settings['tags'])
-                        $data['tags'] = implode(' ', $settings['tags']);
-                }catch (\Exception $exception)
-                {
-                    Log::error("Exception ZendeskController From Line 75 to 90:");
-                    Log::error($exception);
-                    return "Please try again, if the problem persists please contact our Support team zendesk@assuresoft.com.";
+            }
+            $telegramAccessToken = '';
+            if (!empty($this->zendeskInfo['metadata']) && !empty($this->zendeskInfo['metadata']['token'])) {
+                $savedAccount = $this->telegram_service->getById($this->zendeskInfo['metadata']['token']);
+                $settings = $savedAccount->settings()->first();
+                if (empty($settings) || empty($savedAccount)) {
+                    JavaScript::put([
+                        'backend_variables' => [
+                            'pull_mode' => true
+                        ]
+                    ]);
+                    return view('telegramV2.admin_ui');
                 }
-            }
-            //Only when is an older integration.
-            if (array_key_exists('pull_mode', $data)) {
-                return view('telegram.admin_ui_old_users', $data);
+                $this->zendeskInfo['metadata']['account_id'] = $savedAccount->uuid;
+                unset($this->zendeskInfo['metadata']['token']);
+                $telegramAccessToken = $savedAccount->token;
             }
 
-            return view('telegram.admin_ui', $data);
+            $front_end_variables = $this->getAdminUIVariables($request);
+            $front_end_variables['backend_variables']['token'] = $telegramAccessToken;
+            if (!empty($settings)) {
+                $front_end_variables['backend_variables']['settings'] = $settings->toArray();
+                if (!empty($settings['tags'])) {
+                    $front_end_variables['backend_variables']['settings']['tags'] = implode(' ', json_decode($settings['tags'], true));
+                }
+                $front_end_variables['backend_variables']['settings']['has_hello_message'] = (bool)$front_end_variables['backend_variables']['settings']['has_hello_message'];
+                $front_end_variables['backend_variables']['settings']['required_user_info'] = (bool)$front_end_variables['backend_variables']['settings']['required_user_info'];
+                $front_end_variables['backend_variables']['settings']['tickets_by_group'] = (bool)$front_end_variables['backend_variables']['settings']['tickets_by_group'];
+            }
+            $front_end_variables['backend_variables']['ticket_types'] = $this->ticket_types;
+            $front_end_variables['backend_variables']['ticket_priorities'] = $this->ticket_priorities;
+            $front_end_variables['backend_variables']['locales'] = $this->ticket_locales;
+            JavaScript::put($front_end_variables);
+            return view('telegramV2.admin_ui');
         } catch (\Exception $exception) {
-            Log::error($exception);
-            return $this->showErrorMessageAdminUI(['Please try again, if the problem persists please contact our Support team zendesk@assuresoft.com'], $data);
+            Log::error($exception->getMessage());
+            return view('please_contact_support');
         }
     }
 
-    public function showErrorMessageAdminUI($errors, $data)
-    {
-        $data['errors'] = $errors;
-        if(array_key_exists('pull_mode', $data))
-        {
-            return view('telegram.admin_ui_old_users', $data);
-        }
-        return view('telegram.admin_ui', $data);
-    }
-
-    public function admin_ui_add(Request $request)
+    public function admin_ui_validate_data(Request $request)
     {
         try {
             $data = $request->all();
-            foreach ($data as $key => $value) {
-                if ($value == 'on')
-                    $data[$key] = true;
-                if ($value == 'off')
-                    $data[$key] = false;
-            }
+            /**
+             * Example request[
+             * "account_id" => "191ed66c-4ed4-4618-baad-17c8d30ec249"
+             * "name" => "My Clients From Instagram"
+             * "token" => "575219012:AAEc-eJkXADjeiBT3-lymQ_yP6MsLK1rL14"
+             * "settings" => array:4 [
+             * "has_hello_message" => false
+             * "required_user_info" => false
+             * "selected_ticket_type" => "incident"
+             * "tags" => "telegram channel users"
+             * ]
+             * ]
+             */
 
+            $account_id = $request->account_id;
+            $name = $request->name;
             $token = $request->token;
-            $return_url = $data['return_url'];
-            $subdomain = $data['subdomain'];
-            $name = $data['name'];
-            $submitURL = $data['submitURL'];
-            $has_hello_message = array_key_exists('has_hello_message', $data) ? $data['has_hello_message'] : false;
-            $required_user_info = array_key_exists('required_user_info', $data) ? $data['required_user_info'] : false;
-            $hello_message = array_key_exists('hello_message', $data) ? $data['hello_message'] : null;
 
-            $data = [
-                'return_url' => $return_url,
-                'subdomain' => $subdomain,
-                'name' => $name,
-                'submitURL' => $submitURL,
-                'token' => $token,
-                'has_hello_message' => $has_hello_message,
-                'required_user_info' => $required_user_info,
-                'hello_message' => $hello_message,
-                'ticket_type' => $request->ticket_type,
-                'ticket_priority' => $request->ticket_priority,
-                'tags' => $request->tags,
-                'token_hide' => false
-            ];
+            $account = $this->getNewAccountInformation($account_id);
 
-            if ($request->telegram_mode) {
-                $data['pull_mode'] = true;
-            }
-
-            if (!$token || !$name) {
-                $errors = ['Integration Name and Token is required.'];
-                return $this->showErrorMessageAdminUI($errors, $data);
-            }
-            if ($has_hello_message && (!$hello_message || empty($hello_message))) {
-                $errors = ['Custom Message is required.'];
-                return $this->showErrorMessageAdminUI($errors, $data);
-            }
-            $telegramBot = $this->service->checkValidTelegramBot($token);
+            $telegramBot = $this->telegram_service->checkValidTelegramBot($token);
             if (!$telegramBot) {
-                $errors = ['Invalid token, use Telegram Bot Father to create one.'];
-                return $this->showErrorMessageAdminUI($errors, $data);
-            }
-            if ($this->service->isTokenRegistered($token)) {
-                $errors = ['That telegram token is already registered.'];
-                return $this->showErrorMessageAdminUI($errors, $data);
-            }
-            if ($this->service->isNameRegistered($subdomain, $name)) {
-                $errors = ['That integration name is already registered.'];
-                return $this->showErrorMessageAdminUI($errors, $data);
+                $errors = 'Invalid token, use Telegram Bot Father to create one.';
+                return response()->json(['message' => $errors], 404);
             }
 
-            if (!$request->telegram_mode) {
-                Log::debug("Enabling Telegram Webhook.");
-                $telegramResponse = $this->service->setWebhook($token);
-                if (!$telegramResponse || !$telegramResponse[0]) {
-                    $errors = ['There was an error with bots configuration, please contact support.'];
-                    return $this->showErrorMessageAdminUI($errors, $data);
+            try {
+                $savedAccount = $this->telegram_service->getById($account_id);
+            } catch (\Exception $exception) {
+                if ($this->telegram_service->isTokenRegistered($token)) {
+                    $errors = 'That telegram token is already registered.';
+                    return response()->json(['message' => $errors], 404);
+                }
+
+                if ($this->telegram_service->isNameRegistered($account['subdomain'], $name)) {
+                    $errors = 'That integration name is already registered.';
+                    return response()->json(['message' => $errors], 404);
                 }
             }
 
-            $tags = null;
-            if ($request->tags && !empty($request->tags)) {
-                $tags = json_encode(explode(' ', $request->tags), true);
+            $telegramResponse = $this->telegram_service->setWebhook($token);
+
+            if (!$telegramResponse || !$telegramResponse[0]) {
+                $errors = 'There was an error with bots configuration, please contact support.';
+                return response()->json(['message' => $errors], 404);
             }
 
-            $settings = [
-                'has_hello_message' => $has_hello_message,
-                'required_user_info' => $required_user_info,
-                'hello_message' => $hello_message,
-                'ticket_type' => $request->ticket_type,
-                'ticket_priority' => $request->ticket_priority,
-                'tags' => $tags
-            ];
-            $metadata = $this->service->registerNewIntegration([
-                'name' => $name,
-                'token' => $token,
-                'subDomain' => $subdomain,
-                'settings' => $settings
-            ]);
-            if (!$metadata) {
-                $errors = ['There was an error processing your data, please check your information or contact support.'];
-                return $this->showErrorMessageAdminUI($errors, $data);
+            if (!empty($data['settings']['tags'])) {
+                $tags = json_encode(explode(' ', $data['settings']['tags']), true);
+                $data['settings']['tags'] = $tags;
             }
+            $return_url = $account['return_url'];
+            unset($account['return_url']);
+            $account = array_merge($account, $data);
+            $account['uuid'] = $account['account_id'];
+            unset($account['account_id']);
+            $account['integration_name'] = $account['name'];
+            unset($account['name']);
+            $account['zendesk_app_id'] = $account['subdomain'];
+            unset($account['subdomain']);
+
+            $metadata = $this->telegram_service->registerNewIntegration($account);
+            if (!$metadata) {
+                $errors = 'There was an error processing your data, please check your information or contact support.';
+                return response()->json(['message' => $errors], 404);
+            }
+            $metadata['return_url'] = $return_url;
             Log::debug(json_encode($metadata));
-            return view('telegram.post_metadata', ['return_url' => $return_url, 'name' => $name, 'metadata' => json_encode($metadata)]);
+            $this->saveNewAccountInformation($account_id, $metadata);
+            return response()->json([
+                'save_url' => env('APP_URL') . '/telegram/admin_ui_save/' . $account_id
+            ], 200);
 
         } catch (\Exception $exception) {
             Log::error($exception);
@@ -220,88 +177,19 @@ class ZendeskController extends CommonZendeskController
         }
     }
 
-    public function admin_ui_edit(Request $request)
+    public function admin_ui_save($account_id)
     {
-        $data = $request->all();
-
-        foreach ($data as $key => $value) {
-            if ($value == 'on')
-                $data[$key] = true;
-            if ($value == 'off')
-                $data[$key] = false;
-        }
-
-        $token = $request->token;
-        $return_url = $data['return_url'];
-        $subdomain = $data['subdomain'];
-        $name = $data['name'];
-        $submitURL = $data['submitURL'];
-        $has_hello_message = array_key_exists('has_hello_message', $data) ? $data['has_hello_message'] : false;
-        $required_user_info = array_key_exists('required_user_info', $data) ? $data['required_user_info'] : false;
-        $hello_message = array_key_exists('hello_message', $data) ? $data['hello_message'] : null;
-
-        $data = [
-            'return_url' => $return_url,
-            'subdomain' => $subdomain,
-            'name' => $name,
-            'submitURL' => $submitURL,
-            'token' => $token,
-            'has_hello_message' => $has_hello_message,
-            'required_user_info' => $required_user_info,
-            'hello_message' => $hello_message,
-            'ticket_type' => $request->ticket_type,
-            'ticket_priority' => $request->ticket_priority,
-            'tags' => $request->tags,
-            'token_hide' => true
-        ];
-
-        if ($request->telegram_mode) {
-            $data['pull_mode'] = true;
-        }
-
         try {
-            if (!$token || !$name) {
-                $errors = ['Integration Name and Token is required.'];
-                return $this->showErrorMessageAdminUI($errors, $data);
-            }
-            if ($has_hello_message && (!$hello_message || empty($hello_message))) {
-                $errors = ['Custom Message is required.'];
-                return $this->showErrorMessageAdminUI($errors, $data);
-            }
-            $telegramBot = $this->service->checkValidTelegramBot($token);
-            if (!$telegramBot) {
-                $errors = ['Invalid token, use Telegram Bot Father to create one.'];
-                return $this->showErrorMessageAdminUI($errors, $data);
-            }
-
-            $telegramResponse = $this->service->setWebhook($token);
-            if (!$telegramResponse || !$telegramResponse[0]) {
-                $errors = ['There was an error with bots configuration, please contact support.'];
-                return $this->showErrorMessageAdminUI($errors, $data);
-            }
-
-            $tags = null;
-            if ($request->tags && !empty($request->tags)) {
-                $tags = json_encode(explode(' ', $request->tags), true);
-            }
-            $data['tags'] = $tags;
-
-            $settings = [
-                'has_hello_message' => $data['has_hello_message'],
-                'required_user_info' => $data['required_user_info'],
-                'hello_message' => $data['hello_message'],
-                'ticket_type' => $data['ticket_type'],
-                'ticket_priority' => $data['ticket_priority'],
-                'tags' => $tags
-            ];
-            $data['settings'] = $settings;
-            $metadata = $this->service->updateIntegrationData($data);
-
-            Log::debug(json_encode($metadata));
-            return view('telegram.post_metadata', ['return_url' => $return_url, 'name' => $name, 'metadata' => json_encode($metadata)]);
+            $account = $this->getNewAccountInformation($account_id);
+            $this->deleteNewAccountInformation($account_id);
+            $return_url = $account['return_url'];
+            unset($account['return_url']);
+            $account = $this->cleanArray($account);
+            Log::debug($account);
+            return view('post_metadata', ['return_url' => $return_url, 'name' => $account['integration_name'], 'metadata' => json_encode($account)]);
         } catch (\Exception $exception) {
-            Log::error($exception);
-            return 'Please try again, if the problem persists please contact our Support team zendesk@assuresoft.com';
+            Log::error($exception->getMessage());
+            return view('please_contact_support');
         }
     }
 
@@ -320,7 +208,9 @@ class ZendeskController extends CommonZendeskController
     public function channel_back(Request $request)
     {
         try {
-            $external_id = $this->channel_service->channelBackRequest($request->parent_id, $request->message);
+            Log::debug('Channel Back:');
+            Log::debug($request->all());
+            $external_id = $this->channel_service->channelBackRequest($request->thread_id, $request->message);
 
             $response = [
                 'external_id' => $external_id
