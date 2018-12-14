@@ -41,13 +41,14 @@ class WebhookController extends Controller
     {
         try {
             $request = $request->all();
-            Log::debug($request);
+            Log::notice($request);
             if (array_key_exists('entry', $request)) {
                 $entries = $request['entry'];
                 foreach ($entries as $entry) {
                     if (array_key_exists('changes', $entry) && array_key_exists('id', $entry)) {
                         $instagramChannel = $channelRepository->getModelByColumnName('instagram_id', $entry['id']);
                         if ($instagramChannel) {
+                            Log::notice($instagramChannel->toArray());
                             foreach ($entry['changes'] as $change) {
                                 if (array_key_exists('field', $change) && array_key_exists('value', $change)) {
                                     $field_type = $change['field'];
@@ -69,6 +70,7 @@ class WebhookController extends Controller
             }
             return response()->json('ok', 200);
         } catch (\Exception $exception) {
+            Log::error($exception->getMessage());
             throw new BadRequestHttpException();
         }
     }
