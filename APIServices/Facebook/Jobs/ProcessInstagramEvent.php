@@ -74,6 +74,11 @@ class ProcessInstagramEvent implements ShouldQueue
                 if ($facebookService->isFacebookLimitEnable())
                     throw new \Exception('Facebook limit reached.');
 
+                if (empty($this->payload['media']['id'])) {
+                    $comment = $facebookService->getInstagramCommentByID($this->payload['id']);
+                    $this->payload['media'] = $comment['media'];
+                }
+
                 $media = $facebookService->getInstagramMediaByID($this->payload['media']['id']);
 
                 if (empty($media) || empty($media['comments'])) {
@@ -110,10 +115,10 @@ class ProcessInstagramEvent implements ShouldQueue
                 }
             }
         } catch (\ReflectionException $exception) {
-            Log::error($exception->getMessage() . ' OnLine: ' . $exception->getLine().' '.$exception->getFile());
+            Log::error($exception->getMessage() . ' OnLine: ' . $exception->getLine() . ' ' . $exception->getFile());
             Log::error('class does not exist, new instagram message type added.');
         } catch (\Exception $exception) {
-            Log::error($exception->getMessage() . ' OnLine: ' . $exception->getLine().' '.$exception->getFile());
+            Log::error($exception->getMessage() . ' OnLine: ' . $exception->getLine() . ' ' . $exception->getFile());
             throw $exception;
         }
     }
