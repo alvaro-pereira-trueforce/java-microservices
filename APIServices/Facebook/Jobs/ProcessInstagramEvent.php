@@ -50,7 +50,7 @@ class ProcessInstagramEvent implements ShouldQueue
      */
     public function handle()
     {
-        Log::debug('Starting Job With: ' . $this->field_type);
+        Log::notice('Starting Job With: ' . $this->field_type);
         try {
             Log::notice('Log Worker');
             Log::notice($this->instagramChannel->uuid);
