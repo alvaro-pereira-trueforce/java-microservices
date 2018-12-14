@@ -50,7 +50,7 @@ class ProcessInstagramEvent implements ShouldQueue
      */
     public function handle()
     {
-        Log::debug('Starting Job With: ' . $this->field_type);
+        Log::notice('Starting Job With: ' . $this->field_type);
         try {
             Log::notice('Log Worker');
             Log::notice($this->instagramChannel->uuid);
@@ -73,6 +73,11 @@ class ProcessInstagramEvent implements ShouldQueue
             try {
                 if ($facebookService->isFacebookLimitEnable())
                     throw new \Exception('Facebook limit reached.');
+
+                if (empty($this->payload['media']['id'])) {
+                    $comment = $facebookService->getInstagramCommentByID($this->payload['id']);
+                    $this->payload['media'] = $comment['media'];
+                }
 
                 $media = $facebookService->getInstagramMediaByID($this->payload['media']['id']);
 
@@ -110,10 +115,10 @@ class ProcessInstagramEvent implements ShouldQueue
                 }
             }
         } catch (\ReflectionException $exception) {
-            Log::error($exception->getMessage() . ' OnLine: ' . $exception->getLine().' '.$exception->getFile());
+            Log::error($exception->getMessage() . ' OnLine: ' . $exception->getLine() . ' ' . $exception->getFile());
             Log::error('class does not exist, new instagram message type added.');
         } catch (\Exception $exception) {
-            Log::error($exception->getMessage() . ' OnLine: ' . $exception->getLine().' '.$exception->getFile());
+            Log::error($exception->getMessage() . ' OnLine: ' . $exception->getLine() . ' ' . $exception->getFile());
             throw $exception;
         }
     }

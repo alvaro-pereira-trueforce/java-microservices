@@ -41,24 +41,33 @@ class WebhookController extends Controller
     {
         try {
             $request = $request->all();
-            Log::debug($request);
+            Log::notice($request);
             if (array_key_exists('entry', $request)) {
                 $entries = $request['entry'];
                 foreach ($entries as $entry) {
                     if (array_key_exists('changes', $entry) && array_key_exists('id', $entry)) {
                         $instagramChannel = $channelRepository->getModelByColumnName('instagram_id', $entry['id']);
                         if ($instagramChannel) {
+                            Log::debug($instagramChannel->toArray());
                             foreach ($entry['changes'] as $change) {
                                 if (array_key_exists('field', $change) && array_key_exists('value', $change)) {
                                     $field_type = $change['field'];
 
                                     /** Because the facebook Validation the type field strategy only works with the transformed message format, here we need to set and if else logic */
-                                    if (!empty($change['value']['id']) && !empty($change['value']['text']) && !empty($change['value']['media'])) {
-                                        $payload = [
-                                            'id' => $change['value']['id'],
-                                            'text' => $change['value']['text'],
-                                            'media' => $change['value']['media']
-                                        ];
+                                    if (!empty($change['value']['id']) && !empty($change['value']['text'])) {
+                                        if (!empty($change['value']['media'])) {
+                                            $payload = [
+                                                'id' => $change['value']['id'],
+                                                'text' => $change['value']['text'],
+                                                'media' => $change['value']['media']
+                                            ];
+                                        } else {
+                                            $payload = [
+                                                'id' => $change['value']['id'],
+                                                'text' => $change['value']['text']
+                                            ];
+                                        }
+                                        Log::notice($payload);
                                         ProcessInstagramEvent::dispatch($instagramChannel, $field_type, $payload, 1);
                                     }
                                 }
@@ -69,6 +78,7 @@ class WebhookController extends Controller
             }
             return response()->json('ok', 200);
         } catch (\Exception $exception) {
+            Log::error($exception->getMessage());
             throw new BadRequestHttpException();
         }
     }
