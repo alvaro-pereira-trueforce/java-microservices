@@ -81,7 +81,7 @@ class Facebook extends FB
             $response = json_decode($this->post($endpoint)->getBody(), true);
             return $response;
         } catch (FacebookSDKException $exception) {
-            Log::error('Facebook GET Request Code: ' . $exception->getCode());
+            Log::error('Facebook POST Request Code: ' . $exception->getCode());
             throw $exception;
         }
     }
