@@ -74,26 +74,32 @@ class ProcessInstagramEvent implements ShouldQueue
                 if ($facebookService->isFacebookLimitEnable())
                     throw new \Exception('Facebook limit reached.');
 
-                if (empty($this->payload['media']['id'])) {
-                    $comment = $facebookService->getInstagramCommentByID($this->payload['id']);
-                    if(empty($comment['media']))
-                    {
-                        Log::error('This Message will be omitted is not exist on facebook');
+                try {
+                    if (empty($this->payload['media']['id'])) {
+                        $comment = $facebookService->getInstagramCommentByID($this->payload['id']);
+                        if (empty($comment['media'])) {
+                            Log::error('This Message will be omitted is not exist on facebook');
+                            return;
+                        }
+                        $this->payload['media'] = $comment['media'];
+                    }
+
+                    $media = $facebookService->getInstagramMediaByID($this->payload['media']['id']);
+
+                    if (empty($media) || empty($media['comments'])) {
+                        Log::debug('The media does not exist or it has not comments');
                         return;
                     }
-                    $this->payload['media'] = $comment['media'];
-                }
-
-                $media = $facebookService->getInstagramMediaByID($this->payload['media']['id']);
-
-                if (empty($media) || empty($media['comments'])) {
-                    Log::debug('The media does not exist or it has not comments');
+                } catch (\Exception $exception) {
+                    Log::error('Facebook says: ' . $exception->getMessage() . 'this is the try number: ' . $this->triesCount);
+                    Log::error('This job wil be finished with error code: ' . $exception->getCode());
                     return;
                 }
+
             } catch (\Exception $exception) {
                 Log::error('Facebook says: ' . $exception->getMessage() . 'this is the try number: ' . $this->triesCount);
-                Log::error('Facebook Request Code: ' . $exception->getCode());
-                if ($this->triesCount > 2) {
+                Log::error('Facebook Error On Job Code: ' . $exception->getCode());
+                if ($this->triesCount > 3) {
                     Log::error('Tries limit reached.');
                     return;
                 }
