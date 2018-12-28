@@ -27,6 +27,8 @@ class ZendeskAPI extends API
             Log::debug($response);
             return $response;
         } catch (\Exception $exception) {
+            Log::error("Something happened sending the message to zendesk, this message will be lost");
+            Log::error("Zendesk Request Code: " . $exception->getCode());
             Log::error($exception->getMessage());
         }
     }

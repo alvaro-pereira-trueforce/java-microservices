@@ -67,7 +67,8 @@ class ZendeskChannelService extends ChannelService
             $zendeskAPI = App::make(ZendeskAPI::class);
             $zendeskAPI->pushNewMessages($transformedMessages);
         } catch (\Exception $exception) {
-            throw $exception;
+            Log::error("Container Exception: " . $exception->getCode());
+            Log::error($exception->getMessage());
         }
     }
 }
