@@ -87,6 +87,7 @@ class ProcessInstagramEvent implements ShouldQueue
                 }
             } catch (\Exception $exception) {
                 Log::error('Facebook says: ' . $exception->getMessage() . 'this is the try number: ' . $this->triesCount);
+                Log::error('Facebook Request Code: ' . $exception->getCode());
                 if ($this->triesCount > 10) {
                     Log::error('Tries limit reached.');
                     return;
@@ -115,9 +116,11 @@ class ProcessInstagramEvent implements ShouldQueue
                 }
             }
         } catch (\ReflectionException $exception) {
+            Log::error('Reflexion Code: ' . $exception->getCode());
             Log::error($exception->getMessage() . ' OnLine: ' . $exception->getLine() . ' ' . $exception->getFile());
             Log::error('class does not exist, new instagram message type added.');
         } catch (\Exception $exception) {
+            Log::error('General Code: ' . $exception->getCode());
             Log::error($exception->getMessage() . ' OnLine: ' . $exception->getLine() . ' ' . $exception->getFile());
             throw $exception;
         }
@@ -131,6 +134,7 @@ class ProcessInstagramEvent implements ShouldQueue
      */
     public function failed(\Exception $exception)
     {
+        Log::error('Failed Code: ' . $exception->getCode());
         Log::error('Message: ' . $exception->getMessage() . ' On Line: ' . $exception->getLine());
     }
 }
