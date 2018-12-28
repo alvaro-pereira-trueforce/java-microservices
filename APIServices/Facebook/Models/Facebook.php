@@ -65,6 +65,7 @@ class Facebook extends FB
             Log::debug($response);
             return $response;
         } catch (FacebookSDKException $exception) {
+            Log::error('Facebook GET Request Code: ' . $exception->getCode());
             throw $exception;
         }
     }
