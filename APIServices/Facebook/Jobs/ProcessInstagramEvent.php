@@ -76,6 +76,11 @@ class ProcessInstagramEvent implements ShouldQueue
 
                 if (empty($this->payload['media']['id'])) {
                     $comment = $facebookService->getInstagramCommentByID($this->payload['id']);
+                    if(empty($comment['media']))
+                    {
+                        Log::error('This Message will be omitted is not exist on facebook');
+                        return;
+                    }
                     $this->payload['media'] = $comment['media'];
                 }
 
@@ -88,11 +93,11 @@ class ProcessInstagramEvent implements ShouldQueue
             } catch (\Exception $exception) {
                 Log::error('Facebook says: ' . $exception->getMessage() . 'this is the try number: ' . $this->triesCount);
                 Log::error('Facebook Request Code: ' . $exception->getCode());
-                if ($this->triesCount > 10) {
+                if ($this->triesCount > 2) {
                     Log::error('Tries limit reached.');
                     return;
                 }
-                static:: dispatch($this->instagramChannel, $this->field_type, $this->payload, $this->triesCount + 1)->delay($this->triesCount * 10 * 60);
+                static:: dispatch($this->instagramChannel, $this->field_type, $this->payload, $this->triesCount + 1)->delay($this->triesCount * 60);
                 return;
             }
             Log::notice('Success..Processing Data..');
@@ -122,7 +127,7 @@ class ProcessInstagramEvent implements ShouldQueue
         } catch (\Exception $exception) {
             Log::error('General Code: ' . $exception->getCode());
             Log::error($exception->getMessage() . ' OnLine: ' . $exception->getLine() . ' ' . $exception->getFile());
-            throw $exception;
+            //throw $exception;
         }
     }
 
