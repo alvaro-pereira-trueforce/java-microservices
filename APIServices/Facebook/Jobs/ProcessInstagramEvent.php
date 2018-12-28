@@ -91,7 +91,7 @@ class ProcessInstagramEvent implements ShouldQueue
                         return;
                     }
                 } catch (\Exception $exception) {
-                    Log::error('Facebook says: ' . $exception->getMessage() . 'this is the try number: ' . $this->triesCount);
+                    Log::error('Facebook says on comment or media request: ' . $exception->getMessage());
                     Log::error('This job wil be finished with error code: ' . $exception->getCode());
                     return;
                 }
