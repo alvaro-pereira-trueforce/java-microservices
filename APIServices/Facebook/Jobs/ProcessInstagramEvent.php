@@ -87,7 +87,7 @@ class ProcessInstagramEvent implements ShouldQueue
                     $media = $facebookService->getInstagramMediaByID($this->payload['media']['id']);
 
                     if (empty($media) || empty($media['comments'])) {
-                        Log::debug('The media does not exist or it has not comments');
+                        Log::error('The media does not exist or it has not comments');
                         return;
                     }
                 } catch (\Exception $exception) {
