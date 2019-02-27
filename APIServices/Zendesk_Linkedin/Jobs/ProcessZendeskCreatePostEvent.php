@@ -17,7 +17,6 @@ use Illuminate\Support\Facades\Log;
 use APIServices\Utilities\StringUtilities;
 use Carbon\Carbon;
 
-
 /**
  * Class ProcessZendeskCreatePostEvent
  * @package APIServices\Zendesk_Linkedin\Jobs
@@ -70,7 +69,7 @@ class ProcessZendeskCreatePostEvent implements ShouldQueue
     /**
      * @var $limitParams
      */
-    protected $filteredParams;
+    protected $filteredParams=[];
 
     /**
      * ProcessZendeskCreatePostEvent constructor.
@@ -96,7 +95,7 @@ class ProcessZendeskCreatePostEvent implements ShouldQueue
             App::when(ChannelRepository::class)->needs('$channelModel')->give(new LinkedInChannel());
             /** @var ZendeskChannelService $channelService */
             $channelService = App::make(ZendeskChannelService::class);
-
+            /** @var LinkedinService $linkedInService */
             $linkedInService = App::make(LinkedinService::class);
             $this->zendeskChannelService = App::make(ZendeskChannelService::class);
             try {
@@ -104,6 +103,7 @@ class ProcessZendeskCreatePostEvent implements ShouldQueue
                 $requestParameter['access_token'] = $this->metadata['access_token'];
                 $likesAmount = $linkedInService->getLinkedInLikes($requestParameter);
                 $this->followersAmount = $linkedInService->getLinkedInFollowers($requestParameter);
+                /** @var Timestamp $serviceParams */
                 $serviceParams = App::makeWith(Timestamp::class, ['metadata' => $requestParameter]);
                 $this->filteredParams = $serviceParams->getTransformedMessage($this->thead_id);
                 if ($likesAmount == null) {

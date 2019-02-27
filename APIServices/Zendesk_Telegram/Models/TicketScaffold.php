@@ -50,7 +50,7 @@ class TicketScaffold
     public function getParentID($message)
     {
         $parent_id = $this->generateBasicParentID($message);
-        $parent_uuid = $this->ticketService->getValidParentID($parent_id);
+        $parent_uuid = $this->ticketService->getValidParentID($parent_id, $this->isTicketByGroupEnabled($message));
         return $this->zendeskUtils->getExternalID([$parent_uuid, $parent_id]);
     }
 
@@ -73,10 +73,7 @@ class TicketScaffold
             $bot_id = $message->getChat()->getId();
         }
 
-        if (
-            array_key_exists('tickets_by_group', $this->ticketSettings) &&
-            (bool)$this->ticketSettings['tickets_by_group'] == true &&
-            ($message->getChat()->getType() == 'group' || $message->getChat()->getType() == 'supergroup')) {
+        if ($this->isTicketByGroupEnabled($message)) {
             Log::debug('This is the message at the moment of generate the external ID:');
             Log::debug($message);
             $parent_id = $this->zendeskUtils->getExternalID([
@@ -93,5 +90,15 @@ class TicketScaffold
         //}
 
         return $parent_id;
+    }
+
+    /**
+     * This function checks if the ticket by group configuration is enabled and the message was made on a group.
+     * @param Message $message
+     * @return bool
+     */
+    public function isTicketByGroupEnabled($message)
+    {
+        return array_key_exists('tickets_by_group', $this->ticketSettings) && (bool)$this->ticketSettings['tickets_by_group'] == true && ($message->getChat()->getType() == 'group' || $message->getChat()->getType() == 'supergroup');
     }
 }

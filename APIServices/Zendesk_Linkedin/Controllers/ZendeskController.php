@@ -133,7 +133,7 @@ class ZendeskController extends CommonZendeskController
     {
         /* Example Request
          *  'account_id' => '43a63903-eb23-480f-ae2a-f9e598cea089',
-         *  'name' => 'Integration Name'
+         *  'name' => 'Integration CompanyType'
          */
         try {
             $newAccount = $this->getNewAccountInformation($request->account_id);
@@ -141,10 +141,8 @@ class ZendeskController extends CommonZendeskController
             if (array_key_exists('linkedin_code', $newAccount)) {
                 $newAccount['name'] = $request->name;
                 $LinkedToken = $this->linkedinService->getAuthorizationToken($newAccount['linkedin_code']);
-                Log::debug('Access_token');
                 unset($newAccount['linkedin_code']);
                 $pagesData = $linkedinService->getCompanies($LinkedToken);
-                Log::debug($pagesData);
                 if (empty($pagesData) || (array_key_exists('_total', $pagesData) && (int)$pagesData['_total'] == 0) ||
                     !array_key_exists('values', $pagesData)) {
                     return response()->json(['linkedIn_no_companies' => true], 404);
@@ -198,7 +196,6 @@ class ZendeskController extends CommonZendeskController
                     'tags' => $request->tags
                 ]
             ]);
-            Log::debug($newAccount);
             unset($newAccount['locale']);
             //return response()->json('Not Registered', 440);
             $newAccountDBModel = $newAccount;
@@ -206,8 +203,6 @@ class ZendeskController extends CommonZendeskController
             $newAccountDBModel['integration_name'] = $newAccount['name'];
             unset($newAccountDBModel['account_id']);
             unset($newAccountDBModel['name']);
-            Log::debug($newAccountDBModel);
-
             $newAccountDBModel = $this->channelService->registerNewChannelIntegration($newAccountDBModel);
             $newAccount['settings'] = $newAccountDBModel['settings'] ? $newAccountDBModel['settings']->toArray() : [];
 
@@ -281,9 +276,9 @@ class ZendeskController extends CommonZendeskController
         $newState = '';
         $metadata = json_decode($request->metadata, true);
         $state = json_decode($request->state, true);
-        Log::debug($request->all());
         try {
             $validatedPost = App::makeWith(Validator::class, ['metadata' => $metadata]);
+            /** @var Validator $validatedPost */
             $comments = $validatedPost->getTransformedMessage($metadata['integration_timestamp']);
             if (!empty($comments)) {
                 $integrationChannel = $this->channelService->getChannelIntegration($metadata);
@@ -314,36 +309,18 @@ class ZendeskController extends CommonZendeskController
 
     public function channel_back(Request $request)
     {
-        Log::debug($request);
         try {
+            /** @var ChannelBackServices $channelBackServices */
             $channelBackServices = App::makeWith(ChannelBackServices::class, ['request' => $request]);
             $channelBackId = $channelBackServices->getChannelBackRequest($request->message);
             $response = [
                 'external_id' => $channelBackId
             ];
-            Log::debug($channelBackId);
             Log::debug('channel back success');
             return response()->json($response);
 
         } catch (\Exception $exception) {
             Log::error($exception->getMessage() . ' Line: ' . $exception->getLine());
-            $metadata = json_decode($request->metadata, true);
-            $this->channelService->configureZendeskAPI($metadata['zendesk_access_token'], $metadata['subdomain'], $metadata['instance_push_id']);
-            $this->channelService->sendUpdate([
-                    [
-                        'external_id' => $request->thread_id . ':' . StringUtilities::RandomString(),
-                        'message' => 'The following message couldn\'t be posted on your LinkedIn Company/Product Account. 
-                             LinkedIn denied the action because of security reasons, please wait 30 seconds and try again.',
-                        'thread_id' => $request->thread_id,
-                        'created_at' => date('Y-m-d\TH:i:s\Z'),
-                        'author' => [
-                            'external_id' => $request->recipient_id,
-                            'name' => 'administration'
-                        ]
-                    ]
-                ]
-            );
-            Log::error($exception->getMessage());
             throw new ServiceUnavailableHttpException('something wrong happened');
         }
     }
@@ -361,7 +338,6 @@ class ZendeskController extends CommonZendeskController
 
     public function event_callback(Request $request)
     {
-        Log::debug($request->all());
         try {
             Log::debug("Zendesk Event:");
             /** @var IEventType $event */

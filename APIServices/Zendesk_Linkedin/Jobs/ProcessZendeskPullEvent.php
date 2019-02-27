@@ -83,7 +83,7 @@ class ProcessZendeskPullEvent implements ShouldQueue
     }
 
     /**
-     * Send all the messages already transformed to the zendesks service
+     * @throws \Throwable
      */
     public function handle()
     {
@@ -95,8 +95,8 @@ class ProcessZendeskPullEvent implements ShouldQueue
             App::when(ChannelRepository::class)->needs('$channelModel')->give(new LinkedInChannel());
             /** @var ZendeskChannelService $channelService */
             $channelService = App::make(ZendeskChannelService::class);
-
             try {
+                /** @var Transformer $zendeskTransformService */
                 $zendeskTransformService = App::makeWith(Transformer::class, ['metadata' => $this->metadata]);
                 $transformedMessages = $zendeskTransformService->getTransformedMessage($this->comments);
                 if ($this->nameJob === 'Pull old Posts') {
@@ -114,6 +114,7 @@ class ProcessZendeskPullEvent implements ShouldQueue
                         Log::debug($this->state['last_timestamp_id']);
                         $paramsStatus['transformedMessages'] = $transformedMessages;
                         $paramsStatus['limitPull'] = $this->state['last_timestamp_id'];
+                        /** @var PullValidator $postStateValidate */
                         $postStateValidate = App::makeWith(PullValidator::class, ['metadata' => $this->metadata]);
                         $messagesPullValidated = $postStateValidate->getTransformedMessage($paramsStatus);
                         if (!empty($messagesPullValidated)) {

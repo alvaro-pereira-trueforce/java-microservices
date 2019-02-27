@@ -17,15 +17,6 @@ use APIServices\Zendesk_Linkedin\Models\MessageTypes\ImageTransformer;
 abstract class MessageBuilder implements IMessageTransformer
 {
     /**
-     * @var $commentType
-     */
-    protected $commentType;
-    /**
-     * @var $imageType
-     */
-    protected $imageType;
-
-    /**
      * @var $messageImage
      */
     protected $messageImage = [];
@@ -75,12 +66,14 @@ abstract class MessageBuilder implements IMessageTransformer
             foreach ($messages as $message) {
                 $newArray = $this->linkedinService->getAllCommentPost($message, $this->metadata['access_token']);
                 if (array_key_exists('content', $newArray['updateContent']['companyStatusUpdate']['share'])) {
-                    $this->imageType = App::make(ImageTransformer::class);
-                    $this->messageImage = array_merge($this->imageType->getTransformedMessage($newArray), $this->messageImage);
+                    $imageType = App::make(ImageTransformer::class);
+                    /** @var ImageTransformer $imageType */
+                    $this->messageImage = array_merge($imageType->getTransformedMessage($newArray), $this->messageImage);
                 } else
                     if (array_key_exists('comment', $newArray['updateContent']['companyStatusUpdate']['share'])) {
-                        $this->commentType = App::make(CommentTransformer::class);
-                        $this->messageComment = array_merge($this->messageComment, $this->commentType->getTransformedMessage($newArray));
+                        $commentType = App::make(CommentTransformer::class);
+                        /** @var CommentTransformer $commentType */
+                        $this->messageComment = array_merge($this->messageComment, $commentType->getTransformedMessage($newArray));
                     } else {
                         Log::debug("video goes here");
                     }
