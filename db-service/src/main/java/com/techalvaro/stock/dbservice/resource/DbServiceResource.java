@@ -23,6 +23,11 @@ public class DbServiceResource {
         return getQuotesByUserName(username);
     }
 
+    @GetMapping("/all")
+    public List<Quote> getAllQuotes() {
+        return quotesRepository.findAll();
+    }
+
     private List<String> getQuotesByUserName(@PathVariable("username") String username) {
         return quotesRepository.findByUsername(username)
                 .stream()
