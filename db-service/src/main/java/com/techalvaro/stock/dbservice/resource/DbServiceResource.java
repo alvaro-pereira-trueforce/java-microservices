@@ -1,7 +1,6 @@
 package com.techalvaro.stock.dbservice.resource;
 
 import com.techalvaro.stock.dbservice.model.Quote;
-import com.techalvaro.stock.dbservice.model.Quotes;
 import com.techalvaro.stock.dbservice.repository.QuotesRepository;
 import org.springframework.web.bind.annotation.*;
 
@@ -42,13 +41,13 @@ public class DbServiceResource {
         return getQuotesByUserName(username);
     }
 
-    @PostMapping("/add")
-    public List<String> add(@RequestBody final Quotes quotes) {
-        quotes.getQuotes()
-                .stream()
-                .map(quote -> new Quote(quotes.getUsername(), quote))
-                .forEach(quote -> quotesRepository.save(quote));
-        return getQuotesByUserName(quotes.getUsername());
-    }
+//    @PostMapping("/add")
+//    public List<String> add(@RequestBody final Quotes quotes) {
+//        quotes.getQuotes()
+//                .stream()
+//                .map(quote -> new Quote(quotes.getUsername(), quote))
+//                .forEach(quote -> quotesRepository.save(quote));
+//        return getQuotesByUserName(quotes.getUsername());
+//    }
 }
 
