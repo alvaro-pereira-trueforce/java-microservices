@@ -12,7 +12,7 @@ public class Linkedin extends ModelBase {
     @Column(name = "integration_name")
     private String integration_name;
 
-    @Column(name = "expired_in")
+    @Column(name = "expires_in")
     private int expires_in;
 
     @Column(name = "access_token")

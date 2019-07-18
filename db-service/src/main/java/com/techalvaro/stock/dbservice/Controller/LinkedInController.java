@@ -35,6 +35,7 @@ public class LinkedInController {
     public Linkedin updateAccount(@RequestBody Linkedin link){
         return linkedInService.updateInstagraAccoun(link);
     }
+
     @DeleteMapping("/linkedin/{id}")
     public Linkedin deleteAccountById(@PathVariable("id") final UUID id) {
         return linkedInService.deleteLinkedInAccountById(id);
