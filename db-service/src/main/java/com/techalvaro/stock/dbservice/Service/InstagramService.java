@@ -1,10 +1,10 @@
 package com.techalvaro.stock.dbservice.Service;
 
+import com.techalvaro.stock.dbservice.ExceptionHandler.WebExceptions.NotFoundException;
 import com.techalvaro.stock.dbservice.model.Instagram;
 import com.techalvaro.stock.dbservice.repository.InstagramRepository;
 import org.springframework.stereotype.Service;
 
-import javax.persistence.EntityNotFoundException;
 import java.util.List;
 import java.util.UUID;
 
@@ -21,11 +21,11 @@ public class InstagramService {
         return instagramRepository.findAll();
     }
 
-    public Instagram getInstagramAccountById(UUID id) {
-        return instagramRepository.findById(id).orElseThrow(EntityNotFoundException::new);
+    public Instagram getInstagramAccountById(UUID id) throws Exception {
+        return instagramRepository.findById(id).orElseThrow(() -> new NotFoundException("The instagram account doesn't exist."));
     }
 
-    public Instagram saveNewInstagramAccount(Instagram ins) {
+    public Instagram saveNewInstagramAccount(Instagram ins) throws Exception{
         instagramRepository.save(ins);
         return getInstagramAccountById(ins.getUuid());
     }
@@ -35,7 +35,7 @@ public class InstagramService {
         return "the account has been deleted successfully";
     }
 
-    public Instagram updateInstagraAccoun(Instagram ins) {
+    public Instagram updateInstagraAccoun(Instagram ins) throws Exception{
         Instagram instagram = getInstagramAccountById(ins.getUuid());
         instagram.setAccess_token(ins.getAccess_token());
         instagram.setExpires_in(ins.getExpires_in());
