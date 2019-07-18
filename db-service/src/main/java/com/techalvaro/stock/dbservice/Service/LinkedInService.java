@@ -29,9 +29,9 @@ public class LinkedInService {
         return getLinkedInAccountById(link.getUuid());
     }
 
-    public Linkedin deleteLinkedInAccountById(UUID uuid) {
+    public String deleteLinkedInAccountById(UUID uuid) {
         linkedinRepository.deleteById(uuid);
-        return getLinkedInAccountById(uuid);
+        return "the account has been deleted successfully";
     }
 
     public Linkedin updateInstagraAccoun(Linkedin ins) {

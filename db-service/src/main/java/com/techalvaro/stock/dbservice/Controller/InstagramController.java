@@ -25,7 +25,7 @@ public class InstagramController {
 
     @GetMapping("/instagram/{id}")
     public Instagram getAccountById(@PathVariable("id") final UUID uuid) {
-        return instagramService.deleteInstagramAccountById(uuid);
+        return instagramService.getInstagramAccountById(uuid);
     }
 
     @PostMapping("/instagram")
@@ -34,7 +34,7 @@ public class InstagramController {
     }
 
     @DeleteMapping("/instagram/{id}")
-    public Instagram deleteById(@PathVariable("id") final UUID uuid) {
+    public String deleteById(@PathVariable("id") final UUID uuid) {
         return instagramService.deleteInstagramAccountById(uuid);
     }
 
@@ -43,7 +43,7 @@ public class InstagramController {
         return instagramService.deleteAllAccounts();
     }
 
-    @PutMapping("/update")
+    @PutMapping("/instagram/update")
     public Instagram updateAccount(@RequestBody Instagram ins) {
         return instagramService.updateInstagraAccoun(ins);
     }

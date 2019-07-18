@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/res-api")
+@RequestMapping("/rest-api")
 public class LinkedInController {
 
     private LinkedInService linkedInService;
@@ -31,13 +31,14 @@ public class LinkedInController {
     public Linkedin saveAccount(@RequestBody Linkedin link) {
         return linkedInService.saveNewLinkedInAccount(link);
     }
+
     @PutMapping("/linkedin")
-    public Linkedin updateAccount(@RequestBody Linkedin link){
+    public Linkedin updateAccount(@RequestBody Linkedin link) {
         return linkedInService.updateInstagraAccoun(link);
     }
 
     @DeleteMapping("/linkedin/{id}")
-    public Linkedin deleteAccountById(@PathVariable("id") final UUID id) {
+    public String deleteAccountById(@PathVariable("id") final UUID id) {
         return linkedInService.deleteLinkedInAccountById(id);
     }
 

@@ -30,17 +30,17 @@ public class InstagramService {
         return getInstagramAccountById(ins.getUuid());
     }
 
-    public Instagram deleteInstagramAccountById(UUID id) {
+    public String deleteInstagramAccountById(UUID id) {
         instagramRepository.deleteById(id);
-        return getInstagramAccountById(id);
+        return "the account has been deleted successfully";
     }
 
     public Instagram updateInstagraAccoun(Instagram ins) {
-        Instagram instagrama = getInstagramAccountById(ins.getUuid());
-        instagrama.setAccess_token(ins.getAccess_token());
-        instagrama.setExpires_in(ins.getExpires_in());
-        instagrama.setIntegration_name(ins.getIntegration_name());
-        return saveNewInstagramAccount(instagrama);
+        Instagram instagram = getInstagramAccountById(ins.getUuid());
+        instagram.setAccess_token(ins.getAccess_token());
+        instagram.setExpires_in(ins.getExpires_in());
+        instagram.setIntegration_name(ins.getIntegration_name());
+        return saveNewInstagramAccount(instagram);
     }
 
     public String deleteAllAccounts() {
