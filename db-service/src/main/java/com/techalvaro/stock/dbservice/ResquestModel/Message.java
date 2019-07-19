@@ -1,11 +1,10 @@
-package com.techalvaro.stock.dbservice.ExceptionHandler.Models;
+package com.techalvaro.stock.dbservice.ResquestModel;
 
 public class Message {
     private String cause;
     private String message;
 
-    public Message(String cause, String message) {
-        this.cause = cause;
+    public Message(String message) {
         this.message = message;
     }
 
