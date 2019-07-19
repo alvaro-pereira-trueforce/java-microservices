@@ -1,5 +1,6 @@
 package com.techalvaro.stock.dbservice.model;
 
+import org.hibernate.annotations.GenericGenerator;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -14,8 +15,9 @@ import java.util.UUID;
 public class ModelBase {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(nullable = false, unique = true, name = "uuid")
+    @GeneratedValue(generator = "UUID")
+    @GenericGenerator(name = "UUID", strategy = "org.hibernate.id.UUIDGenerator")
+    @Column(nullable = false, updatable = false, unique = true, name = "uuid", columnDefinition = "BINARY(16)")
     private UUID uuid;
 
     @CreatedDate

@@ -5,13 +5,13 @@ import javax.persistence.Entity;
 import javax.persistence.Table;
 
 @Entity
-@Table(name = "intagram_integration")
+@Table(name = "instagram_integration")
 public class Instagram extends ModelBase {
 
     @Column(name = "integration_name")
     private String integration_name;
 
-    @Column(name = "expired_in")
+    @Column(name = "expires_in")
     private int expires_in;
 
     @Column(name = "access_token")
