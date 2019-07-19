@@ -18,31 +18,37 @@ public class LinkedInController {
     }
 
     @GetMapping("/linkedin")
+    @ResponseBody
     public List<Linkedin> getAllAccounts() {
         return linkedInService.getAllLinkedInAccount();
     }
 
     @GetMapping("/linkedin/{id}")
-    public Linkedin getAccountById(@PathVariable("id") final UUID uuid) {
+    @ResponseBody
+    public Linkedin getAccountById(@PathVariable("id") final UUID uuid) throws Exception {
         return linkedInService.getLinkedInAccountById(uuid);
     }
 
     @PostMapping("/linkedin")
-    public Linkedin saveAccount(@RequestBody Linkedin link) {
+    @ResponseBody
+    public Linkedin saveAccount(@RequestBody Linkedin link) throws Exception {
         return linkedInService.saveNewLinkedInAccount(link);
     }
 
     @PutMapping("/linkedin")
-    public Linkedin updateAccount(@RequestBody Linkedin link) {
+    @ResponseBody
+    public Linkedin updateAccount(@RequestBody Linkedin link) throws Exception {
         return linkedInService.updateInstagraAccoun(link);
     }
 
     @DeleteMapping("/linkedin/{id}")
+    @ResponseBody
     public String deleteAccountById(@PathVariable("id") final UUID id) {
         return linkedInService.deleteLinkedInAccountById(id);
     }
 
     @DeleteMapping("/linkedin/all")
+    @ResponseBody
     public String resetAccounts() {
         return linkedInService.deleteAllAccounts();
     }

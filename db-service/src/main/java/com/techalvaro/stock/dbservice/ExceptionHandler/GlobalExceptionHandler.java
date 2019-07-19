@@ -1,6 +1,7 @@
 package com.techalvaro.stock.dbservice.ExceptionHandler;
 
 import com.techalvaro.stock.dbservice.ExceptionHandler.Models.ErrorMessage;
+import com.techalvaro.stock.dbservice.ExceptionHandler.WebExceptions.BadRequestException;
 import com.techalvaro.stock.dbservice.ExceptionHandler.WebExceptions.NotFoundException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -15,14 +16,21 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     @ExceptionHandler({NotFoundException.class})
     @ResponseStatus(HttpStatus.NOT_FOUND)
     @ResponseBody
-    public ErrorMessage handleNotFoundException(NotFoundException ex){
+    public ErrorMessage handleNotFoundException(NotFoundException ex) {
         return new ErrorMessage(ex.getMessage(), HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler({BadRequestException.class})
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ResponseBody
+    public ErrorMessage handleBadResquestException(BadRequestException ex) {
+        return new ErrorMessage(ex.getMessage(), HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler({Exception.class})
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     @ResponseBody
-    public Object handleDefaultException(NotFoundException ex, HttpHeaders headers, WebRequest request){
+    public Object handleDefaultException(NotFoundException ex, HttpHeaders headers, WebRequest request) {
         return null;
     }
 

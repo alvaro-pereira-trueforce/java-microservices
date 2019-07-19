@@ -1,10 +1,10 @@
 package com.techalvaro.stock.dbservice.Service;
 
+import com.techalvaro.stock.dbservice.ExceptionHandler.WebExceptions.NotFoundException;
 import com.techalvaro.stock.dbservice.model.Linkedin;
 import com.techalvaro.stock.dbservice.repository.LinkedinRepository;
 import org.springframework.stereotype.Service;
 
-import javax.persistence.EntityNotFoundException;
 import java.util.List;
 import java.util.UUID;
 
@@ -20,11 +20,11 @@ public class LinkedInService {
         return linkedinRepository.findAll();
     }
 
-    public Linkedin getLinkedInAccountById(UUID uuid) {
-        return linkedinRepository.findById(uuid).orElseThrow(EntityNotFoundException::new);
+    public Linkedin getLinkedInAccountById(UUID uuid) throws Exception {
+        return linkedinRepository.findById(uuid).orElseThrow(() -> new NotFoundException("the Linkedin account doesn't  exist"));
     }
 
-    public Linkedin saveNewLinkedInAccount(Linkedin link) {
+    public Linkedin saveNewLinkedInAccount(Linkedin link) throws Exception {
         linkedinRepository.save(link);
         return getLinkedInAccountById(link.getUuid());
     }
@@ -34,7 +34,7 @@ public class LinkedInService {
         return "the account has been deleted successfully";
     }
 
-    public Linkedin updateInstagraAccoun(Linkedin ins) {
+    public Linkedin updateInstagraAccoun(Linkedin ins) throws Exception {
         Linkedin linkedin = getLinkedInAccountById(ins.getUuid());
         linkedin.setAccess_token(ins.getAccess_token());
         linkedin.setExpires_in(ins.getExpires_in());

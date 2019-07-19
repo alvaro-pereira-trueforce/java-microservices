@@ -22,7 +22,7 @@ public class InstagramService {
     }
 
     public Instagram getInstagramAccountById(UUID id) throws Exception {
-        return instagramRepository.findById(id).orElseThrow(() -> new NotFoundException("The instagram account doesn't exist."));
+        return instagramRepository.findById(id).orElseThrow(() -> new NotFoundException("The Instagram account doesn't exist."));
     }
 
     public Instagram saveNewInstagramAccount(Instagram ins) throws Exception{

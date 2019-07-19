@@ -2,8 +2,6 @@ package com.techalvaro.stock.dbservice.Controller;
 
 import com.techalvaro.stock.dbservice.Service.InstagramService;
 import com.techalvaro.stock.dbservice.model.Instagram;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -20,42 +18,39 @@ public class InstagramController {
     }
 
     @GetMapping("/instagram")
-    public ResponseEntity<List<Instagram>> getAllAccounts() {
-
-        List<Instagram> response = instagramService.getAllInstagramAccount();
-        return new ResponseEntity<>(response, HttpStatus.OK);
-
+    @ResponseBody
+    public List<Instagram> getAllAccounts() {
+        return instagramService.getAllInstagramAccount();
     }
 
     @GetMapping(value = "/instagram/{id}")
     @ResponseBody
     public Instagram getAccountById(@PathVariable("id") final UUID uuid) throws Exception {
-        Instagram response = instagramService.getInstagramAccountById(uuid);
-        return response;
+        return instagramService.getInstagramAccountById(uuid);
     }
 
     @PostMapping("/instagram")
-    public ResponseEntity<Instagram> saveAccount(@RequestBody Instagram ins)throws Exception {
-            Instagram response = instagramService.saveNewInstagramAccount(ins);
-            return new ResponseEntity<>(response, HttpStatus.CREATED);
+    @ResponseBody
+    public Instagram saveAccount(@RequestBody Instagram ins) throws Exception {
+        return instagramService.saveNewInstagramAccount(ins);
     }
 
 
     @DeleteMapping("/instagram/{id}")
-    public ResponseEntity<String> deleteById(@PathVariable("id") final UUID uuid) {
-            String response = instagramService.deleteInstagramAccountById(uuid);
-            return new ResponseEntity<>(response, HttpStatus.OK);
+    @ResponseBody
+    public String deleteById(@PathVariable("id") final UUID uuid) {
+        return instagramService.deleteInstagramAccountById(uuid);
     }
 
     @DeleteMapping("/instagram/all")
-    public ResponseEntity<String> resetAccounts() {
-            String response = instagramService.deleteAllAccounts();
-            return new ResponseEntity<>(response, HttpStatus.OK);
+    @ResponseBody
+    public String resetAccounts() {
+        return instagramService.deleteAllAccounts();
     }
 
     @PutMapping("/instagram/update")
-    public ResponseEntity<Instagram> updateAccount(@RequestBody Instagram ins) throws Exception{
-            Instagram response = instagramService.updateInstagraAccoun(ins);
-            return new ResponseEntity<>(response, HttpStatus.OK);
+    @ResponseBody
+    public Instagram updateAccount(@RequestBody Instagram ins) throws Exception {
+        return instagramService.updateInstagraAccoun(ins);
     }
 }
