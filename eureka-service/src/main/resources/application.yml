@@ -19,6 +19,9 @@ zuul:
     db-service:
       path: /db-service/**
       url: http://localhost:8300
-    stock-service:
-      path: /stock-service/**
+    instagram-service:
+      path: /instagram-service/**
       url: http://localhost:8301
+    instagram-Impl:
+      path: /instagram-Impl/**
+      url: http://localhost:8303
