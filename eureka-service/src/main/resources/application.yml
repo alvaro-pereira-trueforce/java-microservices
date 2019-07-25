@@ -25,3 +25,9 @@ zuul:
     instagram-Impl:
       path: /instagram-Impl/**
       url: http://localhost:8303
+    linkedin-service:
+      path: /linkedin-service/**
+      url: http://localhost:8304
+    linkedin-Impl:
+      path: /linkedin-Impl/**
+      url: http://localhost:8305
