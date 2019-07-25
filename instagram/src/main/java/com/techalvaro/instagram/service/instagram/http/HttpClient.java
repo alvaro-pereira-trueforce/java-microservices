@@ -35,12 +35,12 @@ public class HttpClient {
         return response.getBody();
     }
 
-    public <T> T makePostRequest(String URL, Object body, Class<T> responseType) throws Exception {
+    public <T> T makePostRequest(String URL, Class<T> responseType) throws Exception {
 
         ResponseEntity<T> response = httpTemplate.exchange(
                 URL,
                 HttpMethod.POST,
-                new HttpEntity<>(body, httpHeaders),
+                new HttpEntity<>(httpHeaders),
                 responseType
         );
         return response.getBody();
