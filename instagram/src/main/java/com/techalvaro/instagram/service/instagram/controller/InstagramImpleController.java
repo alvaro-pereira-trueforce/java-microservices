@@ -29,9 +29,9 @@ public class InstagramImpleController {
         return instagramImplService.getPageAccessToken(pageID);
     }
 
-    @GetMapping("/posts/{pageId}")
-    public Object getPosts(@PathVariable("pageId") final String pageID) throws Exception {
-        return instagramImplService.getPosts(pageID);
+    @GetMapping("/posts/{pageId}/token/{token}")
+    public Object getPosts(@PathVariable("pageId") final String pageID, @PathVariable("token") final String token) throws Exception {
+        return instagramImplService.getPosts(pageID, token);
     }
 
     @GetMapping("/comments/{pageID}")
@@ -44,9 +44,9 @@ public class InstagramImpleController {
         return instagramImplService.postComment(pageId, body);
     }
 
-    @GetMapping("/media/{id}")
-    public Object getInstagramMediaByID(@PathVariable("id") final String id) throws Exception {
-        return instagramImplService.getInstagramMediaByID(id);
+    @GetMapping("/media/{id}/token/{token}")
+    public Object getInstagramMediaByID(@PathVariable("id") final String id, @PathVariable("token") final String token) throws Exception {
+        return instagramImplService.getInstagramMediaByID(id, token);
     }
 
     @GetMapping("/media/comment/{id}")

@@ -17,17 +17,17 @@ public class InstagramController {
 
     @GetMapping("")
     public List<InstagramAccount> getAll() throws Exception {
-        return instagramService.getAllAccounts();
+        return instagramService.getAccounts();
     }
 
     @GetMapping("/{id}")
     public Object getById(@PathVariable("id") @NotNull final UUID id) throws Exception {
-        return instagramService.getById(id);
+        return instagramService.getAccountById(id);
     }
 
-    @GetMapping("/all")
-    public Object getAllPost() throws Exception {
-        return instagramService.getPosts();
+    @GetMapping("/all/{id}")
+    public Object getPosts(@PathVariable("id") @NotNull final UUID id) throws Exception {
+        return instagramService.getPosts(id);
     }
 
 }

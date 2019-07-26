@@ -29,8 +29,8 @@ public class InstagramImplService implements InstagramImplRepository {
     }
 
 
-    public <T> T getPosts(String pageID) throws Exception {
-        return api.getPosts(pageID);
+    public <T> T getPosts(String pageID, String token) throws Exception {
+        return api.getPosts(pageID, token);
     }
 
 
@@ -44,8 +44,8 @@ public class InstagramImplService implements InstagramImplRepository {
     }
 
 
-    public <T> T getInstagramMediaByID(String mediaID) throws Exception {
-        return api.getInstagramMediaByID(mediaID);
+    public <T> T getInstagramMediaByID(String mediaID, String token) throws Exception {
+        return api.getInstagramMediaByID(mediaID, token);
     }
 
 

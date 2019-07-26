@@ -11,13 +11,13 @@ public interface InstagramImplRepository {
 
     <T> T getPageAccessToken(String pageID) throws Exception;
 
-    <T> T getPosts(String pageID) throws Exception;
+    <T> T getPosts(String pageID, String token) throws Exception;
 
     <T> T getComments(String postID) throws Exception;
 
     <T> T postComment(String postID, String body) throws Exception;
 
-    <T> T getInstagramMediaByID(String mediaID) throws Exception;
+    <T> T getInstagramMediaByID(String mediaID, String token) throws Exception;
 
     <T> T getInstagramCommentByID(String commentId) throws Exception;
 
