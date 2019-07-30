@@ -1,8 +1,8 @@
-package com.techalvaro.stock.dbservice.Controller;
+package com.techalvaro.stock.dbservice.controller;
 
-import com.techalvaro.stock.dbservice.ResquestModel.CustomizeMessage;
-import com.techalvaro.stock.dbservice.Service.GenericService;
-import com.techalvaro.stock.dbservice.Utilities.PropertyAccesor;
+import com.techalvaro.stock.dbservice.messages.CustomizeMessage;
+import com.techalvaro.stock.dbservice.service.GenericService;
+import com.techalvaro.stock.dbservice.utilities.PropertyAccesor;
 import com.techalvaro.stock.dbservice.model.ModelBase;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;

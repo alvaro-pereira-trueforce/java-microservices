@@ -32,6 +32,7 @@ public class HttpClient {
                 new HttpEntity<>(httpHeaders),
                 responseType
         );
+        System.out.println(response.getHeaders());
         return response.getBody();
     }
 

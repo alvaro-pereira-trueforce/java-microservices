@@ -1,11 +1,9 @@
 package com.techalvaro.instagram.service.instagram.controller;
 
+import com.techalvaro.instagram.service.instagram.dto.Account;
 import com.techalvaro.instagram.service.instagram.services.InstagramImplService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/rest")
@@ -14,49 +12,58 @@ public class InstagramImpleController {
     @Autowired
     InstagramImplService instagramImplService;
 
-    @GetMapping("/users/{id}")
-    public Object getUser(@PathVariable("id") final String id) throws Exception {
-        return instagramImplService.getUser(id);
+    @PostMapping(value = "/users")
+    @ResponseBody
+    public Object getUser(@RequestBody final Account a) throws Exception {
+        return instagramImplService.getUser(a.getCompany_id(), a.getAccess_token());
     }
 
-    @GetMapping("/page/{pageID}")
-    public Object getPageInstagram(@PathVariable("pageID") final String pageID) throws Exception {
-        return instagramImplService.getPageInstagram(pageID);
+    @PostMapping(value = "/page")
+    @ResponseBody
+    public Object getPageInstagram(@RequestBody final Account a) throws Exception {
+        return instagramImplService.getPageInstagram(a.getCompany_id(), a.getAccess_token());
     }
 
-    @GetMapping("/page/access/{pageID}")
-    public Object getPageAccessToken(@PathVariable("pageID") final String pageID) throws Exception {
-        return instagramImplService.getPageAccessToken(pageID);
+    @PostMapping(value = "/token")
+    @ResponseBody
+    public Object getPageAccessToken(@RequestBody final Account a) throws Exception {
+        return instagramImplService.getPageAccessToken(a.getCompany_id());
     }
 
-    @GetMapping("/posts/{pageId}/token/{token}")
-    public Object getPosts(@PathVariable("pageId") final String pageID, @PathVariable("token") final String token) throws Exception {
-        return instagramImplService.getPosts(pageID, token);
+    @PostMapping(value = "/posts")
+    @ResponseBody
+    public Object getPosts(@RequestBody final Account a) throws Exception {
+        return instagramImplService.getPosts(a.getCompany_id(), a.getAccess_token());
     }
 
-    @GetMapping("/comments/{pageID}")
-    public Object getComments(@PathVariable("pageID") final String pageID) throws Exception {
-        return instagramImplService.getComments(pageID);
+    @PostMapping(value = "/comments")
+    @ResponseBody
+    public Object getComments(@RequestBody final Account a) throws Exception {
+        return instagramImplService.getComments(a.getCompany_id(), a.getAccess_token());
     }
 
-    @GetMapping("/post/comment/{pageId}/body/{body}")
-    public Object postComment(@PathVariable("pageId") final String pageId, @PathVariable("body") final String body) throws Exception {
-        return instagramImplService.postComment(pageId, body);
+    @PostMapping(value = "/create/{pageId}")
+    @ResponseBody
+    public Object postComment(@RequestBody final Account a, @PathVariable("pageId") final String pageId) throws Exception {
+        return instagramImplService.postComment(pageId, a.getCompany_id(), a.getAccess_token());
     }
 
-    @GetMapping("/media/{id}/token/{token}")
-    public Object getInstagramMediaByID(@PathVariable("id") final String id, @PathVariable("token") final String token) throws Exception {
-        return instagramImplService.getInstagramMediaByID(id, token);
+    @PostMapping(value = "/media")
+    @ResponseBody
+    public Object getInstagramMediaByID(@RequestBody final Account a) throws Exception {
+        return instagramImplService.getInstagramMediaByID(a.getCompany_id(), a.getAccess_token());
     }
 
-    @GetMapping("/media/comment/{id}")
-    public Object getInstagramCommentByID(@PathVariable("id") final String id) throws Exception {
-        return instagramImplService.getInstagramCommentByID(id);
+    @PostMapping(value = "/media/comments")
+    @ResponseBody
+    public Object getInstagramCommentByID(@RequestBody final Account a) throws Exception {
+        return instagramImplService.getInstagramCommentByID(a.getCompany_id(), a.getAccess_token());
     }
 
-    @GetMapping("/media/reply/{id}")
-    public Object getMediaWithCommentsAndReplies(@PathVariable("id") final String id) throws Exception {
-        return instagramImplService.getMediaWithCommentsAndReplies(id);
+    @PostMapping(value = "/media/reply")
+    @ResponseBody
+    public Object getMediaWithCommentsAndReplies(@RequestBody final Account a) throws Exception {
+        return instagramImplService.getMediaWithCommentsAndReplies(a.getCompany_id(), a.getAccess_token());
     }
 
 }

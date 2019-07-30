@@ -1,4 +1,4 @@
-package com.techalvaro.stock.dbservice.ResquestModel;
+package com.techalvaro.stock.dbservice.messages;
 
 public class Message {
     private String cause;

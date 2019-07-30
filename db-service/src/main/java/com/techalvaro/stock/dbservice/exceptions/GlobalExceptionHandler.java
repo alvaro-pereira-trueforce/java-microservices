@@ -1,8 +1,8 @@
-package com.techalvaro.stock.dbservice.ExceptionHandler;
+package com.techalvaro.stock.dbservice.exceptions;
 
-import com.techalvaro.stock.dbservice.ResquestModel.CustomizeMessage;
-import com.techalvaro.stock.dbservice.ExceptionHandler.WebExceptions.BadRequestException;
-import com.techalvaro.stock.dbservice.ExceptionHandler.WebExceptions.NotFoundException;
+import com.techalvaro.stock.dbservice.messages.CustomizeMessage;
+import com.techalvaro.stock.dbservice.exceptions.webExceptions.BadRequestException;
+import com.techalvaro.stock.dbservice.exceptions.webExceptions.NotFoundException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

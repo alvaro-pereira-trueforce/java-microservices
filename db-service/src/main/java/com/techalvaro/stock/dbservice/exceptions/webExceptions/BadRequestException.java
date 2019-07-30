@@ -1,4 +1,4 @@
-package com.techalvaro.stock.dbservice.ExceptionHandler.WebExceptions;
+package com.techalvaro.stock.dbservice.exceptions.webExceptions;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;

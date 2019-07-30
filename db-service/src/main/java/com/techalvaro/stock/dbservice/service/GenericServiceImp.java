@@ -1,7 +1,7 @@
-package com.techalvaro.stock.dbservice.Service;
+package com.techalvaro.stock.dbservice.service;
 
-import com.techalvaro.stock.dbservice.ExceptionHandler.WebExceptions.NotFoundException;
-import com.techalvaro.stock.dbservice.Utilities.PropertyAccesor;
+import com.techalvaro.stock.dbservice.exceptions.webExceptions.NotFoundException;
+import com.techalvaro.stock.dbservice.utilities.PropertyAccesor;
 import com.techalvaro.stock.dbservice.model.ModelBase;
 import com.techalvaro.stock.dbservice.repository.GenericRepository;
 import org.slf4j.Logger;

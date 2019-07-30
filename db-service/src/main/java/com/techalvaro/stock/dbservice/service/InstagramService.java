@@ -1,4 +1,4 @@
-package com.techalvaro.stock.dbservice.Service;
+package com.techalvaro.stock.dbservice.service;
 
 import com.techalvaro.stock.dbservice.model.Instagram;
 

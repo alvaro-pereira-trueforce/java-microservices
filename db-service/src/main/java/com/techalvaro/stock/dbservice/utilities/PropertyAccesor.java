@@ -1,4 +1,4 @@
-package com.techalvaro.stock.dbservice.Utilities;
+package com.techalvaro.stock.dbservice.utilities;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;

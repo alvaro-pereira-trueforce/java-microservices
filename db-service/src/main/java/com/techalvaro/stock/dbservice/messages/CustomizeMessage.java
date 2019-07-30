@@ -1,4 +1,4 @@
-package com.techalvaro.stock.dbservice.ResquestModel;
+package com.techalvaro.stock.dbservice.messages;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;

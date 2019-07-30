@@ -1,7 +1,7 @@
-package com.techalvaro.stock.dbservice.Controller;
+package com.techalvaro.stock.dbservice.controller;
 
-import com.techalvaro.stock.dbservice.Service.GenericService;
-import com.techalvaro.stock.dbservice.Service.LinkedInService;
+import com.techalvaro.stock.dbservice.service.GenericService;
+import com.techalvaro.stock.dbservice.service.LinkedInService;
 import com.techalvaro.stock.dbservice.model.Linkedin;
 import org.springframework.web.bind.annotation.*;
 

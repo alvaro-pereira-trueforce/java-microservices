@@ -11,9 +11,9 @@ public class StringUtility {
     public static <T> T filterByParameter(Map<T, T> mapping, String value) throws Exception {
         Map<T, T> result = mapping.entrySet()
                 .stream()
-                .filter(map -> map.getKey().equals(value))
-                .collect(Collectors.toMap(map -> map.getKey(), map -> map.getValue()));
-        return (T) result;
+                .filter(token -> token.getKey().equals(value))
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+        return (T) result.get(value).toString();
     }
 
     public static String listAsString(List<String> list) {
