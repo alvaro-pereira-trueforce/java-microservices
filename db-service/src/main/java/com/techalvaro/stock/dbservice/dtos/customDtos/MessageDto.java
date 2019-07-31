@@ -1,10 +1,10 @@
-package com.techalvaro.stock.dbservice.messages;
+package com.techalvaro.stock.dbservice.dtos.customDtos;
 
-public class Message {
+public class MessageDto {
     private String cause;
     private String message;
 
-    public Message(String message) {
+    public MessageDto(String message) {
         this.message = message;
     }
 

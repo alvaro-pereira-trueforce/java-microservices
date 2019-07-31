@@ -1,45 +1,15 @@
-package com.techalvaro.stock.dbservice.model;
+package com.techalvaro.stock.dbservice.dtos;
 
+import com.techalvaro.stock.dbservice.model.Linkedin;
+import org.modelmapper.ModelMapper;
 
-import javax.persistence.*;
-import javax.validation.constraints.NotNull;
+public class LinkedinDto extends BaseDto<Linkedin> {
 
-@Entity
-@Table(name = "linkedin_integration")
-public class Linkedin extends ModelBase {
-
-    @NotNull
-    @Column(name = "integration_name")
     private String integration_name;
-
-    @NotNull
-    @Column(name = "expires_in")
     private Long expires_in;
-
-    @NotNull
-    @Column(name = "access_token", length = 500)
     private String access_token;
-
-    @NotNull
-    @Column(name = "subdomain")
     private String subdomain;
-
-    @NotNull
-    @Column(name = "company_id")
     private String company_id;
-
-
-    public Linkedin() {
-    }
-
-    public Linkedin(@NotNull String integration_name, @NotNull Long expires_in, @NotNull String access_token, @NotNull String subdomain, @NotNull String company_id) {
-        this.integration_name = integration_name;
-        this.expires_in = expires_in;
-        this.access_token = access_token;
-        this.subdomain = subdomain;
-        this.company_id = company_id;
-    }
-
 
     public String getIntegration_name() {
         return integration_name;
@@ -79,5 +49,16 @@ public class Linkedin extends ModelBase {
 
     public void setCompany_id(String company_id) {
         this.company_id = company_id;
+    }
+
+    @Override
+    public LinkedinDto toDto(Linkedin item, ModelMapper mapper) {
+        super.toDto(item, mapper);
+        setIntegration_name(item.getIntegration_name());
+        setExpires_in(item.getExpires_in());
+        setAccess_token(item.getAccess_token());
+        setSubdomain(item.getSubdomain());
+        setCompany_id(item.getCompany_id());
+        return this;
     }
 }

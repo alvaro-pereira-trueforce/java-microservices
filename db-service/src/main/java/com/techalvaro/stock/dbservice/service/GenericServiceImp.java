@@ -13,7 +13,6 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 
 @Service
 @SuppressWarnings("rawtypes")
@@ -27,7 +26,7 @@ public abstract class GenericServiceImp<T extends ModelBase> implements GenericS
     }
 
     @Override
-    public T findById(UUID id) {
+    public T findById(String id) {
         final Optional<T> optional = getRepository().findById(id);
         if (!optional.isPresent()) {
             throw new NotFoundException(PropertyAccesor.getInstance().getNotFoundExceptionMessage());
@@ -49,11 +48,11 @@ public abstract class GenericServiceImp<T extends ModelBase> implements GenericS
     }
 
     @Override
-    public T deleteById(UUID id) {
+    public T deleteById(String id) {
         try {
-            getRepository().deleteById(id);
+            getRepository().deleteById((id));
         } catch (Exception ex) {
-            logger.error("Error reading file", ex);
+            logger.error("Error deleting record", ex);
             throw new NotFoundException(PropertyAccesor.getInstance().getNotFoundExceptionMessage());
         }
         return null;

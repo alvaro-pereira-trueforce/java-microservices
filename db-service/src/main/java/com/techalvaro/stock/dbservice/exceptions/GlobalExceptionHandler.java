@@ -1,6 +1,6 @@
 package com.techalvaro.stock.dbservice.exceptions;
 
-import com.techalvaro.stock.dbservice.messages.CustomizeMessage;
+import com.techalvaro.stock.dbservice.dtos.customDtos.ResponseDto;
 import com.techalvaro.stock.dbservice.exceptions.webExceptions.BadRequestException;
 import com.techalvaro.stock.dbservice.exceptions.webExceptions.NotFoundException;
 import org.springframework.http.HttpHeaders;
@@ -16,15 +16,15 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     @ExceptionHandler({NotFoundException.class})
     @ResponseStatus(HttpStatus.NOT_FOUND)
     @ResponseBody
-    public CustomizeMessage handleNotFoundException(NotFoundException ex) {
-        return new CustomizeMessage(ex.getMessage(), HttpStatus.NOT_FOUND, 404);
+    public ResponseDto handleNotFoundException(NotFoundException ex) {
+        return new ResponseDto(ex.getMessage(), HttpStatus.NOT_FOUND, 404);
     }
 
     @ExceptionHandler({BadRequestException.class})
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ResponseBody
-    public CustomizeMessage handleBadResquestException(BadRequestException ex) {
-        return new CustomizeMessage(ex.getMessage(), HttpStatus.BAD_REQUEST, 400);
+    public ResponseDto handleBadResquestException(BadRequestException ex) {
+        return new ResponseDto(ex.getMessage(), HttpStatus.BAD_REQUEST, 400);
     }
 
     @ExceptionHandler({Exception.class})

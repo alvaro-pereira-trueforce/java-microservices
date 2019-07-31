@@ -10,7 +10,7 @@ import java.util.stream.Collectors;
 @SuppressWarnings("rawtypes")
 public class BaseDto<E extends ModelBase> {
 
-    private UUID uuid;
+    private String uuid;
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX")
     private Date created_at;
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX")
@@ -51,11 +51,11 @@ public class BaseDto<E extends ModelBase> {
         }).sorted(Comparator.comparing(BaseDto::getUuid)).collect(Collectors.toList());
     }
 
-    public UUID getUuid() {
+    public String getUuid() {
         return uuid;
     }
 
-    public void setUuid(UUID uuid) {
+    public void setUuid(String uuid) {
         this.uuid = uuid;
     }
 

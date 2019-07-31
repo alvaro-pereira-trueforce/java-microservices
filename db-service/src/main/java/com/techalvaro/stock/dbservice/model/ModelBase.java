@@ -1,24 +1,25 @@
 package com.techalvaro.stock.dbservice.model;
 
+import com.techalvaro.stock.dbservice.dtos.BaseDto;
 import org.hibernate.annotations.GenericGenerator;
+import org.modelmapper.ModelMapper;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import javax.persistence.*;
 import java.util.Date;
-import java.util.UUID;
 
 @MappedSuperclass
 @EntityListeners(AuditingEntityListener.class)
 @SuppressWarnings("rawtypes")
-public class ModelBase {
+public class ModelBase<D extends BaseDto> {
 
     @Id
-    @GeneratedValue(generator = "UUID")
-    @GenericGenerator(name = "UUID", strategy = "org.hibernate.id.UUIDGenerator")
-    @Column(nullable = false, updatable = false, unique = true, name = "uuid", columnDefinition = "BINARY(16)")
-    private UUID uuid;
+    @GeneratedValue(generator = "system-uuid")
+    @GenericGenerator(name = "system-uuid", strategy = "uuid")
+    @Column(name = "uuid", unique = true)
+    private String uuid;
 
     @CreatedDate
     @Temporal(TemporalType.TIMESTAMP)
@@ -31,11 +32,11 @@ public class ModelBase {
     private Date updated_at;
 
 
-    public UUID getUuid() {
+    public String getUuid() {
         return uuid;
     }
 
-    public void setUuid(UUID uuid) {
+    public void setUuid(String uuid) {
         this.uuid = uuid;
     }
 
@@ -53,6 +54,11 @@ public class ModelBase {
 
     public void setUpdated_at(Date updated_at) {
         this.updated_at = updated_at;
+    }
+
+    public ModelBase toDomain(D element, ModelMapper mapper) {
+        mapper.map(element, this);
+        return this;
     }
 }
 

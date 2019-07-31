@@ -1,32 +1,39 @@
 package com.techalvaro.stock.dbservice.model;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Table;
+import javax.persistence.*;
+import javax.validation.constraints.NotNull;
 
 @Entity
 @Table(name = "instagram_integration")
 public class Instagram extends ModelBase {
-
+    @NotNull
     @Column(name = "integration_name")
     private String integration_name;
 
+    @NotNull
     @Column(name = "expires_in")
     private Long expires_in;
 
-    @Column(name = "access_token")
+    @NotNull
+    @Column(name = "access_token", length = 500)
     private String access_token;
 
+    @NotNull
+    @Column(name = "subdomain")
+    private String subdomain;
+
+    @NotNull
     @Column(name = "company_id")
     private String company_id;
 
     public Instagram() {
     }
 
-    public Instagram(String integration_name, Long expires_in, String access_token, String company_id) {
+    public Instagram(@NotNull String integration_name, @NotNull Long expires_in, @NotNull String access_token, @NotNull String subdomain, @NotNull String company_id) {
         this.integration_name = integration_name;
         this.expires_in = expires_in;
         this.access_token = access_token;
+        this.subdomain = subdomain;
         this.company_id = company_id;
     }
 
@@ -54,6 +61,14 @@ public class Instagram extends ModelBase {
         this.access_token = access_token;
     }
 
+    public String getSubdomain() {
+        return subdomain;
+    }
+
+    public void setSubdomain(String subdomain) {
+        this.subdomain = subdomain;
+    }
+
     public String getCompany_id() {
         return company_id;
     }
@@ -61,4 +76,5 @@ public class Instagram extends ModelBase {
     public void setCompany_id(String company_id) {
         this.company_id = company_id;
     }
+
 }
