@@ -1,11 +1,11 @@
 package com.techalvaro.stock.stockservice.services;
 
 import com.techalvaro.stock.stockservice.api.DBApi;
-import com.techalvaro.stock.stockservice.dto.Account;
+import com.techalvaro.stock.stockservice.dto.CredentialsDto;
 import com.techalvaro.stock.stockservice.utils.StringUtility;
+import org.json.JSONObject;
 
 import java.util.Map;
-import java.util.UUID;
 
 abstract class BaseService {
 
@@ -15,8 +15,8 @@ abstract class BaseService {
         this.dbApi = dbApi;
     }
 
-    protected  <T> T getInstagramCredencials(UUID id) throws Exception {
-        Account a = new Account();
+    protected <T> T getIngramCredentials(String id) throws Exception {
+        CredentialsDto a = new CredentialsDto();
         Map<T, T> dbInstance;
         dbInstance = dbApi.getById(id);
         a.setAccess_token((String) StringUtility.filterByParameter(dbInstance, "access_token"));
@@ -24,4 +24,7 @@ abstract class BaseService {
         return (T) a;
     }
 
+    protected JSONObject parseEntity(String s) {
+        return new JSONObject(s);
+    }
 }

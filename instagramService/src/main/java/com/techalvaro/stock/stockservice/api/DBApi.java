@@ -4,12 +4,13 @@ import com.techalvaro.stock.stockservice.http.HttpClient;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import java.util.UUID;
-
 @Component
 public class DBApi {
-    @Value("${api.persistence.service}")
-    private String persistence;
+    @Value("${api.persistence.instagram}")
+    private String accountPersistence;
+
+    @Value("${api.persistence.settings}")
+    private String settingPersistence;
 
     private final HttpClient httpClient;
 
@@ -18,15 +19,19 @@ public class DBApi {
     }
 
     public <T> T getAccounts() throws Exception {
-        return (T) httpClient.makeGetRequest(persistence, Object.class);
+        return (T) httpClient.makeGetRequest(accountPersistence, Object.class);
     }
 
-    public <T> T getById(UUID id) throws Exception {
-        return (T) httpClient.makeGetRequest(persistence + "/" + id, Object.class);
+    public <T> T getById(String id) throws Exception {
+        return (T) httpClient.makeGetRequest(accountPersistence + "/" + id, Object.class);
     }
 
-    public <T> T saveAccount(T element) throws Exception {
-        return (T) httpClient.makePostRequest(persistence, element, Object.class);
+    public <T> T saveAccount(T body) throws Exception {
+        return (T) httpClient.makePostRequest(accountPersistence, body, Object.class);
+    }
+
+    public <T> T saveSettings(T body) throws Exception {
+        return (T) httpClient.makePostRequest(settingPersistence, body, Object.class);
     }
 
 }

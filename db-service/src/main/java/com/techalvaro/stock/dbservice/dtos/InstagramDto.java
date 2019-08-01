@@ -11,6 +11,10 @@ public class InstagramDto extends BaseDto<Instagram> {
     private String subdomain;
     private String company_id;
 
+    public String getIntegration_name() {
+        return integration_name;
+    }
+
     public void setIntegration_name(String integration_name) {
         this.integration_name = integration_name;
     }
@@ -55,7 +59,6 @@ public class InstagramDto extends BaseDto<Instagram> {
         setAccess_token(element.getAccess_token());
         setSubdomain(element.getSubdomain());
         setCompany_id(element.getCompany_id());
-
         return this;
     }
 }

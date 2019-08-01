@@ -10,7 +10,11 @@ public class Settings extends ModelBase {
 
     @NotNull
     @Column(name = "ticket_tag")
-    private String ticket_tag;
+    private String[] ticket_tag;
+
+    @NotNull
+    @Column(name = "channel_uuid")
+    private String channel_uuid;
 
     @NotNull
     @Column(name = "ticket_priority")
@@ -29,12 +33,28 @@ public class Settings extends ModelBase {
     public Settings() {
     }
 
-    public String getTicket_tag() {
+    public Settings(@NotNull String[] ticket_tag, @NotNull String channel_uuid, @NotNull String ticket_priority, @NotNull String ticket_type, @NotNull @Email String email) {
+        this.ticket_tag = ticket_tag;
+        this.channel_uuid = channel_uuid;
+        this.ticket_priority = ticket_priority;
+        this.ticket_type = ticket_type;
+        this.email = email;
+    }
+
+    public String[] getTicket_tag() {
         return ticket_tag;
     }
 
-    public void setTicket_tag(String ticket_tag) {
+    public void setTicket_tag(String[] ticket_tag) {
         this.ticket_tag = ticket_tag;
+    }
+
+    public String getChannel_uuid() {
+        return channel_uuid;
+    }
+
+    public void setChannel_uuid(String channel_uuid) {
+        this.channel_uuid = channel_uuid;
     }
 
     public String getTicket_priority() {

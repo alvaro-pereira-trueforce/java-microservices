@@ -1,12 +1,13 @@
 package com.techalvaro.stock.dbservice.dtos;
 
 import com.techalvaro.stock.dbservice.model.Settings;
+import org.modelmapper.ModelMapper;
 
 public class SettingsDto extends BaseDto<Settings> {
 
     private String channel_uuid;
-    private String tag;
-    private String priority;
+    private String[] ticket_tag;
+    private String ticket_priority;
     private String ticket_type;
     private String email;
 
@@ -18,20 +19,20 @@ public class SettingsDto extends BaseDto<Settings> {
         this.channel_uuid = channel_uuid;
     }
 
-    public String getTag() {
-        return tag;
+    public String[] getTicket_tag() {
+        return ticket_tag;
     }
 
-    public void setTag(String tag) {
-        this.tag = tag;
+    public void setTicket_tag(String[] ticket_tag) {
+        this.ticket_tag = ticket_tag;
     }
 
-    public String getPriority() {
-        return priority;
+    public String getTicket_priority() {
+        return ticket_priority;
     }
 
-    public void setPriority(String priority) {
-        this.priority = priority;
+    public void setTicket_priority(String ticket_priority) {
+        this.ticket_priority = ticket_priority;
     }
 
     public String getTicket_type() {
@@ -50,4 +51,14 @@ public class SettingsDto extends BaseDto<Settings> {
         this.email = email;
     }
 
+    @Override
+    public SettingsDto toDto(Settings item, ModelMapper mapper) {
+        super.toDto(item, mapper);
+        setChannel_uuid(item.getChannel_uuid());
+        setTicket_tag(item.getTicket_tag());
+        setTicket_priority(item.getTicket_priority());
+        setTicket_type(item.getTicket_type());
+        setEmail(item.getEmail());
+        return this;
+    }
 }

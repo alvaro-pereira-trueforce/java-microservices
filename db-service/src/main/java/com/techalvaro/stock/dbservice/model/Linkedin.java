@@ -1,6 +1,5 @@
 package com.techalvaro.stock.dbservice.model;
 
-
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 

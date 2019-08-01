@@ -1,8 +1,7 @@
 package com.techalvaro.stock.stockservice.controller;
 
-import com.techalvaro.stock.stockservice.dto.Account;
 import com.techalvaro.stock.stockservice.services.InstagramService;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.techalvaro.stock.stockservice.services.PersistenceService;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.constraints.NotNull;
@@ -10,26 +9,37 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/rest")
+@RequestMapping("/api")
 public class InstagramController {
-    @Autowired
-    InstagramService instagramService;
+    private final InstagramService instagramService;
+    private final PersistenceService persistenceService;
 
-    @GetMapping("")
+    public InstagramController(InstagramService instagramService, PersistenceService persistenceService) {
+        this.instagramService = instagramService;
+        this.persistenceService = persistenceService;
+    }
+
+    @GetMapping
     @ResponseBody
-    public List<Account> getAll() throws Exception {
-        return instagramService.getAccounts();
+    public List<Object> getAll() throws Exception {
+        return persistenceService.getAccounts();
+    }
+
+    @PostMapping
+    @ResponseBody
+    public Object save(@RequestBody String body) throws Exception {
+        return persistenceService.saveNewAccount(body);
     }
 
     @GetMapping("/{id}")
     @ResponseBody
-    public Object getById(@PathVariable("id") @NotNull final UUID id) throws Exception {
-        return instagramService.getAccountById(id);
+    public Object getById(@PathVariable("id") @NotNull final String id) throws Exception {
+        return persistenceService.getAccountById(id);
     }
 
     @GetMapping("/instagram/{id}")
     @ResponseBody
-    public Object getPosts(@PathVariable("id") @NotNull final UUID id) throws Exception {
+    public Object getPosts(@PathVariable("id") @NotNull final String id) throws Exception {
         return instagramService.getPosts(id);
     }
 

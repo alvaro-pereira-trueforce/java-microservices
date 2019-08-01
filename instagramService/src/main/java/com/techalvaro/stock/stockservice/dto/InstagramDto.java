@@ -1,41 +1,24 @@
-package com.techalvaro.stock.dbservice.model;
+package com.techalvaro.stock.stockservice.dto;
 
-import javax.persistence.*;
-import javax.validation.constraints.NotNull;
+public class InstagramDto {
 
-@Entity
-@Table(name = "instagram_integration")
-public class Instagram extends ModelBase {
-
-    @NotNull
-    @Column(name = "integration_name")
     private String integration_name;
-
-    @NotNull
-    @Column(name = "expires_in")
     private Long expires_in;
-
-    @NotNull
-    @Column(name = "access_token", length = 500)
     private String access_token;
-
-    @NotNull
-    @Column(name = "subdomain")
     private String subdomain;
-
-    @NotNull
-    @Column(name = "company_id")
     private String company_id;
 
-    public Instagram() {
-    }
 
-    public Instagram(@NotNull String integration_name, @NotNull Long expires_in, @NotNull String access_token, @NotNull String subdomain, @NotNull String company_id) {
+    public InstagramDto(String integration_name, Long expires_in, String access_token, String subdomain, String company_id) {
         this.integration_name = integration_name;
         this.expires_in = expires_in;
         this.access_token = access_token;
         this.subdomain = subdomain;
         this.company_id = company_id;
+    }
+
+    public InstagramDto() {
+
     }
 
     public String getIntegration_name() {
@@ -77,5 +60,4 @@ public class Instagram extends ModelBase {
     public void setCompany_id(String company_id) {
         this.company_id = company_id;
     }
-
 }

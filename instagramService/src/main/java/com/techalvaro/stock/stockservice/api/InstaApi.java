@@ -1,6 +1,6 @@
 package com.techalvaro.stock.stockservice.api;
 
-import com.techalvaro.stock.stockservice.dto.Account;
+import com.techalvaro.stock.stockservice.dto.InstagramDto;
 import com.techalvaro.stock.stockservice.http.HttpClient;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -17,7 +17,7 @@ public class InstaApi {
         this.httpClient = httpClient;
     }
 
-    public <T> T getPosts(Account body) throws Exception {
+    public <T> T getPosts(InstagramDto body) throws Exception {
         String URL = instagram;
         return (T) httpClient.makePostRequest(URL, body, Object.class);
     }
