@@ -9,7 +9,6 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 
 @Service
@@ -27,7 +26,6 @@ public class PersistenceService extends BaseService implements PersistenceReposi
         return dbApi.getById(id);
     }
 
-    @Transactional(rollbackFor = RuntimeException.class)
     public <T> T saveNewAccount(String body) throws Exception {
         JSONObject obj = parseEntity(body);
         InstagramDto i = new InstagramDto();
