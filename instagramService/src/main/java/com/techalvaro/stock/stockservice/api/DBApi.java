@@ -22,7 +22,11 @@ public class DBApi {
         return (T) httpClient.makeGetRequest(accountPersistence, Object.class);
     }
 
-    public <T> T getById(String id) throws Exception {
+    public <T> T getSettings(String id) throws Exception {
+        return (T) httpClient.makeGetRequest(settingPersistence+ "/company/" + id, Object.class);
+    }
+
+    public <T> T getById(String id)  {
         return (T) httpClient.makeGetRequest(accountPersistence + "/" + id, Object.class);
     }
 

@@ -4,12 +4,15 @@ import com.techalvaro.stock.stockservice.api.DBApi;
 import com.techalvaro.stock.stockservice.dto.CredentialsDto;
 import com.techalvaro.stock.stockservice.utils.StringUtility;
 import org.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Map;
 
 abstract class BaseService {
 
     protected DBApi dbApi;
+    protected Logger logger = LoggerFactory.getLogger(this.getClass());
 
     public BaseService(DBApi dbApi) {
         this.dbApi = dbApi;

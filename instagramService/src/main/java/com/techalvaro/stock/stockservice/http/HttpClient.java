@@ -27,7 +27,7 @@ public class HttpClient {
         this.httpTemplate = httpTemplate;
     }
 
-    public <T> T makeGetRequest(String URL, Class<T> responseType) throws Exception {
+    public <T> T makeGetRequest(String URL, Class<T> responseType)  {
         ResponseEntity<T> response = httpTemplate.exchange(
                 URL,
                 HttpMethod.GET,

@@ -1,22 +1,18 @@
-package com.techalvaro.stock.stockservice.dto;
+package com.techalvaro.stock.stockservice.model;
 
-public class SettingsDto {
+public class Settings {
     private String channel_uuid;
     private String email;
     private String ticket_priority;
     private String[] ticket_tag;
     private String ticket_type;
 
-    public SettingsDto(String channel_uuid, String email, String ticket_priority, String[] ticket_tag, String ticket_type) {
+    public Settings(String channel_uuid, String email, String ticket_priority, String[] ticket_tag, String ticket_type) {
         this.channel_uuid = channel_uuid;
         this.email = email;
         this.ticket_priority = ticket_priority;
         this.ticket_tag = ticket_tag;
         this.ticket_type = ticket_type;
-    }
-
-    public SettingsDto() {
-
     }
 
     public String getChannel_uuid() {
